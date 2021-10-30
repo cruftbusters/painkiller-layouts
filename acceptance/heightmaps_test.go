@@ -9,7 +9,7 @@ import (
 
 func TestHeightmaps(t *testing.T) {
 	go func() {
-		http.ListenAndServe(":8080", http.HandlerFunc(heightmap.HeightmapController))
+		http.ListenAndServe(":8080", heightmap.Handler())
 	}()
 
 	t.Run("get missing heightmap", func(t *testing.T) {
@@ -20,10 +20,15 @@ func TestHeightmaps(t *testing.T) {
 	})
 
 	t.Run("create new heightmap", func(t *testing.T) {
-		response, err := http.Post("http://localhost:8080/v1/heightmaps", "", nil)
+		postResponse, err := http.Post("http://localhost:8080/v1/heightmaps", "", nil)
 		assertNoError(t, err)
 
-		assertStatusCode(t, response, 201)
+		assertStatusCode(t, postResponse, 201)
+
+		response, err := http.Get("http://localhost:8080/v1/heightmaps/deadbeef")
+		assertNoError(t, err)
+
+		assertStatusCode(t, response, 200)
 	})
 }
 
