@@ -1,13 +1,15 @@
-package main
+package acceptance
 
 import (
 	"net/http"
 	"testing"
+
+	"github.com/cruftbusters/painkiller-gallery/heightmap"
 )
 
 func TestHeightmaps(t *testing.T) {
 	go func() {
-		http.ListenAndServe(":8080", nil)
+		http.ListenAndServe(":8080", http.HandlerFunc(heightmap.HeightmapController))
 	}()
 
 	t.Run("get missing heightmap", func(t *testing.T) {
@@ -16,6 +18,14 @@ func TestHeightmaps(t *testing.T) {
 
 		assertStatusCode(t, response, 404)
 	})
+
+	t.Run("create new heightmap", func(t *testing.T) {
+		response, err := http.Post("http://localhost:8080/v1/heightmaps", "", nil)
+		assertNoError(t, err)
+
+		assertStatusCode(t, response, 201)
+	})
+}
 
 func assertNoError(t testing.TB, err error) {
 	if err != nil {
