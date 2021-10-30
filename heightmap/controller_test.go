@@ -7,11 +7,11 @@ import (
 )
 
 type StubService struct {
-	getWillReturn bool
+	getWillReturn *Metadata
 	postCount     int
 }
 
-func (stub *StubService) get() bool {
+func (stub *StubService) get() *Metadata {
 	return stub.getWillReturn
 }
 
@@ -26,6 +26,8 @@ func TestController(t *testing.T) {
 	}
 
 	t.Run("get missing heightmap", func(t *testing.T) {
+		stubService.getWillReturn = nil
+
 		request, _ := http.NewRequest(http.MethodGet, "/v1/heightmaps/deadbeef", nil)
 		response := httptest.NewRecorder()
 
@@ -46,7 +48,7 @@ func TestController(t *testing.T) {
 	})
 
 	t.Run("get heightmap", func(t *testing.T) {
-		stubService.getWillReturn = true
+		stubService.getWillReturn = &Metadata{}
 
 		request, _ := http.NewRequest(http.MethodGet, "/v1/heightmaps/deadbeef", nil)
 		response := httptest.NewRecorder()

@@ -1,23 +1,33 @@
 package heightmap
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestService(t *testing.T) {
 	t.Run("get when missing", func(t *testing.T) {
-		assertGet(t, &DefaultService{}, false)
+		assertGetIsNil(t, &DefaultService{})
 	})
 
 	t.Run("get after post", func(t *testing.T) {
 		service := &DefaultService{}
 		service.post()
-		assertGet(t, service, true)
+		assertGetIsNotNil(t, service)
 	})
 }
 
-func assertGet(t testing.TB, service Service, want bool) {
+func assertGetIsNil(t testing.TB, service Service) {
 	t.Helper()
-	got := service.get()
-	if got != want {
-		t.Fatalf("got %t want %t", got, want)
+	metadata := service.get()
+	if metadata != nil {
+		t.Fatal("got metadata but want nil")
+	}
+}
+
+func assertGetIsNotNil(t testing.TB, service Service) {
+	t.Helper()
+	metadata := service.get()
+	if metadata == nil {
+		t.Fatal("got nil but want metadata", metadata)
 	}
 }

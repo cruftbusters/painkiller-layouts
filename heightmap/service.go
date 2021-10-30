@@ -1,18 +1,18 @@
 package heightmap
 
 type Service interface {
-	get() bool
+	get() *Metadata
 	post()
 }
 
 type DefaultService struct {
-	isCreated bool
+	metadata *Metadata
 }
 
-func (service *DefaultService) get() bool {
-	return service.isCreated
+func (service *DefaultService) get() *Metadata {
+	return service.metadata
 }
 
 func (service *DefaultService) post() {
-	service.isCreated = true
+	service.metadata = &Metadata{}
 }
