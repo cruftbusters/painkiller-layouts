@@ -1,5 +1,7 @@
 package heightmap
 
+import . "github.com/cruftbusters/painkiller-gallery/types"
+
 type Service interface {
 	get() *Metadata
 	post()
@@ -14,5 +16,5 @@ func (service *DefaultService) get() *Metadata {
 }
 
 func (service *DefaultService) post() {
-	service.metadata = &Metadata{}
+	service.metadata = &Metadata{Id: "deadbeef"}
 }

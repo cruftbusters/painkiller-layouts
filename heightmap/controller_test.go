@@ -1,9 +1,12 @@
 package heightmap
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	. "github.com/cruftbusters/painkiller-gallery/types"
 )
 
 type StubService struct {
@@ -48,7 +51,7 @@ func TestController(t *testing.T) {
 	})
 
 	t.Run("get heightmap", func(t *testing.T) {
-		stubService.getWillReturn = &Metadata{}
+		stubService.getWillReturn = &Metadata{Id: "beefdead"}
 
 		request, _ := http.NewRequest(http.MethodGet, "/v1/heightmaps/deadbeef", nil)
 		response := httptest.NewRecorder()
@@ -56,6 +59,7 @@ func TestController(t *testing.T) {
 		controller.ServeHTTP(response, request)
 
 		assertStatusCode(t, response, 200)
+		assertBody(t, response, Metadata{Id: "beefdead"})
 	})
 }
 
@@ -70,5 +74,16 @@ func assertPostCount(t testing.TB, stubService *StubService, want int) {
 	t.Helper()
 	if stubService.postCount != want {
 		t.Fatalf("got post count %d want %d", stubService.postCount, want)
+	}
+}
+
+func assertBody(t testing.TB, response *httptest.ResponseRecorder, want Metadata) {
+	t.Helper()
+	got := &Metadata{}
+	if err := json.NewDecoder(response.Body).Decode(got); err != nil {
+		t.Fatal("got error json decoding body", err)
+	}
+	if *got != want {
+		t.Fatalf("got %#v want %#v", got, want)
 	}
 }

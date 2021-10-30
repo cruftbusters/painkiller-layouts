@@ -1,6 +1,9 @@
 package heightmap
 
-import "net/http"
+import (
+	"encoding/json"
+	"net/http"
+)
 
 type Controller struct {
 	Service Service
@@ -14,5 +17,7 @@ func (controller Controller) ServeHTTP(response http.ResponseWriter, request *ht
 		response.WriteHeader(404)
 	} else {
 		response.WriteHeader(200)
+		response.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(response).Encode(controller.Service.get())
 	}
 }

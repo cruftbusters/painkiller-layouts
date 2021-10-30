@@ -1,7 +1,10 @@
 package heightmap
 
 import (
+	"reflect"
 	"testing"
+
+	. "github.com/cruftbusters/painkiller-gallery/types"
 )
 
 func TestService(t *testing.T) {
@@ -12,7 +15,7 @@ func TestService(t *testing.T) {
 	t.Run("get after post", func(t *testing.T) {
 		service := &DefaultService{}
 		service.post()
-		assertGetIsNotNil(t, service)
+		assertGet(t, service, &Metadata{Id: "deadbeef"})
 	})
 }
 
@@ -24,10 +27,10 @@ func assertGetIsNil(t testing.TB, service Service) {
 	}
 }
 
-func assertGetIsNotNil(t testing.TB, service Service) {
+func assertGet(t testing.TB, service Service, want *Metadata) {
 	t.Helper()
-	metadata := service.get()
-	if metadata == nil {
-		t.Fatal("got nil but want metadata", metadata)
+	got := service.get()
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %#v want %#v", got, want)
 	}
 }
