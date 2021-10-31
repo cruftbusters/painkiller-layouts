@@ -4,7 +4,7 @@ Description=painkiller/gallery
 [Service]
 ExecStart=/home/arctair/painkiller/gallery/build/server
 StandardOutput=file:/home/arctair/painkiller/gallery/application.log
-StandardError=file:/home/arctair/painkiler/gallery/error.log
+StandardError=file:/home/arctair/painkiller/gallery/error.log
 Type=simple
 WorkingDirectory=/home/arctair/painkiller/gallery
 
