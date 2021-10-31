@@ -13,8 +13,8 @@ func TestService(t *testing.T) {
 
 	t.Run("get after post", func(t *testing.T) {
 		service := &DefaultService{}
-		assertPost(t, service, Metadata{Id: "deadbeef"})
-		assertGet(t, service, Metadata{Id: "deadbeef"})
+		assertMetadata(t, service.post(), Metadata{Id: "deadbeef"})
+		assertMetadata(t, *service.get(), Metadata{Id: "deadbeef"})
 	})
 }
 
@@ -26,17 +26,8 @@ func assertGetIsNil(t testing.TB, service Service) {
 	}
 }
 
-func assertGet(t testing.TB, service Service, want Metadata) {
+func assertMetadata(t testing.TB, got Metadata, want Metadata) {
 	t.Helper()
-	got := *service.get()
-	if got != want {
-		t.Fatalf("got %#v want %#v", got, want)
-	}
-}
-
-func assertPost(t testing.TB, service Service, want Metadata) {
-	t.Helper()
-	got := service.post()
 	if got != want {
 		t.Fatalf("got %#v want %#v", got, want)
 	}
