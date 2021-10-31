@@ -20,7 +20,7 @@ func (client Client) GetMetadata(id string) Metadata {
 	assertNoError(client.t, err)
 	assertStatusCode(client.t, response, 200)
 
-	return decodeMetadata(client.t, response)
+	return decode(client.t, response)
 }
 
 func (client Client) GetMetadataExpectNotFound() {
@@ -30,19 +30,19 @@ func (client Client) GetMetadataExpectNotFound() {
 }
 
 func (client Client) Create(metadata Metadata) Metadata {
-	up := encodeMetadata(client.t, metadata)
+	up := encode(client.t, metadata)
 	response, err := http.Post(client.baseUrl("/v1/heightmaps"), "", up)
 	assertNoError(client.t, err)
 	assertStatusCode(client.t, response, 201)
 
-	return decodeMetadata(client.t, response)
+	return decode(client.t, response)
 }
 
 func (client Client) baseUrl(path string, a ...interface{}) string {
 	return client.BaseUrl + fmt.Sprintf(path, a...)
 }
 
-func encodeMetadata(t testing.TB, metadata Metadata) *bytes.Buffer {
+func encode(t testing.TB, metadata Metadata) *bytes.Buffer {
 	up := &bytes.Buffer{}
 	err := json.NewEncoder(up).Encode(metadata)
 	assertNoError(t, err)
@@ -62,7 +62,7 @@ func assertStatusCode(t testing.TB, response *http.Response, statusCode int) {
 	}
 }
 
-func decodeMetadata(t testing.TB, response *http.Response) Metadata {
+func decode(t testing.TB, response *http.Response) Metadata {
 	down := &Metadata{}
 	err := json.NewDecoder(response.Body).Decode(down)
 	assertNoError(t, err)
