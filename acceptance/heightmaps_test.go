@@ -25,7 +25,6 @@ func TestHeightmaps(t *testing.T) {
 
 	t.Run("create new heightmap", func(t *testing.T) {
 		postResponse, err := client.post(Metadata{
-			Id:   "dont use this",
 			Size: "large",
 		})
 		assertNoError(t, err)
