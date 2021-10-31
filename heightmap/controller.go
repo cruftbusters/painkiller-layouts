@@ -18,10 +18,10 @@ func (controller Controller) ServeHTTP(response http.ResponseWriter, request *ht
 		json.NewDecoder(request.Body).Decode(up)
 		down := controller.Service.post(*up)
 		json.NewEncoder(response).Encode(down)
-	} else if metadata := controller.Service.get(); metadata == nil {
+	} else if metadata := controller.Service.get(""); metadata == nil {
 		response.WriteHeader(404)
 	} else {
 		response.WriteHeader(200)
-		json.NewEncoder(response).Encode(controller.Service.get())
+		json.NewEncoder(response).Encode(controller.Service.get(""))
 	}
 }

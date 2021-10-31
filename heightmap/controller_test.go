@@ -17,7 +17,7 @@ type StubService struct {
 	postWillReturn     Metadata
 }
 
-func (stub *StubService) get() *Metadata {
+func (stub *StubService) get(id string) *Metadata {
 	return stub.getWillReturn
 }
 

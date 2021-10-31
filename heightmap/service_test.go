@@ -23,13 +23,13 @@ func TestService(t *testing.T) {
 
 		down := service.post(up)
 		assertMetadata(t, down, expectedDown)
-		assertMetadata(t, *service.get(), expectedDown)
+		assertMetadata(t, *service.get(""), expectedDown)
 	})
 }
 
 func assertGetIsNil(t testing.TB, service Service) {
 	t.Helper()
-	metadata := service.get()
+	metadata := service.get("")
 	if metadata != nil {
 		t.Fatal("got metadata but want nil")
 	}

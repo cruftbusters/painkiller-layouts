@@ -3,7 +3,7 @@ package heightmap
 import . "github.com/cruftbusters/painkiller-gallery/types"
 
 type Service interface {
-	get() *Metadata
+	get(id string) *Metadata
 	post(metadata Metadata) Metadata
 }
 
@@ -11,7 +11,7 @@ type DefaultService struct {
 	metadata *Metadata
 }
 
-func (service *DefaultService) get() *Metadata {
+func (service *DefaultService) get(id string) *Metadata {
 	return service.metadata
 }
 
