@@ -40,14 +40,15 @@ func TestController(t *testing.T) {
 	})
 
 	t.Run("create heightmap", func(t *testing.T) {
-		stubService.postWillReturn = Metadata{Id: "conch"}
+		down := Metadata{Id: "down"}
+		stubService.postWillReturn = down
 		request, _ := http.NewRequest(http.MethodPost, "/v1/heightmaps", nil)
 		response := httptest.NewRecorder()
 
 		controller.ServeHTTP(response, request)
 
 		assertStatusCode(t, response, 201)
-		assertBody(t, response, Metadata{Id: "conch"})
+		assertBody(t, response, down)
 	})
 
 	t.Run("get heightmap", func(t *testing.T) {
