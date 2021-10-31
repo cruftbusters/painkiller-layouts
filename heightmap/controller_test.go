@@ -18,7 +18,7 @@ func (stub *StubService) get() *Metadata {
 	return stub.getWillReturn
 }
 
-func (stub *StubService) post() Metadata {
+func (stub *StubService) post(metadata Metadata) Metadata {
 	return stub.postWillReturn
 }
 

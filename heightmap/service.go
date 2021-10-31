@@ -4,7 +4,7 @@ import . "github.com/cruftbusters/painkiller-gallery/types"
 
 type Service interface {
 	get() *Metadata
-	post() Metadata
+	post(metadata Metadata) Metadata
 }
 
 type DefaultService struct {
@@ -15,7 +15,7 @@ func (service *DefaultService) get() *Metadata {
 	return service.metadata
 }
 
-func (service *DefaultService) post() Metadata {
+func (service *DefaultService) post(metadata Metadata) Metadata {
 	service.metadata = &Metadata{Id: "deadbeef"}
 	return *service.metadata
 }

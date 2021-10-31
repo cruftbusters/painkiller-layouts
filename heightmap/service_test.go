@@ -13,7 +13,7 @@ func TestService(t *testing.T) {
 
 	t.Run("get after post", func(t *testing.T) {
 		service := &DefaultService{}
-		assertMetadata(t, service.post(), Metadata{Id: "deadbeef"})
+		assertMetadata(t, service.post(Metadata{}), Metadata{Id: "deadbeef"})
 		assertMetadata(t, *service.get(), Metadata{Id: "deadbeef"})
 	})
 }
