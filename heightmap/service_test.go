@@ -6,18 +6,27 @@ import (
 	. "github.com/cruftbusters/painkiller-gallery/types"
 )
 
+type StubUUIDService struct {
+	id string
+}
+
+func (service StubUUIDService) NewUUID() string {
+	return service.id
+}
+
 func TestService(t *testing.T) {
+	uuidService := StubUUIDService{"beefdead"}
+	service := &DefaultService{uuidService: uuidService}
 	t.Run("get when missing", func(t *testing.T) {
-		assertGetIsNil(t, &DefaultService{})
+		assertGetIsNil(t, service)
 	})
 
 	t.Run("get after post", func(t *testing.T) {
-		service := &DefaultService{}
 		up, expectedDown := Metadata{
 			Id:   "ignore",
 			Size: "dont ignore",
 		}, Metadata{
-			Id:   "deadbeef",
+			Id:   "beefdead",
 			Size: "dont ignore",
 		}
 

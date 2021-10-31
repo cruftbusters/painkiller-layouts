@@ -8,7 +8,8 @@ type Service interface {
 }
 
 type DefaultService struct {
-	metadata *Metadata
+	uuidService UUIDService
+	metadata    *Metadata
 }
 
 func (service *DefaultService) get(id string) *Metadata {
@@ -17,7 +18,7 @@ func (service *DefaultService) get(id string) *Metadata {
 
 func (service *DefaultService) post(metadata Metadata) Metadata {
 	newMetadata := &metadata
-	newMetadata.Id = "deadbeef"
+	newMetadata.Id = service.uuidService.NewUUID()
 	service.metadata = newMetadata
 	return *newMetadata
 }
