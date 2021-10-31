@@ -3,6 +3,7 @@ package heightmap
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	. "github.com/cruftbusters/painkiller-gallery/types"
 )
@@ -18,10 +19,14 @@ func (controller Controller) ServeHTTP(response http.ResponseWriter, request *ht
 		json.NewDecoder(request.Body).Decode(up)
 		down := controller.Service.post(*up)
 		json.NewEncoder(response).Encode(down)
-	} else if metadata := controller.Service.get(""); metadata == nil {
-		response.WriteHeader(404)
 	} else {
-		response.WriteHeader(200)
-		json.NewEncoder(response).Encode(controller.Service.get(""))
+		id := strings.TrimPrefix(request.URL.Path, "/v1/heightmaps/")
+		metadata := controller.Service.get(id)
+		if metadata == nil {
+			response.WriteHeader(404)
+		} else {
+			response.WriteHeader(200)
+			json.NewEncoder(response).Encode(metadata)
+		}
 	}
 }

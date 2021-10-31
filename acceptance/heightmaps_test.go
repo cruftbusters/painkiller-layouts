@@ -20,18 +20,16 @@ func TestHeightmaps(t *testing.T) {
 	})
 
 	t.Run("create new heightmap", func(t *testing.T) {
-		metadata := client.Create(Metadata{
-			Size: "large",
-		})
+		gotFirst := client.Create(Metadata{Size: "first"})
+		wantFirst := Metadata{Id: gotFirst.Id, Size: "first"}
+		assertMetadata(t, gotFirst, wantFirst)
 
-		assertMetadata(t,
-			metadata,
-			Metadata{
-				Id:   metadata.Id,
-				Size: "large",
-			})
+		gotSecond := client.Create(Metadata{Size: "second"})
+		wantSecond := Metadata{Id: gotSecond.Id, Size: "second"}
+		assertMetadata(t, gotSecond, wantSecond)
 
-		assertMetadata(t, client.GetMetadata(), metadata)
+		assertMetadata(t, client.GetMetadata(gotFirst.Id), gotFirst)
+		assertMetadata(t, client.GetMetadata(gotSecond.Id), gotSecond)
 	})
 }
 

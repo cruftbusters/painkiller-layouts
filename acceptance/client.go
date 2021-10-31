@@ -3,6 +3,7 @@ package acceptance
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -14,8 +15,8 @@ type Client struct {
 	BaseUrl string
 }
 
-func (client Client) GetMetadata() Metadata {
-	response, err := http.Get(client.baseUrl("/v1/heightmaps/deadbeef"))
+func (client Client) GetMetadata(id string) Metadata {
+	response, err := http.Get(client.baseUrl("/v1/heightmaps/%s", id))
 	assertNoError(client.t, err)
 	assertStatusCode(client.t, response, 200)
 
@@ -37,8 +38,8 @@ func (client Client) Create(metadata Metadata) Metadata {
 	return decodeMetadata(client.t, response)
 }
 
-func (client Client) baseUrl(path string) string {
-	return client.BaseUrl + path
+func (client Client) baseUrl(path string, a ...interface{}) string {
+	return client.BaseUrl + fmt.Sprintf(path, a...)
 }
 
 func encodeMetadata(t testing.TB, metadata Metadata) *bytes.Buffer {

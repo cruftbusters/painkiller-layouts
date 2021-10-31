@@ -1,5 +1,9 @@
 package heightmap
 
+import (
+	"github.com/google/uuid"
+)
+
 type UUIDService interface {
 	NewUUID() string
 }
@@ -7,5 +11,5 @@ type UUIDService interface {
 type DefaultUUIDService struct{}
 
 func (service DefaultUUIDService) NewUUID() string {
-	return "deadbeef"
+	return uuid.New().String()
 }

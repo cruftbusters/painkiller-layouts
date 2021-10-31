@@ -9,16 +9,29 @@ type Service interface {
 
 type DefaultService struct {
 	uuidService UUIDService
-	metadata    *Metadata
+
+	metadata map[string]Metadata
+}
+
+func NewService(uuidService UUIDService) Service {
+	return &DefaultService{
+		uuidService: uuidService,
+		metadata:    make(map[string]Metadata),
+	}
 }
 
 func (service *DefaultService) get(id string) *Metadata {
-	return service.metadata
+	if metadata, hasKey := service.metadata[id]; hasKey {
+		return &metadata
+	} else {
+		return nil
+	}
 }
 
 func (service *DefaultService) post(metadata Metadata) Metadata {
+	id := service.uuidService.NewUUID()
 	newMetadata := &metadata
-	newMetadata.Id = service.uuidService.NewUUID()
-	service.metadata = newMetadata
+	newMetadata.Id = id
+	service.metadata[id] = *newMetadata
 	return *newMetadata
 }

@@ -3,10 +3,10 @@ package heightmap
 import "testing"
 
 func TestUUIDService(t *testing.T) {
-	got := DefaultUUIDService{}.NewUUID()
-	want := "deadbeef"
+	got1 := DefaultUUIDService{}.NewUUID()
+	got2 := DefaultUUIDService{}.NewUUID()
 
-	if got != want {
-		t.Errorf("got %s want %s", got, want)
+	if got1 == got2 {
+		t.Errorf("want [%s, %s] to be distinct", got1, got2)
 	}
 }

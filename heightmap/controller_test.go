@@ -12,12 +12,18 @@ import (
 
 type StubService struct {
 	t                  testing.TB
+	whenGetCalledWith  string
 	getWillReturn      *Metadata
 	whenPostCalledWith Metadata
 	postWillReturn     Metadata
 }
 
-func (stub *StubService) get(id string) *Metadata {
+func (stub *StubService) get(got string) *Metadata {
+	stub.t.Helper()
+	want := stub.whenGetCalledWith
+	if got != want {
+		stub.t.Fatalf("got %#v want %#v", got, want)
+	}
 	return stub.getWillReturn
 }
 
@@ -37,6 +43,7 @@ func TestController(t *testing.T) {
 	}
 
 	t.Run("get missing heightmap", func(t *testing.T) {
+		stubService.whenGetCalledWith = "deadbeef"
 		stubService.getWillReturn = nil
 
 		request, _ := http.NewRequest(http.MethodGet, "/v1/heightmaps/deadbeef", nil)
@@ -63,9 +70,10 @@ func TestController(t *testing.T) {
 	})
 
 	t.Run("get heightmap", func(t *testing.T) {
+		stubService.whenGetCalledWith = "path-id"
 		stubService.getWillReturn = &Metadata{Id: "beefdead"}
 
-		request, _ := http.NewRequest(http.MethodGet, "/v1/heightmaps/deadbeef", nil)
+		request, _ := http.NewRequest(http.MethodGet, "/v1/heightmaps/path-id", nil)
 		response := httptest.NewRecorder()
 
 		controller.ServeHTTP(response, request)

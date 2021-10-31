@@ -7,32 +7,35 @@ import (
 )
 
 type StubUUIDService struct {
-	id string
+	idQueue []string
 }
 
-func (service StubUUIDService) NewUUID() string {
-	return service.id
+func (service *StubUUIDService) NewUUID() string {
+	nextId := service.idQueue[0]
+	service.idQueue = service.idQueue[1:]
+	return nextId
 }
 
 func TestService(t *testing.T) {
-	uuidService := StubUUIDService{"beefdead"}
-	service := &DefaultService{uuidService: uuidService}
+	stubUuidService := &StubUUIDService{}
+	service := NewService(stubUuidService)
 	t.Run("get when missing", func(t *testing.T) {
 		assertGetIsNil(t, service)
 	})
 
-	t.Run("get after post", func(t *testing.T) {
-		up, expectedDown := Metadata{
-			Id:   "ignore",
-			Size: "dont ignore",
-		}, Metadata{
-			Id:   "beefdead",
-			Size: "dont ignore",
-		}
+	t.Run("create and get two heightmaps", func(t *testing.T) {
+		stubUuidService.idQueue = []string{"first", "second"}
 
-		down := service.post(up)
-		assertMetadata(t, down, expectedDown)
-		assertMetadata(t, *service.get(""), expectedDown)
+		gotFirst := service.post(Metadata{Size: "first size"})
+		wantFirst := Metadata{Id: "first", Size: "first size"}
+		assertMetadata(t, gotFirst, wantFirst)
+
+		gotSecond := service.post(Metadata{Size: "second size"})
+		wantSecond := Metadata{Id: "second", Size: "second size"}
+		assertMetadata(t, gotSecond, wantSecond)
+
+		assertMetadata(t, *service.get(gotFirst.Id), gotFirst)
+		assertMetadata(t, *service.get(gotSecond.Id), gotSecond)
 	})
 }
 
