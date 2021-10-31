@@ -10,16 +10,16 @@ import (
 )
 
 type StubService struct {
-	getWillReturn *Metadata
-	postCount     int
+	getWillReturn  *Metadata
+	postWillReturn Metadata
 }
 
 func (stub *StubService) get() *Metadata {
 	return stub.getWillReturn
 }
 
-func (stub *StubService) post() {
-	stub.postCount++
+func (stub *StubService) post() Metadata {
+	return stub.postWillReturn
 }
 
 func TestController(t *testing.T) {
@@ -40,14 +40,14 @@ func TestController(t *testing.T) {
 	})
 
 	t.Run("create heightmap", func(t *testing.T) {
+		stubService.postWillReturn = Metadata{Id: "conch"}
 		request, _ := http.NewRequest(http.MethodPost, "/v1/heightmaps", nil)
 		response := httptest.NewRecorder()
 
 		controller.ServeHTTP(response, request)
 
 		assertStatusCode(t, response, 201)
-
-		assertPostCount(t, stubService, 1)
+		assertBody(t, response, Metadata{Id: "conch"})
 	})
 
 	t.Run("get heightmap", func(t *testing.T) {
@@ -67,13 +67,6 @@ func assertStatusCode(t testing.TB, response *httptest.ResponseRecorder, want in
 	t.Helper()
 	if response.Code != want {
 		t.Fatalf("got status code %d want %d", response.Code, want)
-	}
-}
-
-func assertPostCount(t testing.TB, stubService *StubService, want int) {
-	t.Helper()
-	if stubService.postCount != want {
-		t.Fatalf("got post count %d want %d", stubService.postCount, want)
 	}
 }
 

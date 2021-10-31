@@ -27,6 +27,10 @@ func TestHeightmaps(t *testing.T) {
 
 		assertStatusCode(t, postResponse, 201)
 
+		assertBody(t, postResponse, Metadata{
+			Id: "deadbeef",
+		})
+
 		response, err := http.Get("http://localhost:8080/v1/heightmaps/deadbeef")
 		assertNoError(t, err)
 

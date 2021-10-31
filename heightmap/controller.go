@@ -11,13 +11,12 @@ type Controller struct {
 
 func (controller Controller) ServeHTTP(response http.ResponseWriter, request *http.Request) {
 	if request.Method == "POST" {
-		controller.Service.post()
 		response.WriteHeader(201)
+		json.NewEncoder(response).Encode(controller.Service.post())
 	} else if metadata := controller.Service.get(); metadata == nil {
 		response.WriteHeader(404)
 	} else {
 		response.WriteHeader(200)
-		response.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(response).Encode(controller.Service.get())
 	}
 }
