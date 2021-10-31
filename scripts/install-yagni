@@ -1,0 +1,7 @@
+cat <<EOF | ssh yagni -T
+  mkdir -p $HOME/painkiller
+  git clone https://github.com/cruftbusters/painkiller-gallery painkiller/gallery
+  cd painkiller/gallery
+  ln -s $HOME/painkiller/gallery/scripts/painkiller.gallery.service $HOME/.config/systemd/user/
+  systemctl enable painkiller.gallery --user
+EOF
