@@ -14,15 +14,17 @@ func TestHeightmaps(t *testing.T) {
 		http.ListenAndServe(":8080", heightmap.Handler())
 	}()
 
+	client := Client{BaseUrl: "http://localhost:8080"}
+
 	t.Run("get missing heightmap", func(t *testing.T) {
-		response, err := http.Get("http://localhost:8080/v1/heightmaps/deadbeef")
+		response, err := client.getMetadata()
 		assertNoError(t, err)
 
 		assertStatusCode(t, response, 404)
 	})
 
 	t.Run("create new heightmap", func(t *testing.T) {
-		postResponse, err := http.Post("http://localhost:8080/v1/heightmaps", "", nil)
+		postResponse, err := client.postMetadata()
 		assertNoError(t, err)
 
 		assertStatusCode(t, postResponse, 201)
