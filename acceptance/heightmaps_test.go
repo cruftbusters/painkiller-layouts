@@ -24,13 +24,17 @@ func TestHeightmaps(t *testing.T) {
 	})
 
 	t.Run("create new heightmap", func(t *testing.T) {
-		postResponse, err := client.postMetadata()
+		postResponse, err := client.post(Metadata{
+			Id:   "dont use this",
+			Size: "large",
+		})
 		assertNoError(t, err)
 
 		assertStatusCode(t, postResponse, 201)
 
 		assertBody(t, postResponse, Metadata{
-			Id: "deadbeef",
+			Id:   "deadbeef",
+			Size: "large",
 		})
 
 		response, err := http.Get("http://localhost:8080/v1/heightmaps/deadbeef")
@@ -39,7 +43,8 @@ func TestHeightmaps(t *testing.T) {
 		assertStatusCode(t, response, 200)
 
 		assertBody(t, response, Metadata{
-			Id: "deadbeef",
+			Id:   "deadbeef",
+			Size: "large",
 		})
 	})
 }

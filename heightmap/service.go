@@ -16,6 +16,8 @@ func (service *DefaultService) get() *Metadata {
 }
 
 func (service *DefaultService) post(metadata Metadata) Metadata {
-	service.metadata = &Metadata{Id: "deadbeef"}
-	return *service.metadata
+	newMetadata := &metadata
+	newMetadata.Id = "deadbeef"
+	service.metadata = newMetadata
+	return *newMetadata
 }

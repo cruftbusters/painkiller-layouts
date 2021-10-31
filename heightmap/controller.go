@@ -14,7 +14,10 @@ type Controller struct {
 func (controller Controller) ServeHTTP(response http.ResponseWriter, request *http.Request) {
 	if request.Method == "POST" {
 		response.WriteHeader(201)
-		json.NewEncoder(response).Encode(controller.Service.post(Metadata{}))
+		up := &Metadata{}
+		json.NewDecoder(request.Body).Decode(up)
+		down := controller.Service.post(*up)
+		json.NewEncoder(response).Encode(down)
 	} else if metadata := controller.Service.get(); metadata == nil {
 		response.WriteHeader(404)
 	} else {

@@ -1,6 +1,7 @@
 package heightmap
 
 import (
+	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -10,20 +11,27 @@ import (
 )
 
 type StubService struct {
-	getWillReturn  *Metadata
-	postWillReturn Metadata
+	t                  testing.TB
+	getWillReturn      *Metadata
+	whenPostCalledWith Metadata
+	postWillReturn     Metadata
 }
 
 func (stub *StubService) get() *Metadata {
 	return stub.getWillReturn
 }
 
-func (stub *StubService) post(metadata Metadata) Metadata {
+func (stub *StubService) post(got Metadata) Metadata {
+	stub.t.Helper()
+	want := stub.whenPostCalledWith
+	if got != want {
+		stub.t.Fatalf("got %#v want %#v", got, want)
+	}
 	return stub.postWillReturn
 }
 
 func TestController(t *testing.T) {
-	stubService := &StubService{}
+	stubService := &StubService{t: t}
 	controller := Controller{
 		stubService,
 	}
@@ -40,11 +48,14 @@ func TestController(t *testing.T) {
 	})
 
 	t.Run("create heightmap", func(t *testing.T) {
-		down := Metadata{Id: "down"}
+		up, down := Metadata{Id: "up"}, Metadata{Id: "down"}
+		stubService.whenPostCalledWith = up
 		stubService.postWillReturn = down
-		request, _ := http.NewRequest(http.MethodPost, "/v1/heightmaps", nil)
-		response := httptest.NewRecorder()
 
+		body := &bytes.Buffer{}
+		json.NewEncoder(body).Encode(up)
+		request, _ := http.NewRequest(http.MethodPost, "/v1/heightmaps", body)
+		response := httptest.NewRecorder()
 		controller.ServeHTTP(response, request)
 
 		assertStatusCode(t, response, 201)

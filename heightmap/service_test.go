@@ -13,8 +13,17 @@ func TestService(t *testing.T) {
 
 	t.Run("get after post", func(t *testing.T) {
 		service := &DefaultService{}
-		assertMetadata(t, service.post(Metadata{}), Metadata{Id: "deadbeef"})
-		assertMetadata(t, *service.get(), Metadata{Id: "deadbeef"})
+		up, expectedDown := Metadata{
+			Id:   "ignore",
+			Size: "dont ignore",
+		}, Metadata{
+			Id:   "deadbeef",
+			Size: "dont ignore",
+		}
+
+		down := service.post(up)
+		assertMetadata(t, down, expectedDown)
+		assertMetadata(t, *service.get(), expectedDown)
 	})
 }
 
