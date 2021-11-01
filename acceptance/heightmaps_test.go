@@ -22,13 +22,13 @@ func TestHeightmaps(t *testing.T) {
 	t.Run("create and get two heightmaps", func(t *testing.T) {
 		gotFirst := client.Create(Metadata{Size: "first"})
 		wantFirst := Metadata{Id: gotFirst.Id, Size: "first"}
-		assertEquals(t, gotFirst, wantFirst)
+		assertMetadata(t, gotFirst, wantFirst)
 
 		gotSecond := client.Create(Metadata{Size: "second"})
 		wantSecond := Metadata{Id: gotSecond.Id, Size: "second"}
-		assertEquals(t, gotSecond, wantSecond)
+		assertMetadata(t, gotSecond, wantSecond)
 
-		assertEquals(t, client.GetMetadata(gotFirst.Id), gotFirst)
-		assertEquals(t, client.GetMetadata(gotSecond.Id), gotSecond)
+		assertMetadata(t, client.GetMetadata(gotFirst.Id), gotFirst)
+		assertMetadata(t, client.GetMetadata(gotSecond.Id), gotSecond)
 	})
 }

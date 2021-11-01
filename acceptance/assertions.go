@@ -20,7 +20,7 @@ func assertStatusCode(t testing.TB, response *http.Response, statusCode int) {
 	}
 }
 
-func assertEquals(t testing.TB, got types.Metadata, want types.Metadata) {
+func assertMetadata(t testing.TB, got, want types.Metadata) {
 	t.Helper()
 	if got != want {
 		t.Fatalf("got %#v want %#v", got, want)
