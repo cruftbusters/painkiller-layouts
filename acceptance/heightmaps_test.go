@@ -19,7 +19,7 @@ func TestHeightmaps(t *testing.T) {
 		client.GetMetadataExpectNotFound()
 	})
 
-	t.Run("create new heightmap", func(t *testing.T) {
+	t.Run("create and get two heightmaps", func(t *testing.T) {
 		gotFirst := client.Create(Metadata{Size: "first"})
 		wantFirst := Metadata{Id: gotFirst.Id, Size: "first"}
 		assertEquals(t, gotFirst, wantFirst)
