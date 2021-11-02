@@ -32,12 +32,15 @@ func TestHeightmaps(t *testing.T) {
 	})
 
 	t.Run("create and get all heightmaps", func(t *testing.T) {
-		want := []Metadata{
-			client.Create(Metadata{Size: ""}),
-			client.Create(Metadata{Size: ""}),
-		}
+		first := client.Create(Metadata{})
+		second := client.Create(Metadata{})
+
 		got := client.GetAll()
+		want := []Metadata{first, second}
 		AssertAllMetadataUnordered(t, got, want)
+
+		client.Delete(first.Id)
+		client.Delete(second.Id)
 	})
 
 	t.Run("delete heightmap", func(t *testing.T) {
