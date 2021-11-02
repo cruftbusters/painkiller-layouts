@@ -1,10 +1,8 @@
 package heightmap
 
 import (
-	"bytes"
-	"encoding/json"
+	"fmt"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	. "github.com/cruftbusters/painkiller-gallery/assertions"
@@ -38,21 +36,23 @@ func (stub *StubService) post(got Metadata) Metadata {
 }
 
 func TestController(t *testing.T) {
+	listener, port := RandomPortListener()
+	client := NewClient(t, fmt.Sprintf("http://localhost:%d", port))
+
 	stubService := &StubService{t: t}
 	controller := Controller{
 		stubService,
 	}
 
+	go func() {
+		http.Serve(listener, controller)
+	}()
+
 	t.Run("get missing heightmap", func(t *testing.T) {
 		stubService.whenGetCalledWith = "deadbeef"
 		stubService.getWillReturn = nil
 
-		request, _ := http.NewRequest(http.MethodGet, "/v1/heightmaps/deadbeef", nil)
-		response := httptest.NewRecorder()
-
-		controller.ServeHTTP(response, request)
-
-		assertStatusCode(t, response, 404)
+		client.GetMetadataExpectNotFound()
 	})
 
 	t.Run("create heightmap", func(t *testing.T) {
@@ -60,15 +60,7 @@ func TestController(t *testing.T) {
 		stubService.whenPostCalledWith = up
 		stubService.postWillReturn = down
 
-		body := &bytes.Buffer{}
-		json.NewEncoder(body).Encode(up)
-		request, _ := http.NewRequest(http.MethodPost, "/v1/heightmaps", body)
-		response := httptest.NewRecorder()
-		controller.ServeHTTP(response, request)
-
-		assertStatusCode(t, response, 201)
-
-		got := decode(t, response)
+		got := client.Create(up)
 		AssertMetadata(t, got, down)
 	})
 
@@ -76,31 +68,8 @@ func TestController(t *testing.T) {
 		stubService.whenGetCalledWith = "path-id"
 		stubService.getWillReturn = &Metadata{Id: "beefdead"}
 
-		request, _ := http.NewRequest(http.MethodGet, "/v1/heightmaps/path-id", nil)
-		response := httptest.NewRecorder()
-
-		controller.ServeHTTP(response, request)
-
-		assertStatusCode(t, response, 200)
-
-		got := decode(t, response)
+		got := client.GetMetadata("path-id")
 		want := Metadata{Id: "beefdead"}
 		AssertMetadata(t, got, want)
 	})
-}
-
-func assertStatusCode(t testing.TB, response *httptest.ResponseRecorder, want int) {
-	t.Helper()
-	if response.Code != want {
-		t.Fatalf("got status code %d want %d", response.Code, want)
-	}
-}
-
-func decode(t testing.TB, response *httptest.ResponseRecorder) Metadata {
-	t.Helper()
-	got := &Metadata{}
-	if err := json.NewDecoder(response.Body).Decode(got); err != nil {
-		t.Fatal("got error json decoding body", err)
-	}
-	return *got
 }
