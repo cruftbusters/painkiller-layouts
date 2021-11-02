@@ -3,9 +3,9 @@ package heightmap
 import "github.com/julienschmidt/httprouter"
 
 func Handler() *httprouter.Router {
-	return Controller{
+	return NewController(
 		NewService(
 			&DefaultUUIDService{},
 		),
-	}.Router()
+	)
 }

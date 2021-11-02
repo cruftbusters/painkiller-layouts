@@ -51,12 +51,10 @@ func TestController(t *testing.T) {
 	client := NewClient(t, fmt.Sprintf("http://localhost:%d", port))
 
 	stubService := &StubService{t: t}
-	controller := Controller{
-		stubService,
-	}
+	controller := NewController(stubService)
 
 	go func() {
-		http.Serve(listener, controller.Router())
+		http.Serve(listener, controller)
 	}()
 
 	t.Run("get missing heightmap", func(t *testing.T) {

@@ -12,7 +12,8 @@ type Controller struct {
 	Service Service
 }
 
-func (controller Controller) Router() *httprouter.Router {
+func NewController(service Service) *httprouter.Router {
+	controller := &Controller{service}
 	router := httprouter.New()
 	router.POST("/v1/heightmaps", controller.Create)
 	router.GET("/v1/heightmaps/:id", controller.Get)
