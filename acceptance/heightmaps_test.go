@@ -1,6 +1,8 @@
 package acceptance
 
 import (
+	"fmt"
+	"net"
 	"net/http"
 	"testing"
 
@@ -10,11 +12,17 @@ import (
 )
 
 func TestHeightmaps(t *testing.T) {
+	listener, err := net.Listen("tcp", ":0")
+	if err != nil {
+		panic(err)
+	}
+	port := listener.Addr().(*net.TCPAddr).Port
 	go func() {
-		http.ListenAndServe(":8080", heightmap.Handler())
+		http.Serve(listener, heightmap.Handler())
 	}()
 
-	client := Client{t: t, BaseUrl: "http://localhost:8080"}
+	baseURL := fmt.Sprintf("http://localhost:%d", port)
+	client := Client{t: t, BaseUrl: baseURL}
 
 	t.Run("get missing heightmap", func(t *testing.T) {
 		client.GetMetadataExpectNotFound()
