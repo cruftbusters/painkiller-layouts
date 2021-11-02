@@ -37,7 +37,6 @@ func TestService(t *testing.T) {
 	})
 
 	t.Run("create and get all heightmaps", func(t *testing.T) {
-		service := NewService(stubUuidService)
 		stubUuidService.idQueue = []string{"first", "second"}
 
 		service.Post(Metadata{})
@@ -49,6 +48,19 @@ func TestService(t *testing.T) {
 			Metadata{Id: "second"},
 		}
 		AssertAllMetadataUnordered(t, got, want)
+	})
+
+	t.Run("patch url onto metadata", func(t *testing.T) {
+		id, size, url := "the id", "old size", "new image url"
+		stubUuidService.idQueue = []string{id}
+		service.Post(Metadata{Size: size})
+
+		got := service.Patch(id, Metadata{ImageURL: url})
+		want := Metadata{Id: id, Size: size, ImageURL: url}
+		AssertMetadata(t, got, want)
+
+		got = *service.Get(id)
+		AssertMetadata(t, got, want)
 	})
 
 	t.Run("delete heightmap", func(t *testing.T) {

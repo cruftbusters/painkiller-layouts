@@ -52,6 +52,21 @@ func (client Client) Create(metadata Metadata) Metadata {
 	return decode(client.t, response)
 }
 
+func (client Client) Patch(id string, metadata Metadata) Metadata {
+	client.t.Helper()
+
+	up := encode(client.t, metadata)
+	requestURL := client.baseURLF("/v1/heightmaps/%s", id)
+	request, err := http.NewRequest(http.MethodPatch, requestURL, up)
+	AssertNoError(client.t, err)
+
+	response, err := (&http.Client{}).Do(request)
+	AssertNoError(client.t, err)
+	AssertStatusCode(client.t, response, 200)
+
+	return decode(client.t, response)
+}
+
 func (client Client) Delete(id string) {
 	client.t.Helper()
 	requestURL := client.baseURLF("/v1/heightmaps/%s", id)

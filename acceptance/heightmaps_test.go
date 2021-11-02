@@ -43,6 +43,17 @@ func TestHeightmaps(t *testing.T) {
 		client.Delete(second.Id)
 	})
 
+	t.Run("patch url onto metadata", func(t *testing.T) {
+		metadata := client.Create(Metadata{Size: "old size"})
+
+		got := client.Patch(metadata.Id, Metadata{ImageURL: "new image url"})
+		want := Metadata{Id: metadata.Id, Size: "old size", ImageURL: "new image url"}
+		AssertMetadata(t, got, want)
+
+		got = client.Get(metadata.Id)
+		AssertMetadata(t, got, want)
+	})
+
 	t.Run("delete heightmap", func(t *testing.T) {
 		metadata := client.Create(Metadata{Size: "delete me"})
 		client.Delete(metadata.Id)

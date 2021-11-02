@@ -11,14 +11,26 @@ import (
 )
 
 type StubService struct {
-	t                    testing.TB
-	whenGetCalledWith    string
-	getWillReturn        *Metadata
-	getAllWillReturn     []Metadata
-	whenPostCalledWith   Metadata
-	postWillReturn       Metadata
-	whenDeleteCalledWith string
-	deleteWillRaise      error
+	t                           testing.TB
+	whenGetCalledWith           string
+	getWillReturn               *Metadata
+	getAllWillReturn            []Metadata
+	whenPostCalledWith          Metadata
+	postWillReturn              Metadata
+	whenPatchCalledWithId       string
+	whenPatchCalledWithMetadata Metadata
+	patchWillReturn             Metadata
+	whenDeleteCalledWith        string
+	deleteWillRaise             error
+}
+
+func (stub *StubService) Post(got Metadata) Metadata {
+	stub.t.Helper()
+	want := stub.whenPostCalledWith
+	if got != want {
+		stub.t.Fatalf("got %#v want %#v", got, want)
+	}
+	return stub.postWillReturn
 }
 
 func (stub *StubService) Get(got string) *Metadata {
@@ -34,13 +46,17 @@ func (stub *StubService) GetAll() []Metadata {
 	return stub.getAllWillReturn
 }
 
-func (stub *StubService) Post(got Metadata) Metadata {
+func (stub *StubService) Patch(gotId string, gotMetadata Metadata) Metadata {
 	stub.t.Helper()
-	want := stub.whenPostCalledWith
-	if got != want {
-		stub.t.Fatalf("got %#v want %#v", got, want)
+	wantId := stub.whenPatchCalledWithId
+	wantMetadata := stub.whenPatchCalledWithMetadata
+	if gotId != wantId {
+		stub.t.Fatalf("got %s want %s", gotId, wantId)
 	}
-	return stub.postWillReturn
+	if gotMetadata != wantMetadata {
+		stub.t.Fatalf("got %#v want %#v", gotMetadata, wantMetadata)
+	}
+	return stub.patchWillReturn
 }
 
 func (stub *StubService) Delete(got string) error {
@@ -93,6 +109,17 @@ func TestController(t *testing.T) {
 		got := client.GetAll()
 		want := []Metadata{{Id: "beefdead"}}
 		AssertAllMetadata(t, got, want)
+	})
+
+	t.Run("patch heightmap by id", func(t *testing.T) {
+		id, up, down := "rafael", Metadata{ImageURL: "coming through"}, Metadata{Id: "rafael", ImageURL: "coming through for real"}
+		stubService.whenPatchCalledWithId = id
+		stubService.whenPatchCalledWithMetadata = up
+		stubService.patchWillReturn = down
+
+		got := client.Patch(id, up)
+		want := down
+		AssertMetadata(t, got, want)
 	})
 
 	t.Run("delete heightmap has error", func(t *testing.T) {

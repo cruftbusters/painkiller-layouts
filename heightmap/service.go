@@ -3,9 +3,10 @@ package heightmap
 import . "github.com/cruftbusters/painkiller-gallery/types"
 
 type Service interface {
+	Post(metadata Metadata) Metadata
 	Get(id string) *Metadata
 	GetAll() []Metadata
-	Post(metadata Metadata) Metadata
+	Patch(id string, metadata Metadata) Metadata
 	Delete(id string) error
 }
 
@@ -20,6 +21,14 @@ func NewService(uuidService UUIDService) Service {
 		uuidService: uuidService,
 		metadata:    make(map[string]Metadata),
 	}
+}
+
+func (service *DefaultService) Post(metadata Metadata) Metadata {
+	id := service.uuidService.NewUUID()
+	newMetadata := &metadata
+	newMetadata.Id = id
+	service.metadata[id] = *newMetadata
+	return *newMetadata
 }
 
 func (service *DefaultService) Get(id string) *Metadata {
@@ -38,10 +47,10 @@ func (service *DefaultService) GetAll() []Metadata {
 	return all
 }
 
-func (service *DefaultService) Post(metadata Metadata) Metadata {
-	id := service.uuidService.NewUUID()
-	newMetadata := &metadata
-	newMetadata.Id = id
+func (service *DefaultService) Patch(id string, patch Metadata) Metadata {
+	oldMetadata := service.metadata[id]
+	newMetadata := &oldMetadata
+	newMetadata.ImageURL = patch.ImageURL
 	service.metadata[id] = *newMetadata
 	return *newMetadata
 }

@@ -18,6 +18,7 @@ func NewController(service Service) *httprouter.Router {
 	router.POST("/v1/heightmaps", c.Create)
 	router.GET("/v1/heightmaps/:id", c.Get)
 	router.GET("/v1/heightmaps", c.GetAll)
+	router.PATCH("/v1/heightmaps/:id", c.Patch)
 	router.DELETE("/v1/heightmaps/:id", c.Delete)
 	return router
 }
@@ -43,6 +44,13 @@ func (c Controller) Get(response http.ResponseWriter, request *http.Request, ps 
 func (c Controller) GetAll(response http.ResponseWriter, request *http.Request, _ httprouter.Params) {
 	allMetadata := c.service.GetAll()
 	json.NewEncoder(response).Encode(allMetadata)
+}
+
+func (c Controller) Patch(response http.ResponseWriter, request *http.Request, ps httprouter.Params) {
+	up := &Metadata{}
+	json.NewDecoder(request.Body).Decode(up)
+	down := c.service.Patch(ps.ByName("id"), *up)
+	json.NewEncoder(response).Encode(down)
 }
 
 func (c Controller) Delete(response http.ResponseWriter, request *http.Request, ps httprouter.Params) {
