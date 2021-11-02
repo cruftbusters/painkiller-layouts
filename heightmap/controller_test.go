@@ -14,6 +14,7 @@ type StubService struct {
 	t                    testing.TB
 	whenGetCalledWith    string
 	getWillReturn        *Metadata
+	getAllWillReturn     []Metadata
 	whenPostCalledWith   Metadata
 	postWillReturn       Metadata
 	whenDeleteCalledWith string
@@ -27,6 +28,10 @@ func (stub *StubService) Get(got string) *Metadata {
 		stub.t.Fatalf("got %#v want %#v", got, want)
 	}
 	return stub.getWillReturn
+}
+
+func (stub *StubService) GetAll() []Metadata {
+	return stub.getAllWillReturn
 }
 
 func (stub *StubService) Post(got Metadata) Metadata {
@@ -80,6 +85,14 @@ func TestController(t *testing.T) {
 		got := client.Get("path-id")
 		want := Metadata{Id: "beefdead"}
 		AssertMetadata(t, got, want)
+	})
+
+	t.Run("get all heightmaps", func(t *testing.T) {
+		stubService.getAllWillReturn = []Metadata{{Id: "beefdead"}}
+
+		got := client.GetAll()
+		want := []Metadata{{Id: "beefdead"}}
+		AssertAllMetadata(t, got, want)
 	})
 
 	t.Run("delete heightmap has error", func(t *testing.T) {

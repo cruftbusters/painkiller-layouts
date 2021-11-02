@@ -22,3 +22,10 @@ func decode(t testing.TB, response *http.Response) types.Metadata {
 	AssertNoError(t, err)
 	return *down
 }
+
+func decodeAllMetadata(t testing.TB, response *http.Response) []types.Metadata {
+	var down *[]types.Metadata = &[]types.Metadata{}
+	err := json.NewDecoder(response.Body).Decode(down)
+	AssertNoError(t, err)
+	return *down
+}

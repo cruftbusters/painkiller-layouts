@@ -26,6 +26,15 @@ func (client Client) Get(id string) Metadata {
 	return decode(client.t, response)
 }
 
+func (client Client) GetAll() []Metadata {
+	client.t.Helper()
+	response, err := http.Get(client.baseURLF("/v1/heightmaps"))
+	AssertNoError(client.t, err)
+	AssertStatusCode(client.t, response, 200)
+
+	return decodeAllMetadata(client.t, response)
+}
+
 func (client Client) GetExpectNotFound(id string) {
 	client.t.Helper()
 	response, err := http.Get(client.baseURLF("/v1/heightmaps/%s", id))

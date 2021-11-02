@@ -23,17 +23,21 @@ func TestHeightmaps(t *testing.T) {
 		client.GetExpectNotFound("deadbeef")
 	})
 
-	t.Run("create and get two heightmaps", func(t *testing.T) {
-		gotFirst := client.Create(Metadata{Size: "first"})
-		wantFirst := Metadata{Id: gotFirst.Id, Size: "first"}
-		AssertMetadata(t, gotFirst, wantFirst)
+	t.Run("create and get heightmap", func(t *testing.T) {
+		got := client.Create(Metadata{})
+		AssertMetadata(t, got, Metadata{Id: got.Id})
+		AssertMetadata(t, client.Get(got.Id), got)
 
-		gotSecond := client.Create(Metadata{Size: "second"})
-		wantSecond := Metadata{Id: gotSecond.Id, Size: "second"}
-		AssertMetadata(t, gotSecond, wantSecond)
+		client.Delete(got.Id)
+	})
 
-		AssertMetadata(t, client.Get(gotFirst.Id), gotFirst)
-		AssertMetadata(t, client.Get(gotSecond.Id), gotSecond)
+	t.Run("create and get all heightmaps", func(t *testing.T) {
+		want := []Metadata{
+			client.Create(Metadata{Size: ""}),
+			client.Create(Metadata{Size: ""}),
+		}
+		got := client.GetAll()
+		AssertAllMetadataUnordered(t, got, want)
 	})
 
 	t.Run("delete heightmap", func(t *testing.T) {

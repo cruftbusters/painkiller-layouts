@@ -24,19 +24,31 @@ func TestService(t *testing.T) {
 		assertGetIsNil(t, service)
 	})
 
-	t.Run("create and get two heightmaps", func(t *testing.T) {
+	t.Run("create and get heightmap", func(t *testing.T) {
+		stubUuidService.idQueue = []string{"the id"}
+
+		got := service.Post(Metadata{})
+		want := Metadata{Id: "the id"}
+		AssertMetadata(t, got, want)
+
+		AssertMetadata(t, *service.Get(got.Id), got)
+
+		service.Delete("the id")
+	})
+
+	t.Run("create and get all heightmaps", func(t *testing.T) {
+		service := NewService(stubUuidService)
 		stubUuidService.idQueue = []string{"first", "second"}
 
-		gotFirst := service.Post(Metadata{Size: "first size"})
-		wantFirst := Metadata{Id: "first", Size: "first size"}
-		AssertMetadata(t, gotFirst, wantFirst)
+		service.Post(Metadata{})
+		service.Post(Metadata{})
 
-		gotSecond := service.Post(Metadata{Size: "second size"})
-		wantSecond := Metadata{Id: "second", Size: "second size"}
-		AssertMetadata(t, gotSecond, wantSecond)
-
-		AssertMetadata(t, *service.Get(gotFirst.Id), gotFirst)
-		AssertMetadata(t, *service.Get(gotSecond.Id), gotSecond)
+		got := service.GetAll()
+		want := []Metadata{
+			Metadata{Id: "first"},
+			Metadata{Id: "second"},
+		}
+		AssertAllMetadataUnordered(t, got, want)
 	})
 
 	t.Run("delete heightmap", func(t *testing.T) {

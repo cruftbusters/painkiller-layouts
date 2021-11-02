@@ -4,6 +4,7 @@ import . "github.com/cruftbusters/painkiller-gallery/types"
 
 type Service interface {
 	Get(id string) *Metadata
+	GetAll() []Metadata
 	Post(metadata Metadata) Metadata
 	Delete(id string) error
 }
@@ -27,6 +28,14 @@ func (service *DefaultService) Get(id string) *Metadata {
 	} else {
 		return nil
 	}
+}
+
+func (service *DefaultService) GetAll() []Metadata {
+	all := make([]Metadata, 0, len(service.metadata))
+	for _, metadata := range service.metadata {
+		all = append(all, metadata)
+	}
+	return all
 }
 
 func (service *DefaultService) Post(metadata Metadata) Metadata {
