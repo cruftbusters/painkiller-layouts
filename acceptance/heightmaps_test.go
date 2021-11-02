@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"testing"
 
+	. "github.com/cruftbusters/painkiller-gallery/assertions"
 	"github.com/cruftbusters/painkiller-gallery/heightmap"
 	. "github.com/cruftbusters/painkiller-gallery/types"
 )
@@ -22,13 +23,13 @@ func TestHeightmaps(t *testing.T) {
 	t.Run("create and get two heightmaps", func(t *testing.T) {
 		gotFirst := client.Create(Metadata{Size: "first"})
 		wantFirst := Metadata{Id: gotFirst.Id, Size: "first"}
-		assertMetadata(t, gotFirst, wantFirst)
+		AssertMetadata(t, gotFirst, wantFirst)
 
 		gotSecond := client.Create(Metadata{Size: "second"})
 		wantSecond := Metadata{Id: gotSecond.Id, Size: "second"}
-		assertMetadata(t, gotSecond, wantSecond)
+		AssertMetadata(t, gotSecond, wantSecond)
 
-		assertMetadata(t, client.GetMetadata(gotFirst.Id), gotFirst)
-		assertMetadata(t, client.GetMetadata(gotSecond.Id), gotSecond)
+		AssertMetadata(t, client.GetMetadata(gotFirst.Id), gotFirst)
+		AssertMetadata(t, client.GetMetadata(gotSecond.Id), gotSecond)
 	})
 }

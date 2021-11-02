@@ -3,6 +3,7 @@ package heightmap
 import (
 	"testing"
 
+	. "github.com/cruftbusters/painkiller-gallery/assertions"
 	. "github.com/cruftbusters/painkiller-gallery/types"
 )
 
@@ -28,14 +29,14 @@ func TestService(t *testing.T) {
 
 		gotFirst := service.post(Metadata{Size: "first size"})
 		wantFirst := Metadata{Id: "first", Size: "first size"}
-		assertMetadata(t, gotFirst, wantFirst)
+		AssertMetadata(t, gotFirst, wantFirst)
 
 		gotSecond := service.post(Metadata{Size: "second size"})
 		wantSecond := Metadata{Id: "second", Size: "second size"}
-		assertMetadata(t, gotSecond, wantSecond)
+		AssertMetadata(t, gotSecond, wantSecond)
 
-		assertMetadata(t, *service.get(gotFirst.Id), gotFirst)
-		assertMetadata(t, *service.get(gotSecond.Id), gotSecond)
+		AssertMetadata(t, *service.get(gotFirst.Id), gotFirst)
+		AssertMetadata(t, *service.get(gotSecond.Id), gotSecond)
 	})
 }
 
@@ -44,12 +45,5 @@ func assertGetIsNil(t testing.TB, service Service) {
 	metadata := service.get("")
 	if metadata != nil {
 		t.Fatal("got metadata but want nil")
-	}
-}
-
-func assertMetadata(t testing.TB, got Metadata, want Metadata) {
-	t.Helper()
-	if got != want {
-		t.Fatalf("got %#v want %#v", got, want)
 	}
 }
