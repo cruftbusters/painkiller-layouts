@@ -1,7 +1,6 @@
 # todo
 ## delete heightmap by id
-### better http router
-### controller - constants for http method matching
+### controller - just a function?
 ### make service methods public
 ### in controller extract Service as func var
 ### client methods are helpers

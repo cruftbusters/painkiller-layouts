@@ -56,7 +56,7 @@ func TestController(t *testing.T) {
 	}
 
 	go func() {
-		http.Serve(listener, controller)
+		http.Serve(listener, controller.Router())
 	}()
 
 	t.Run("get missing heightmap", func(t *testing.T) {

@@ -3,35 +3,44 @@ package heightmap
 import (
 	"encoding/json"
 	"net/http"
-	"strings"
 
 	. "github.com/cruftbusters/painkiller-gallery/types"
+	"github.com/julienschmidt/httprouter"
 )
 
 type Controller struct {
 	Service Service
 }
 
-func (controller Controller) ServeHTTP(response http.ResponseWriter, request *http.Request) {
-	id := strings.TrimPrefix(request.URL.Path, "/v1/heightmaps/")
-	if request.Method == "POST" {
-		response.WriteHeader(201)
-		up := &Metadata{}
-		json.NewDecoder(request.Body).Decode(up)
-		down := controller.Service.post(*up)
-		json.NewEncoder(response).Encode(down)
-	} else if request.Method == http.MethodDelete {
-		if err := controller.Service.Delete(id); err != nil {
-			response.WriteHeader(500)
-		}
-		response.WriteHeader(204)
+func (controller Controller) Router() *httprouter.Router {
+	router := httprouter.New()
+	router.POST("/v1/heightmaps", controller.Create)
+	router.GET("/v1/heightmaps/:id", controller.Get)
+	router.DELETE("/v1/heightmaps/:id", controller.Delete)
+	return router
+}
+
+func (controller Controller) Create(response http.ResponseWriter, request *http.Request, _ httprouter.Params) {
+	response.WriteHeader(201)
+	up := &Metadata{}
+	json.NewDecoder(request.Body).Decode(up)
+	down := controller.Service.post(*up)
+	json.NewEncoder(response).Encode(down)
+}
+
+func (controller Controller) Get(response http.ResponseWriter, request *http.Request, ps httprouter.Params) {
+	metadata := controller.Service.get(ps.ByName("id"))
+	if metadata == nil {
+		response.WriteHeader(404)
 	} else {
-		metadata := controller.Service.get(id)
-		if metadata == nil {
-			response.WriteHeader(404)
-		} else {
-			response.WriteHeader(200)
-			json.NewEncoder(response).Encode(metadata)
-		}
+		response.WriteHeader(200)
+		json.NewEncoder(response).Encode(metadata)
 	}
+}
+
+func (controller Controller) Delete(response http.ResponseWriter, request *http.Request, ps httprouter.Params) {
+	if err := controller.Service.Delete(ps.ByName("id")); err != nil {
+		response.WriteHeader(500)
+	}
+	response.WriteHeader(204)
 }
