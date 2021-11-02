@@ -20,7 +20,7 @@ func TestHeightmaps(t *testing.T) {
 	client := NewClient(t, baseURL)
 
 	t.Run("get missing heightmap", func(t *testing.T) {
-		client.GetMetadataExpectNotFound()
+		client.GetExpectNotFound()
 	})
 
 	t.Run("create and get two heightmaps", func(t *testing.T) {
@@ -32,7 +32,7 @@ func TestHeightmaps(t *testing.T) {
 		wantSecond := Metadata{Id: gotSecond.Id, Size: "second"}
 		AssertMetadata(t, gotSecond, wantSecond)
 
-		AssertMetadata(t, client.GetMetadata(gotFirst.Id), gotFirst)
-		AssertMetadata(t, client.GetMetadata(gotSecond.Id), gotSecond)
+		AssertMetadata(t, client.Get(gotFirst.Id), gotFirst)
+		AssertMetadata(t, client.Get(gotSecond.Id), gotSecond)
 	})
 }

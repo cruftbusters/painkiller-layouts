@@ -17,7 +17,7 @@ func NewClient(t testing.TB, baseURL string) Client {
 	return Client{t: t, baseURL: baseURL}
 }
 
-func (client Client) GetMetadata(id string) Metadata {
+func (client Client) Get(id string) Metadata {
 	response, err := http.Get(client.baseURLF("/v1/heightmaps/%s", id))
 	AssertNoError(client.t, err)
 	AssertStatusCode(client.t, response, 200)
@@ -25,7 +25,7 @@ func (client Client) GetMetadata(id string) Metadata {
 	return decode(client.t, response)
 }
 
-func (client Client) GetMetadataExpectNotFound() {
+func (client Client) GetExpectNotFound() {
 	response, err := http.Get(client.baseURLF("/v1/heightmaps/deadbeef"))
 	AssertNoError(client.t, err)
 	AssertStatusCode(client.t, response, 404)

@@ -52,7 +52,7 @@ func TestController(t *testing.T) {
 		stubService.whenGetCalledWith = "deadbeef"
 		stubService.getWillReturn = nil
 
-		client.GetMetadataExpectNotFound()
+		client.GetExpectNotFound()
 	})
 
 	t.Run("create heightmap", func(t *testing.T) {
@@ -68,7 +68,7 @@ func TestController(t *testing.T) {
 		stubService.whenGetCalledWith = "path-id"
 		stubService.getWillReturn = &Metadata{Id: "beefdead"}
 
-		got := client.GetMetadata("path-id")
+		got := client.Get("path-id")
 		want := Metadata{Id: "beefdead"}
 		AssertMetadata(t, got, want)
 	})
