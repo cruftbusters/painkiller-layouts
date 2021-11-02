@@ -3,7 +3,7 @@ package heightmap
 import (
 	"testing"
 
-	. "github.com/cruftbusters/painkiller-gallery/assertions"
+	. "github.com/cruftbusters/painkiller-gallery/testing"
 	. "github.com/cruftbusters/painkiller-gallery/types"
 )
 

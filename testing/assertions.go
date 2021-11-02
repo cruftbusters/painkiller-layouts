@@ -1,4 +1,4 @@
-package assertions
+package testing
 
 import (
 	"net/http"
