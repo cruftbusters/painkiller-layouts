@@ -1,17 +1,20 @@
-package acceptance
+package assertions
 
 import (
 	"fmt"
 	"net/http"
 	"testing"
 
-	. "github.com/cruftbusters/painkiller-gallery/assertions"
 	. "github.com/cruftbusters/painkiller-gallery/types"
 )
 
 type Client struct {
 	t       testing.TB
 	BaseUrl string
+}
+
+func NewClient(t testing.TB, baseURL string) Client {
+	return Client{t: t, BaseUrl: baseURL}
 }
 
 func (client Client) GetMetadata(id string) Metadata {

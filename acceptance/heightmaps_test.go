@@ -17,7 +17,7 @@ func TestHeightmaps(t *testing.T) {
 	}()
 
 	baseURL := fmt.Sprintf("http://localhost:%d", port)
-	client := Client{t: t, BaseUrl: baseURL}
+	client := NewClient(t, baseURL)
 
 	t.Run("get missing heightmap", func(t *testing.T) {
 		client.GetMetadataExpectNotFound()
