@@ -2,7 +2,6 @@ package acceptance
 
 import (
 	"fmt"
-	"net"
 	"net/http"
 	"testing"
 
@@ -36,13 +35,4 @@ func TestHeightmaps(t *testing.T) {
 		AssertMetadata(t, client.GetMetadata(gotFirst.Id), gotFirst)
 		AssertMetadata(t, client.GetMetadata(gotSecond.Id), gotSecond)
 	})
-}
-
-func RandomPortListener() (net.Listener, int) {
-	listener, err := net.Listen("tcp", ":0")
-	if err != nil {
-		panic(err)
-	}
-	port := listener.Addr().(*net.TCPAddr).Port
-	return listener, port
 }
