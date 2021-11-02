@@ -12,11 +12,7 @@ import (
 )
 
 func TestHeightmaps(t *testing.T) {
-	listener, err := net.Listen("tcp", ":0")
-	if err != nil {
-		panic(err)
-	}
-	port := listener.Addr().(*net.TCPAddr).Port
+	listener, port := RandomPortListener()
 	go func() {
 		http.Serve(listener, heightmap.Handler())
 	}()
@@ -40,4 +36,13 @@ func TestHeightmaps(t *testing.T) {
 		AssertMetadata(t, client.GetMetadata(gotFirst.Id), gotFirst)
 		AssertMetadata(t, client.GetMetadata(gotSecond.Id), gotSecond)
 	})
+}
+
+func RandomPortListener() (net.Listener, int) {
+	listener, err := net.Listen("tcp", ":0")
+	if err != nil {
+		panic(err)
+	}
+	port := listener.Addr().(*net.TCPAddr).Port
+	return listener, port
 }
