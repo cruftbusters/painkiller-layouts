@@ -25,12 +25,12 @@ func (controller Controller) Create(response http.ResponseWriter, request *http.
 	response.WriteHeader(201)
 	up := &Metadata{}
 	json.NewDecoder(request.Body).Decode(up)
-	down := controller.Service.post(*up)
+	down := controller.Service.Post(*up)
 	json.NewEncoder(response).Encode(down)
 }
 
 func (controller Controller) Get(response http.ResponseWriter, request *http.Request, ps httprouter.Params) {
-	metadata := controller.Service.get(ps.ByName("id"))
+	metadata := controller.Service.Get(ps.ByName("id"))
 	if metadata == nil {
 		response.WriteHeader(404)
 	} else {

@@ -27,23 +27,23 @@ func TestService(t *testing.T) {
 	t.Run("create and get two heightmaps", func(t *testing.T) {
 		stubUuidService.idQueue = []string{"first", "second"}
 
-		gotFirst := service.post(Metadata{Size: "first size"})
+		gotFirst := service.Post(Metadata{Size: "first size"})
 		wantFirst := Metadata{Id: "first", Size: "first size"}
 		AssertMetadata(t, gotFirst, wantFirst)
 
-		gotSecond := service.post(Metadata{Size: "second size"})
+		gotSecond := service.Post(Metadata{Size: "second size"})
 		wantSecond := Metadata{Id: "second", Size: "second size"}
 		AssertMetadata(t, gotSecond, wantSecond)
 
-		AssertMetadata(t, *service.get(gotFirst.Id), gotFirst)
-		AssertMetadata(t, *service.get(gotSecond.Id), gotSecond)
+		AssertMetadata(t, *service.Get(gotFirst.Id), gotFirst)
+		AssertMetadata(t, *service.Get(gotSecond.Id), gotSecond)
 	})
 
 	t.Run("delete heightmap", func(t *testing.T) {
 		stubUuidService.idQueue = []string{"the id"}
-		service.post(Metadata{Size: ""})
+		service.Post(Metadata{Size: ""})
 		service.Delete("the id")
-		got := service.get("the id")
+		got := service.Get("the id")
 		if got != nil {
 			t.Fatalf("got %v want nil", got)
 		}
@@ -52,7 +52,7 @@ func TestService(t *testing.T) {
 
 func assertGetIsNil(t testing.TB, service Service) {
 	t.Helper()
-	metadata := service.get("")
+	metadata := service.Get("")
 	if metadata != nil {
 		t.Fatal("got metadata but want nil")
 	}
