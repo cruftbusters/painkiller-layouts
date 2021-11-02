@@ -38,6 +38,16 @@ func TestService(t *testing.T) {
 		AssertMetadata(t, *service.get(gotFirst.Id), gotFirst)
 		AssertMetadata(t, *service.get(gotSecond.Id), gotSecond)
 	})
+
+	t.Run("delete heightmap", func(t *testing.T) {
+		stubUuidService.idQueue = []string{"the id"}
+		service.post(Metadata{Size: ""})
+		service.Delete("the id")
+		got := service.get("the id")
+		if got != nil {
+			t.Fatalf("got %v want nil", got)
+		}
+	})
 }
 
 func assertGetIsNil(t testing.TB, service Service) {

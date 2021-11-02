@@ -25,8 +25,8 @@ func (client Client) Get(id string) Metadata {
 	return decode(client.t, response)
 }
 
-func (client Client) GetExpectNotFound() {
-	response, err := http.Get(client.baseURLF("/v1/heightmaps/deadbeef"))
+func (client Client) GetExpectNotFound(id string) {
+	response, err := http.Get(client.baseURLF("/v1/heightmaps/%s", id))
 	AssertNoError(client.t, err)
 	AssertStatusCode(client.t, response, 404)
 }
@@ -38,6 +38,25 @@ func (client Client) Create(metadata Metadata) Metadata {
 	AssertStatusCode(client.t, response, 201)
 
 	return decode(client.t, response)
+}
+
+func (client Client) Delete(id string) {
+	client.t.Helper()
+	requestURL := client.baseURLF("/v1/heightmaps/%s", id)
+	request, err := http.NewRequest(http.MethodDelete, requestURL, nil)
+	AssertNoError(client.t, err)
+	response, err := (&http.Client{}).Do(request)
+	AssertNoError(client.t, err)
+	AssertStatusCode(client.t, response, 204)
+}
+
+func (client Client) DeleteExpectInternalServerError(id string) {
+	requestURL := client.baseURLF("/v1/heightmaps/%s", id)
+	request, err := http.NewRequest(http.MethodDelete, requestURL, nil)
+	AssertNoError(client.t, err)
+	response, err := (&http.Client{}).Do(request)
+	AssertNoError(client.t, err)
+	AssertStatusCode(client.t, response, 500)
 }
 
 func (client Client) baseURLF(path string, a ...interface{}) string {

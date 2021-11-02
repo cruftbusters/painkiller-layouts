@@ -20,7 +20,7 @@ func TestHeightmaps(t *testing.T) {
 	client := NewClient(t, baseURL)
 
 	t.Run("get missing heightmap", func(t *testing.T) {
-		client.GetExpectNotFound()
+		client.GetExpectNotFound("deadbeef")
 	})
 
 	t.Run("create and get two heightmaps", func(t *testing.T) {
@@ -34,5 +34,11 @@ func TestHeightmaps(t *testing.T) {
 
 		AssertMetadata(t, client.Get(gotFirst.Id), gotFirst)
 		AssertMetadata(t, client.Get(gotSecond.Id), gotSecond)
+	})
+
+	t.Run("delete heightmap", func(t *testing.T) {
+		metadata := client.Create(Metadata{Size: "delete me"})
+		client.Delete(metadata.Id)
+		client.GetExpectNotFound(metadata.Id)
 	})
 }

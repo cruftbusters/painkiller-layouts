@@ -1,6 +1,7 @@
 package heightmap
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"testing"
@@ -10,11 +11,13 @@ import (
 )
 
 type StubService struct {
-	t                  testing.TB
-	whenGetCalledWith  string
-	getWillReturn      *Metadata
-	whenPostCalledWith Metadata
-	postWillReturn     Metadata
+	t                    testing.TB
+	whenGetCalledWith    string
+	getWillReturn        *Metadata
+	whenPostCalledWith   Metadata
+	postWillReturn       Metadata
+	whenDeleteCalledWith string
+	deleteWillRaise      error
 }
 
 func (stub *StubService) get(got string) *Metadata {
@@ -35,6 +38,14 @@ func (stub *StubService) post(got Metadata) Metadata {
 	return stub.postWillReturn
 }
 
+func (stub *StubService) Delete(got string) error {
+	stub.t.Helper()
+	if got != stub.whenDeleteCalledWith {
+		stub.t.Errorf("got id %s want %s", got, stub.whenDeleteCalledWith)
+	}
+	return stub.deleteWillRaise
+}
+
 func TestController(t *testing.T) {
 	listener, port := RandomPortListener()
 	client := NewClient(t, fmt.Sprintf("http://localhost:%d", port))
@@ -52,7 +63,7 @@ func TestController(t *testing.T) {
 		stubService.whenGetCalledWith = "deadbeef"
 		stubService.getWillReturn = nil
 
-		client.GetExpectNotFound()
+		client.GetExpectNotFound("deadbeef")
 	})
 
 	t.Run("create heightmap", func(t *testing.T) {
@@ -71,5 +82,21 @@ func TestController(t *testing.T) {
 		got := client.Get("path-id")
 		want := Metadata{Id: "beefdead"}
 		AssertMetadata(t, got, want)
+	})
+
+	t.Run("delete heightmap has error", func(t *testing.T) {
+		id, want := "some id", errors.New("uh oh")
+		stubService.whenDeleteCalledWith = id
+		stubService.deleteWillRaise = want
+
+		client.DeleteExpectInternalServerError(id)
+	})
+
+	t.Run("delete heightmap", func(t *testing.T) {
+		id := "some id"
+		stubService.whenDeleteCalledWith = id
+		stubService.deleteWillRaise = nil
+
+		client.Delete(id)
 	})
 }

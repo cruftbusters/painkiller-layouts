@@ -5,6 +5,7 @@ import . "github.com/cruftbusters/painkiller-gallery/types"
 type Service interface {
 	get(id string) *Metadata
 	post(metadata Metadata) Metadata
+	Delete(id string) error
 }
 
 type DefaultService struct {
@@ -34,4 +35,9 @@ func (service *DefaultService) post(metadata Metadata) Metadata {
 	newMetadata.Id = id
 	service.metadata[id] = *newMetadata
 	return *newMetadata
+}
+
+func (service *DefaultService) Delete(id string) error {
+	delete(service.metadata, id)
+	return nil
 }
