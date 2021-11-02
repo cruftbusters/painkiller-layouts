@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	. "github.com/cruftbusters/painkiller-gallery/assertions"
 	. "github.com/cruftbusters/painkiller-gallery/types"
 )
 
@@ -66,7 +67,9 @@ func TestController(t *testing.T) {
 		controller.ServeHTTP(response, request)
 
 		assertStatusCode(t, response, 201)
-		assertBody(t, response, down)
+
+		got := decode(t, response)
+		AssertMetadata(t, got, down)
 	})
 
 	t.Run("get heightmap", func(t *testing.T) {
@@ -79,7 +82,10 @@ func TestController(t *testing.T) {
 		controller.ServeHTTP(response, request)
 
 		assertStatusCode(t, response, 200)
-		assertBody(t, response, Metadata{Id: "beefdead"})
+
+		got := decode(t, response)
+		want := Metadata{Id: "beefdead"}
+		AssertMetadata(t, got, want)
 	})
 }
 
@@ -90,13 +96,11 @@ func assertStatusCode(t testing.TB, response *httptest.ResponseRecorder, want in
 	}
 }
 
-func assertBody(t testing.TB, response *httptest.ResponseRecorder, want Metadata) {
+func decode(t testing.TB, response *httptest.ResponseRecorder) Metadata {
 	t.Helper()
 	got := &Metadata{}
 	if err := json.NewDecoder(response.Body).Decode(got); err != nil {
 		t.Fatal("got error json decoding body", err)
 	}
-	if *got != want {
-		t.Fatalf("got %#v want %#v", got, want)
-	}
+	return *got
 }
