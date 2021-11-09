@@ -51,7 +51,7 @@ func TestService(t *testing.T) {
 	})
 
 	t.Run("patch url onto metadata", func(t *testing.T) {
-		id, size, url := "the id", "old size", "new image url"
+		id, size, url := "the id", Size{1, 2}, "new image url"
 		stubUuidService.idQueue = []string{id}
 		service.Post(Metadata{Size: size})
 
@@ -65,7 +65,7 @@ func TestService(t *testing.T) {
 
 	t.Run("delete heightmap", func(t *testing.T) {
 		stubUuidService.idQueue = []string{"the id"}
-		service.Post(Metadata{Size: ""})
+		service.Post(Metadata{})
 		service.Delete("the id")
 		got := service.Get("the id")
 		if got != nil {
