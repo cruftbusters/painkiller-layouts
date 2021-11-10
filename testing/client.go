@@ -87,6 +87,26 @@ func (client ClientV2) DeleteExpectInternalServerError(id string) {
 	AssertStatusCode(client.t, response, 500)
 }
 
+func (client ClientV2) PutHeightmapExpectNotFound(id string) {
+	client.t.Helper()
+	requestURL := client.baseURLF("/v1/maps/%s/heightmap.jpg", id)
+	request, err := http.NewRequest(http.MethodPut, requestURL, nil)
+	AssertNoError(client.t, err)
+	response, err := (&http.Client{}).Do(request)
+	AssertNoError(client.t, err)
+	AssertStatusCode(client.t, response, 404)
+}
+
+func (client ClientV2) PutHeightmap(id string) {
+	client.t.Helper()
+	requestURL := client.baseURLF("/v1/maps/%s/heightmap.jpg", id)
+	request, err := http.NewRequest(http.MethodPut, requestURL, nil)
+	AssertNoError(client.t, err)
+	response, err := (&http.Client{}).Do(request)
+	AssertNoError(client.t, err)
+	AssertStatusCode(client.t, response, 200)
+}
+
 func (client ClientV2) baseURLF(path string, a ...interface{}) string {
 	return client.baseURL + fmt.Sprintf(path, a...)
 }

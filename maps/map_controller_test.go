@@ -16,7 +16,11 @@ func TestMapController(t *testing.T) {
 	client := NewClientV2(t, fmt.Sprintf("http://localhost:%d", port))
 
 	stubService := &StubService{t: t}
-	controller := MapController{stubService}
+	stubHeightmapService := &StubHeightmapService{t: t}
+	controller := MapController{
+		stubService,
+		stubHeightmapService,
+	}
 	router := httprouter.New()
 	controller.AddRoutes(router)
 
@@ -83,5 +87,21 @@ func TestMapController(t *testing.T) {
 		stubService.deleteWillRaise = nil
 
 		client.Delete(id)
+	})
+
+	t.Run("put heightmap on non-existant map is not found", func(t *testing.T) {
+		id := "there is no creativity"
+		stubHeightmapService.whenPutCalledWith = id
+		stubHeightmapService.putWillReturn = MapNotFoundError
+
+		client.PutHeightmapExpectNotFound(id)
+	})
+
+	t.Run("put heightmap", func(t *testing.T) {
+		id := "john denver"
+		stubHeightmapService.whenPutCalledWith = id
+		stubHeightmapService.putWillReturn = nil
+
+		client.PutHeightmap(id)
 	})
 }

@@ -4,10 +4,12 @@ import "github.com/julienschmidt/httprouter"
 
 func Handler() *httprouter.Router {
 	router := httprouter.New()
+	mapService := NewService(
+		&DefaultUUIDService{},
+	)
 	MapController{
-		NewService(
-			&DefaultUUIDService{},
-		),
+		mapService,
+		DefaultHeightmapService{mapService},
 	}.AddRoutes(router)
 	return router
 }

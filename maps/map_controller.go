@@ -9,7 +9,8 @@ import (
 )
 
 type MapController struct {
-	service Service
+	service          Service
+	heightmapService HeightmapService
 }
 
 func (c MapController) AddRoutes(router *httprouter.Router) {
@@ -18,6 +19,7 @@ func (c MapController) AddRoutes(router *httprouter.Router) {
 	router.GET("/v1/maps", c.GetAll)
 	router.PATCH("/v1/maps/:id", c.Patch)
 	router.DELETE("/v1/maps/:id", c.Delete)
+	router.PUT("/v1/maps/:id/heightmap.:extension", c.PutHeightmap)
 }
 
 func (c MapController) Create(response http.ResponseWriter, request *http.Request, _ httprouter.Params) {
@@ -55,4 +57,11 @@ func (c MapController) Delete(response http.ResponseWriter, request *http.Reques
 		response.WriteHeader(500)
 	}
 	response.WriteHeader(204)
+}
+
+func (c MapController) PutHeightmap(response http.ResponseWriter, request *http.Request, ps httprouter.Params) {
+	if c.heightmapService.put(ps.ByName("id")) != nil {
+		response.WriteHeader(404)
+	}
+	response.WriteHeader(200)
 }
