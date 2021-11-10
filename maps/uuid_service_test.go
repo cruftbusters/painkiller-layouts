@@ -1,4 +1,4 @@
-package heightmap
+package maps
 
 import "testing"
 

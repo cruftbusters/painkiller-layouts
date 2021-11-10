@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 
-	. "github.com/cruftbusters/painkiller-gallery/heightmap"
+	. "github.com/cruftbusters/painkiller-gallery/maps"
 )
 
 func main() {

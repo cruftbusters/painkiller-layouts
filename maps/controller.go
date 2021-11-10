@@ -1,4 +1,4 @@
-package heightmap
+package maps
 
 import (
 	"encoding/json"
@@ -12,15 +12,12 @@ type Controller struct {
 	service Service
 }
 
-func NewController(service Service) *httprouter.Router {
-	c := &Controller{service}
-	router := httprouter.New()
+func (c Controller) AddRoutes(router *httprouter.Router) {
 	router.POST("/v1/heightmaps", c.Create)
 	router.GET("/v1/heightmaps/:id", c.Get)
 	router.GET("/v1/heightmaps", c.GetAll)
 	router.PATCH("/v1/heightmaps/:id", c.Patch)
 	router.DELETE("/v1/heightmaps/:id", c.Delete)
-	return router
 }
 
 func (c Controller) Create(response http.ResponseWriter, request *http.Request, _ httprouter.Params) {
