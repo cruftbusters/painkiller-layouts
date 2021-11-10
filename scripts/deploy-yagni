@@ -1,6 +1,7 @@
 cat <<EOF | ssh yagni -T
   cd /home/arctair/painkiller/gallery
-  git pull
+  git fetch
+  git reset origin/main --hard
   go build -o build/server
   systemctl restart painkiller.gallery --user
 EOF
