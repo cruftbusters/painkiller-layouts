@@ -26,7 +26,7 @@ func TestMapController(t *testing.T) {
 
 	t.Run("get missing map", func(t *testing.T) {
 		stubService.whenGetCalledWith = "deadbeef"
-		stubService.getWillReturn = nil
+		stubService.getWillReturnError = MapNotFoundError
 
 		client.GetExpectNotFound("deadbeef")
 	})
@@ -42,7 +42,8 @@ func TestMapController(t *testing.T) {
 
 	t.Run("get map", func(t *testing.T) {
 		stubService.whenGetCalledWith = "path-id"
-		stubService.getWillReturn = &Metadata{Id: "beefdead"}
+		stubService.getWillReturnMetadata = Metadata{Id: "beefdead"}
+		stubService.getWillReturnError = nil
 
 		got := client.Get("path-id")
 		want := Metadata{Id: "beefdead"}

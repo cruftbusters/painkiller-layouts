@@ -9,7 +9,8 @@ import (
 type StubService struct {
 	t                           testing.TB
 	whenGetCalledWith           string
-	getWillReturn               *Metadata
+	getWillReturnMetadata       Metadata
+	getWillReturnError          error
 	getAllWillReturn            []Metadata
 	whenPostCalledWith          Metadata
 	postWillReturn              Metadata
@@ -29,13 +30,13 @@ func (stub *StubService) Post(got Metadata) Metadata {
 	return stub.postWillReturn
 }
 
-func (stub *StubService) Get(got string) *Metadata {
+func (stub *StubService) Get(got string) (Metadata, error) {
 	stub.t.Helper()
 	want := stub.whenGetCalledWith
 	if got != want {
 		stub.t.Fatalf("got %#v want %#v", got, want)
 	}
-	return stub.getWillReturn
+	return stub.getWillReturnMetadata, stub.getWillReturnError
 }
 
 func (stub *StubService) GetAll() []Metadata {

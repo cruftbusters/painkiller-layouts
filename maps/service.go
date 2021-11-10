@@ -1,10 +1,14 @@
 package maps
 
-import . "github.com/cruftbusters/painkiller-gallery/types"
+import (
+	"errors"
+
+	. "github.com/cruftbusters/painkiller-gallery/types"
+)
 
 type Service interface {
 	Post(metadata Metadata) Metadata
-	Get(id string) *Metadata
+	Get(id string) (Metadata, error)
 	GetAll() []Metadata
 	Patch(id string, metadata Metadata) Metadata
 	Delete(id string) error
@@ -23,6 +27,8 @@ func NewService(uuidService UUIDService) Service {
 	}
 }
 
+var MapNotFoundError = errors.New("map not found")
+
 func (service *DefaultService) Post(metadata Metadata) Metadata {
 	id := service.uuidService.NewUUID()
 	newMetadata := &metadata
@@ -31,11 +37,11 @@ func (service *DefaultService) Post(metadata Metadata) Metadata {
 	return *newMetadata
 }
 
-func (service *DefaultService) Get(id string) *Metadata {
+func (service *DefaultService) Get(id string) (Metadata, error) {
 	if metadata, hasKey := service.metadata[id]; hasKey {
-		return &metadata
+		return metadata, nil
 	} else {
-		return nil
+		return Metadata{}, MapNotFoundError
 	}
 }
 

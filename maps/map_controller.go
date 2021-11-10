@@ -29,8 +29,8 @@ func (c MapController) Create(response http.ResponseWriter, request *http.Reques
 }
 
 func (c MapController) Get(response http.ResponseWriter, request *http.Request, ps httprouter.Params) {
-	metadata := c.service.Get(ps.ByName("id"))
-	if metadata == nil {
+	metadata, err := c.service.Get(ps.ByName("id"))
+	if err != nil {
 		response.WriteHeader(404)
 	} else {
 		response.WriteHeader(200)
