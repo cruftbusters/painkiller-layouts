@@ -21,7 +21,10 @@ func TestService(t *testing.T) {
 	stubUuidService := &StubUUIDService{}
 	service := NewService(stubUuidService)
 	t.Run("get when missing", func(t *testing.T) {
-		assertGetIsNil(t, service)
+		metadata := service.Get("")
+		if metadata != nil {
+			t.Fatal("got metadata but want nil")
+		}
 	})
 
 	t.Run("create and get heightmap", func(t *testing.T) {
@@ -72,12 +75,4 @@ func TestService(t *testing.T) {
 			t.Fatalf("got %v want nil", got)
 		}
 	})
-}
-
-func assertGetIsNil(t testing.TB, service Service) {
-	t.Helper()
-	metadata := service.Get("")
-	if metadata != nil {
-		t.Fatal("got metadata but want nil")
-	}
 }
