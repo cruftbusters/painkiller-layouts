@@ -15,11 +15,11 @@ import (
 
 func TestHeightmap(t *testing.T) {
 	listener, port := RandomPortListener()
+	baseURL := fmt.Sprintf("http://localhost:%d", port)
 	go func() {
-		http.Serve(listener, maps.Handler())
+		http.Serve(listener, maps.Handler(baseURL))
 	}()
 
-	baseURL := fmt.Sprintf("http://localhost:%d", port)
 	client := NewClientV2(t, baseURL)
 
 	t.Run("put heightmap on missing map is not found", func(t *testing.T) {
@@ -47,6 +47,16 @@ func TestHeightmap(t *testing.T) {
 		}
 		if gotContentType != contentType {
 			t.Errorf("got %s want %s", gotContentType, contentType)
+		}
+	})
+
+	t.Run("put heightmap updates image URL", func(t *testing.T) {
+		id := client.Create(Metadata{}).Id
+		client.PutHeightmap(id, nil)
+		got := client.Get(id).ImageURL
+		want := fmt.Sprintf("%s/v1/maps/%s/heightmap.jpg", baseURL, id)
+		if got != want {
+			t.Errorf("got %s want %s", got, want)
 		}
 	})
 }

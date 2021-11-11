@@ -3,5 +3,6 @@ cat <<EOF | ssh yagni -T
   git fetch
   git reset origin/main --hard
   go build -o build/server
+  systemctl daemon-reload --user
   systemctl restart painkiller.gallery --user
 EOF

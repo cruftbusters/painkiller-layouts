@@ -2,6 +2,8 @@ package maps
 
 import (
 	"errors"
+	"fmt"
+	. "github.com/cruftbusters/painkiller-gallery/types"
 )
 
 type HeightmapService interface {
@@ -9,14 +11,16 @@ type HeightmapService interface {
 	Get(id string) ([]byte, string, error)
 }
 
-func NewHeightmapService(mapService Service) HeightmapService {
+func NewHeightmapService(baseURL string, mapService Service) HeightmapService {
 	return &DefaultHeightmapService{
+		baseURL,
 		mapService,
 		make(map[string][]byte),
 	}
 }
 
 type DefaultHeightmapService struct {
+	baseURL       string
 	mapService    Service
 	heightmapByID map[string][]byte
 }
@@ -29,7 +33,8 @@ func (s *DefaultHeightmapService) Put(id string, heightmap []byte) error {
 		return err
 	}
 	s.heightmapByID[id] = heightmap
-	return nil
+	_, err = s.mapService.Patch(id, Metadata{ImageURL: fmt.Sprintf("%s/v1/maps/%s/heightmap.jpg", s.baseURL, id)})
+	return err
 }
 
 func (s *DefaultHeightmapService) Get(id string) ([]byte, string, error) {

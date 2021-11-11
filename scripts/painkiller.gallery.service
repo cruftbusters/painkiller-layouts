@@ -2,7 +2,7 @@
 Description=painkiller/gallery
 
 [Service]
-ExecStart=/home/arctair/painkiller/gallery/build/server
+ExecStart=/home/arctair/painkiller/gallery/build/server https://gallery.painkillergis.com
 StandardOutput=file:/home/arctair/painkiller/gallery/application.log
 StandardError=file:/home/arctair/painkiller/gallery/error.log
 Type=simple

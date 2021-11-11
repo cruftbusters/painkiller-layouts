@@ -12,11 +12,11 @@ import (
 
 func TestMapsCrud(t *testing.T) {
 	listener, port := RandomPortListener()
+	baseURL := fmt.Sprintf("http://localhost:%d", port)
 	go func() {
-		http.Serve(listener, maps.Handler())
+		http.Serve(listener, maps.Handler(baseURL))
 	}()
 
-	baseURL := fmt.Sprintf("http://localhost:%d", port)
 	client := NewClientV2(t, baseURL)
 
 	t.Run("get missing map", func(t *testing.T) {
