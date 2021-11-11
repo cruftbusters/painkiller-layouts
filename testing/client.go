@@ -107,6 +107,20 @@ func (client ClientV2) PutHeightmap(id string) {
 	AssertStatusCode(client.t, response, 200)
 }
 
+func (client ClientV2) GetHeightmapExpectNotFound(id string) {
+	client.t.Helper()
+	response, err := http.Get(client.baseURLF("/v1/maps/%s/heightmap.jpg", id))
+	AssertNoError(client.t, err)
+	AssertStatusCode(client.t, response, 404)
+}
+
+func (client ClientV2) GetHeightmap(id string) {
+	client.t.Helper()
+	response, err := http.Get(client.baseURLF("/v1/maps/%s/heightmap.jpg", id))
+	AssertNoError(client.t, err)
+	AssertStatusCode(client.t, response, 200)
+}
+
 func (client ClientV2) baseURLF(path string, a ...interface{}) string {
 	return client.baseURL + fmt.Sprintf(path, a...)
 }

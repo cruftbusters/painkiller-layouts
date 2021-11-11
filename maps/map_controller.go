@@ -19,7 +19,8 @@ func (c MapController) AddRoutes(router *httprouter.Router) {
 	router.GET("/v1/maps", c.GetAll)
 	router.PATCH("/v1/maps/:id", c.Patch)
 	router.DELETE("/v1/maps/:id", c.Delete)
-	router.PUT("/v1/maps/:id/heightmap.:extension", c.PutHeightmap)
+	router.PUT("/v1/maps/:id/heightmap.jpg", c.PutHeightmap)
+	router.GET("/v1/maps/:id/heightmap.jpg", c.GetHeightmap)
 }
 
 func (c MapController) Create(response http.ResponseWriter, request *http.Request, _ httprouter.Params) {
@@ -64,4 +65,10 @@ func (c MapController) PutHeightmap(response http.ResponseWriter, request *http.
 		response.WriteHeader(404)
 	}
 	response.WriteHeader(200)
+}
+
+func (c MapController) GetHeightmap(response http.ResponseWriter, request *http.Request, ps httprouter.Params) {
+	if c.heightmapService.Get(ps.ByName("id")) != nil {
+		response.WriteHeader(404)
+	}
 }

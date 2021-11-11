@@ -19,12 +19,22 @@ func TestHeightmap(t *testing.T) {
 	baseURL := fmt.Sprintf("http://localhost:%d", port)
 	client := NewClientV2(t, baseURL)
 
-	t.Run("put heightmap on non-existant map is not found", func(t *testing.T) {
+	t.Run("put heightmap on missing map is not found", func(t *testing.T) {
 		client.PutHeightmapExpectNotFound("deadbeef")
 	})
 
-	t.Run("put heightmap", func(t *testing.T) {
+	t.Run("get heightmap on missing map is not found", func(t *testing.T) {
+		client.GetHeightmapExpectNotFound("deadbeef")
+	})
+
+	t.Run("get heightmap is not found", func(t *testing.T) {
+		id := client.Create(Metadata{}).Id
+		client.GetHeightmapExpectNotFound(id)
+	})
+
+	t.Run("put and get heightmap", func(t *testing.T) {
 		id := client.Create(Metadata{}).Id
 		client.PutHeightmap(id)
+		client.GetHeightmap(id)
 	})
 }

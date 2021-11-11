@@ -9,7 +9,7 @@ func Handler() *httprouter.Router {
 	)
 	MapController{
 		mapService,
-		DefaultHeightmapService{mapService},
+		NewHeightmapService(mapService),
 	}.AddRoutes(router)
 	return router
 }

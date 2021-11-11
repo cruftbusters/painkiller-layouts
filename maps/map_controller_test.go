@@ -89,12 +89,28 @@ func TestMapController(t *testing.T) {
 		client.Delete(id)
 	})
 
-	t.Run("put heightmap on non-existant map is not found", func(t *testing.T) {
+	t.Run("put heightmap on missing map is not found", func(t *testing.T) {
 		id := "there is no creativity"
 		stubHeightmapService.whenPutCalledWith = id
 		stubHeightmapService.putWillReturn = MapNotFoundError
 
 		client.PutHeightmapExpectNotFound(id)
+	})
+
+	t.Run("get heightmap on missing map is not found", func(t *testing.T) {
+		id := "walrus"
+		stubHeightmapService.whenGetCalledWith = id
+		stubHeightmapService.getWillReturn = MapNotFoundError
+
+		client.GetHeightmapExpectNotFound(id)
+	})
+
+	t.Run("get heightmap is not found", func(t *testing.T) {
+		id := "serendipity"
+		stubHeightmapService.whenGetCalledWith = id
+		stubHeightmapService.getWillReturn = HeightmapNotFoundError
+
+		client.GetHeightmapExpectNotFound(id)
 	})
 
 	t.Run("put heightmap", func(t *testing.T) {
