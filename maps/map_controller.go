@@ -3,7 +3,9 @@ package maps
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"strings"
 
 	. "github.com/cruftbusters/painkiller-gallery/types"
 	"github.com/julienschmidt/httprouter"
@@ -62,7 +64,9 @@ func (c MapController) Delete(response http.ResponseWriter, request *http.Reques
 }
 
 func (c MapController) PutHeightmap(response http.ResponseWriter, request *http.Request, ps httprouter.Params) {
-	if c.heightmapService.Put(ps.ByName("id")) != nil {
+	heightmap := new(strings.Builder)
+	io.Copy(heightmap, request.Body)
+	if c.heightmapService.Put(ps.ByName("id"), heightmap.String()) != nil {
 		response.WriteHeader(404)
 	}
 	response.WriteHeader(200)

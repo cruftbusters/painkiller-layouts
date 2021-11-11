@@ -91,7 +91,7 @@ func TestMapController(t *testing.T) {
 
 	t.Run("put heightmap on missing map is not found", func(t *testing.T) {
 		id := "there is no creativity"
-		stubHeightmapService.whenPutCalledWith = id
+		stubHeightmapService.whenPutCalledWithId = id
 		stubHeightmapService.putWillReturn = MapNotFoundError
 
 		client.PutHeightmapExpectNotFound(id)
@@ -114,11 +114,12 @@ func TestMapController(t *testing.T) {
 	})
 
 	t.Run("put heightmap", func(t *testing.T) {
-		id := "john denver"
-		stubHeightmapService.whenPutCalledWith = id
+		id, up := "john denver", "was a bear"
+		stubHeightmapService.whenPutCalledWithId = id
+		stubHeightmapService.whenPutCalledWithHeightmap = up
 		stubHeightmapService.putWillReturn = nil
 
-		client.PutHeightmap(id)
+		client.PutHeightmap(id, up)
 	})
 
 	t.Run("get heightmap", func(t *testing.T) {

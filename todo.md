@@ -1,5 +1,4 @@
 # todo
-## save and return PUT /v1/maps/:id/heightmap.jpg string body 
 ## save and return PUT /v1/maps/:id/heightmap.jpg blob body 
 ## save and return PUT /v1/maps/:id/heightmap.jpg content-type header
 ## render link in /v1/maps/:id when heightmap is available

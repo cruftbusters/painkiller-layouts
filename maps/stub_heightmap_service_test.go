@@ -3,19 +3,24 @@ package maps
 import "testing"
 
 type StubHeightmapService struct {
-	t                      testing.TB
-	whenPutCalledWith      string
-	putWillReturn          error
-	whenGetCalledWith      string
-	getWillReturnHeightmap string
-	getWillReturnError     error
+	t                          testing.TB
+	whenPutCalledWithId        string
+	whenPutCalledWithHeightmap string
+	putWillReturn              error
+	whenGetCalledWith          string
+	getWillReturnHeightmap     string
+	getWillReturnError         error
 }
 
-func (stub *StubHeightmapService) Put(got string) error {
+func (stub *StubHeightmapService) Put(gotId, gotHeightmap string) error {
 	stub.t.Helper()
-	want := stub.whenPutCalledWith
-	if got != want {
-		stub.t.Errorf("got %s want %s", got, want)
+	wantId := stub.whenPutCalledWithId
+	if gotId != wantId {
+		stub.t.Errorf("got %s want %s", gotId, wantId)
+	}
+	wantHeightmap := stub.whenPutCalledWithHeightmap
+	if gotHeightmap != wantHeightmap {
+		stub.t.Errorf("got %s want %s", gotHeightmap, wantHeightmap)
 	}
 	return stub.putWillReturn
 }

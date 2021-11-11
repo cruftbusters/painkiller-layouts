@@ -99,10 +99,10 @@ func (client ClientV2) PutHeightmapExpectNotFound(id string) {
 	AssertStatusCode(client.t, response, 404)
 }
 
-func (client ClientV2) PutHeightmap(id string) {
+func (client ClientV2) PutHeightmap(id string, heightmap string) {
 	client.t.Helper()
 	requestURL := client.baseURLF("/v1/maps/%s/heightmap.jpg", id)
-	request, err := http.NewRequest(http.MethodPut, requestURL, nil)
+	request, err := http.NewRequest(http.MethodPut, requestURL, strings.NewReader(heightmap))
 	AssertNoError(client.t, err)
 	response, err := (&http.Client{}).Do(request)
 	AssertNoError(client.t, err)
