@@ -1,11 +1,11 @@
 package maps
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
 	"testing"
 
 	. "github.com/cruftbusters/painkiller-gallery/testing"
@@ -116,27 +116,25 @@ func TestMapController(t *testing.T) {
 	})
 
 	t.Run("put heightmap", func(t *testing.T) {
-		id, up := "john denver", "was a bear"
+		id, up := "john denver", []byte("was a bear")
 		stubHeightmapService.whenPutCalledWithId = id
 		stubHeightmapService.whenPutCalledWithHeightmap = up
 		stubHeightmapService.putWillReturn = nil
 
-		client.PutHeightmap(id, strings.NewReader(up))
+		client.PutHeightmap(id, bytes.NewBuffer(up))
 	})
 
 	t.Run("get heightmap", func(t *testing.T) {
-		id, heightmap := "inwards", "buncha bytes"
+		id, heightmap := "inwards", []byte("buncha bytes")
 		stubHeightmapService.whenGetCalledWith = id
 		stubHeightmapService.getWillReturnHeightmap = heightmap
 		stubHeightmapService.getWillReturnError = nil
 
-		builder := new(strings.Builder)
-		_, err := io.Copy(builder, client.GetHeightmap(id))
+		got, err := io.ReadAll(client.GetHeightmap(id))
 		AssertNoError(t, err)
-		got := builder.String()
 		want := heightmap
-		if got != want {
-			t.Errorf("got %s want %s", got, want)
+		if bytes.Compare(got, want) != 0 {
+			t.Errorf("got %v want %v", got, want)
 		}
 	})
 }

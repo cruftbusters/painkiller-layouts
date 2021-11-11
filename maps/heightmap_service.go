@@ -5,8 +5,8 @@ import (
 )
 
 type HeightmapService interface {
-	Put(id, heightmap string) error
-	Get(id string) (string, error)
+	Put(id string, heightmap []byte) error
+	Get(id string) ([]byte, error)
 }
 
 func NewHeightmapService(mapService Service) HeightmapService {
@@ -23,24 +23,24 @@ type DefaultHeightmapService struct {
 
 var HeightmapNotFoundError = errors.New("heightmap not found")
 
-func (s *DefaultHeightmapService) Put(id, heightmap string) error {
+func (s *DefaultHeightmapService) Put(id string, heightmap []byte) error {
 	_, err := s.mapService.Get(id)
 	if err != nil {
 		return err
 	}
-	s.heightmapByID[id] = heightmap
+	s.heightmapByID[id] = string(heightmap)
 	return nil
 }
 
-func (s *DefaultHeightmapService) Get(id string) (string, error) {
+func (s *DefaultHeightmapService) Get(id string) ([]byte, error) {
 	_, err := s.mapService.Get(id)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	heightmap := s.heightmapByID[id]
 	if heightmap != "" {
-		return s.heightmapByID[id], nil
+		return []byte(s.heightmapByID[id]), nil
 	} else {
-		return "", HeightmapNotFoundError
+		return nil, HeightmapNotFoundError
 	}
 }

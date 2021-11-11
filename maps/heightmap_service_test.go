@@ -1,6 +1,7 @@
 package maps
 
 import . "github.com/cruftbusters/painkiller-gallery/testing"
+import "reflect"
 import "testing"
 
 func TestHeightmapService(t *testing.T) {
@@ -14,7 +15,7 @@ func TestHeightmapService(t *testing.T) {
 		stubMapService.whenGetCalledWith = id
 		stubMapService.getWillReturnError = err
 
-		got := heightmapService.Put(id, "")
+		got := heightmapService.Put(id, nil)
 		AssertError(t, got, err)
 	})
 
@@ -37,7 +38,7 @@ func TestHeightmapService(t *testing.T) {
 	})
 
 	t.Run("put and get", func(t *testing.T) {
-		id, heightmap := "bhan mi", "vegan impossible burger"
+		id, heightmap := "bhan mi", []byte("vegan impossible burger")
 		stubMapService.whenGetCalledWith = id
 		stubMapService.getWillReturnError = nil
 
@@ -47,8 +48,8 @@ func TestHeightmapService(t *testing.T) {
 		got, err := heightmapService.Get(id)
 		AssertNoError(t, err)
 		want := heightmap
-		if got != want {
-			t.Errorf("got %s want %s", got, want)
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got %v want %v", got, want)
 		}
 	})
 }
