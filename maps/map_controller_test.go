@@ -120,4 +120,12 @@ func TestMapController(t *testing.T) {
 
 		client.PutHeightmap(id)
 	})
+
+	t.Run("get heightmap", func(t *testing.T) {
+		id := "inwards"
+		stubHeightmapService.whenGetCalledWith = id
+		stubHeightmapService.getWillReturn = nil
+
+		client.GetHeightmap(id)
+	})
 }
