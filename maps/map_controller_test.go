@@ -3,7 +3,9 @@ package maps
 import (
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
+	"strings"
 	"testing"
 
 	. "github.com/cruftbusters/painkiller-gallery/testing"
@@ -119,7 +121,7 @@ func TestMapController(t *testing.T) {
 		stubHeightmapService.whenPutCalledWithHeightmap = up
 		stubHeightmapService.putWillReturn = nil
 
-		client.PutHeightmap(id, up)
+		client.PutHeightmap(id, strings.NewReader(up))
 	})
 
 	t.Run("get heightmap", func(t *testing.T) {
@@ -128,7 +130,10 @@ func TestMapController(t *testing.T) {
 		stubHeightmapService.getWillReturnHeightmap = heightmap
 		stubHeightmapService.getWillReturnError = nil
 
-		got := client.GetHeightmap(id)
+		builder := new(strings.Builder)
+		_, err := io.Copy(builder, client.GetHeightmap(id))
+		AssertNoError(t, err)
+		got := builder.String()
 		want := heightmap
 		if got != want {
 			t.Errorf("got %s want %s", got, want)

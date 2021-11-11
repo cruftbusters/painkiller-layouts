@@ -2,7 +2,9 @@ package acceptance
 
 import (
 	"fmt"
+	"io"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/cruftbusters/painkiller-gallery/maps"
@@ -34,8 +36,11 @@ func TestHeightmap(t *testing.T) {
 
 	t.Run("put and get heightmap", func(t *testing.T) {
 		id, heightmap := client.Create(Metadata{}).Id, "heightmap bytes"
-		client.PutHeightmap(id, heightmap)
-		got := client.GetHeightmap(id)
+		client.PutHeightmap(id, strings.NewReader(heightmap))
+		builder := new(strings.Builder)
+		_, err := io.Copy(builder, client.GetHeightmap(id))
+		AssertNoError(t, err)
+		got := builder.String()
 		want := heightmap
 		if got != want {
 			t.Errorf("got %s want %s", got, want)
