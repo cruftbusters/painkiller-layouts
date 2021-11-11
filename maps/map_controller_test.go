@@ -100,7 +100,7 @@ func TestMapController(t *testing.T) {
 	t.Run("get heightmap on missing map is not found", func(t *testing.T) {
 		id := "walrus"
 		stubHeightmapService.whenGetCalledWith = id
-		stubHeightmapService.getWillReturn = MapNotFoundError
+		stubHeightmapService.getWillReturnError = MapNotFoundError
 
 		client.GetHeightmapExpectNotFound(id)
 	})
@@ -108,7 +108,7 @@ func TestMapController(t *testing.T) {
 	t.Run("get heightmap is not found", func(t *testing.T) {
 		id := "serendipity"
 		stubHeightmapService.whenGetCalledWith = id
-		stubHeightmapService.getWillReturn = HeightmapNotFoundError
+		stubHeightmapService.getWillReturnError = HeightmapNotFoundError
 
 		client.GetHeightmapExpectNotFound(id)
 	})
@@ -122,10 +122,15 @@ func TestMapController(t *testing.T) {
 	})
 
 	t.Run("get heightmap", func(t *testing.T) {
-		id := "inwards"
+		id, heightmap := "inwards", "buncha bytes"
 		stubHeightmapService.whenGetCalledWith = id
-		stubHeightmapService.getWillReturn = nil
+		stubHeightmapService.getWillReturnHeightmap = heightmap
+		stubHeightmapService.getWillReturnError = nil
 
-		client.GetHeightmap(id)
+		got := client.GetHeightmap(id)
+		want := heightmap
+		if got != want {
+			t.Errorf("got %s want %s", got, want)
+		}
 	})
 }

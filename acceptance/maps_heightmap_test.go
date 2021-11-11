@@ -35,6 +35,10 @@ func TestHeightmap(t *testing.T) {
 	t.Run("put and get heightmap", func(t *testing.T) {
 		id := client.Create(Metadata{}).Id
 		client.PutHeightmap(id)
-		client.GetHeightmap(id)
+		got := client.GetHeightmap(id)
+		want := "fixed bytes"
+		if got != want {
+			t.Errorf("got %s want %s", got, want)
+		}
 	})
 }

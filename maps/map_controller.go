@@ -2,6 +2,7 @@ package maps
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	. "github.com/cruftbusters/painkiller-gallery/types"
@@ -68,7 +69,9 @@ func (c MapController) PutHeightmap(response http.ResponseWriter, request *http.
 }
 
 func (c MapController) GetHeightmap(response http.ResponseWriter, request *http.Request, ps httprouter.Params) {
-	if c.heightmapService.Get(ps.ByName("id")) != nil {
+	heightmap, err := c.heightmapService.Get(ps.ByName("id"))
+	if err != nil {
 		response.WriteHeader(404)
 	}
+	fmt.Fprint(response, heightmap)
 }

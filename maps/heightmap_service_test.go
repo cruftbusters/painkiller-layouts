@@ -23,7 +23,7 @@ func TestHeightmapService(t *testing.T) {
 		stubMapService.whenGetCalledWith = id
 		stubMapService.getWillReturnError = err
 
-		got := heightmapService.Get(id)
+		_, got := heightmapService.Get(id)
 		AssertError(t, got, err)
 	})
 
@@ -32,7 +32,7 @@ func TestHeightmapService(t *testing.T) {
 		stubMapService.whenGetCalledWith = id
 		stubMapService.getWillReturnError = nil
 
-		got := heightmapService.Get(id)
+		_, got := heightmapService.Get(id)
 		AssertError(t, got, HeightmapNotFoundError)
 	})
 
@@ -41,10 +41,14 @@ func TestHeightmapService(t *testing.T) {
 		stubMapService.whenGetCalledWith = id
 		stubMapService.getWillReturnError = nil
 
-		got := heightmapService.Put(id)
-		AssertNoError(t, got)
+		err := heightmapService.Put(id)
+		AssertNoError(t, err)
 
-		got = heightmapService.Get(id)
-		AssertNoError(t, got)
+		got, err := heightmapService.Get(id)
+		AssertNoError(t, err)
+		want := "fixed bytes"
+		if got != want {
+			t.Errorf("got %s want %s", got, want)
+		}
 	})
 }

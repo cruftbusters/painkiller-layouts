@@ -2,7 +2,9 @@ package testing
 
 import (
 	"fmt"
+	"io"
 	"net/http"
+	"strings"
 	"testing"
 
 	. "github.com/cruftbusters/painkiller-gallery/types"
@@ -114,11 +116,15 @@ func (client ClientV2) GetHeightmapExpectNotFound(id string) {
 	AssertStatusCode(client.t, response, 404)
 }
 
-func (client ClientV2) GetHeightmap(id string) {
+func (client ClientV2) GetHeightmap(id string) string {
 	client.t.Helper()
 	response, err := http.Get(client.baseURLF("/v1/maps/%s/heightmap.jpg", id))
 	AssertNoError(client.t, err)
 	AssertStatusCode(client.t, response, 200)
+	builder := new(strings.Builder)
+	_, err = io.Copy(builder, response.Body)
+	AssertNoError(client.t, err)
+	return builder.String()
 }
 
 func (client ClientV2) baseURLF(path string, a ...interface{}) string {
