@@ -61,7 +61,7 @@ func (c MapController) Delete(response http.ResponseWriter, request *http.Reques
 }
 
 func (c MapController) PutHeightmap(response http.ResponseWriter, request *http.Request, ps httprouter.Params) {
-	if c.heightmapService.put(ps.ByName("id")) != nil {
+	if c.heightmapService.Put(ps.ByName("id")) != nil {
 		response.WriteHeader(404)
 	}
 	response.WriteHeader(200)

@@ -5,7 +5,7 @@ import (
 )
 
 type HeightmapService interface {
-	put(id string) error
+	Put(id string) error
 	Get(id string) error
 }
 
@@ -23,7 +23,7 @@ type DefaultHeightmapService struct {
 
 var HeightmapNotFoundError = errors.New("heightmap not found")
 
-func (s *DefaultHeightmapService) put(id string) error {
+func (s *DefaultHeightmapService) Put(id string) error {
 	_, err := s.mapService.Get(id)
 	if err != nil {
 		return err

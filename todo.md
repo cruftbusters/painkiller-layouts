@@ -1,5 +1,4 @@
 # todo
-## rename HeightmapService.get to HeightmapService.Get
 ## extract AssertError
 ## GET /v1/maps/:id/heightmap.jpg returns fixed response body
 ## save and return PUT /v1/maps/:id/heightmap.:ext blob body 

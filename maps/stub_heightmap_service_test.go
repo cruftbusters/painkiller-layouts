@@ -10,7 +10,7 @@ type StubHeightmapService struct {
 	getWillReturn     error
 }
 
-func (stub *StubHeightmapService) put(got string) error {
+func (stub *StubHeightmapService) Put(got string) error {
 	stub.t.Helper()
 	want := stub.whenPutCalledWith
 	if got != want {

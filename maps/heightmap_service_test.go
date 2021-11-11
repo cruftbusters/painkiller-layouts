@@ -14,7 +14,7 @@ func TestHeightmapService(t *testing.T) {
 		stubMapService.whenGetCalledWith = id
 		stubMapService.getWillReturnError = err
 
-		got := heightmapService.put(id)
+		got := heightmapService.Put(id)
 		want := err
 		if got != want {
 			t.Errorf("got %v want %v", got, want)
@@ -50,7 +50,7 @@ func TestHeightmapService(t *testing.T) {
 		stubMapService.whenGetCalledWith = id
 		stubMapService.getWillReturnError = nil
 
-		got := heightmapService.put(id)
+		got := heightmapService.Put(id)
 		AssertNoError(t, got)
 
 		got = heightmapService.Get(id)
