@@ -12,13 +12,13 @@ type HeightmapService interface {
 func NewHeightmapService(mapService Service) HeightmapService {
 	return &DefaultHeightmapService{
 		mapService,
-		make([]string, 0),
+		make(map[string]string),
 	}
 }
 
 type DefaultHeightmapService struct {
-	mapService Service
-	ids        []string
+	mapService    Service
+	heightmapByID map[string]string
 }
 
 var HeightmapNotFoundError = errors.New("heightmap not found")
@@ -28,7 +28,7 @@ func (s *DefaultHeightmapService) Put(id string) error {
 	if err != nil {
 		return err
 	}
-	s.ids = append(s.ids, id)
+	s.heightmapByID[id] = "fixed bytes"
 	return nil
 }
 
@@ -37,10 +37,10 @@ func (s *DefaultHeightmapService) Get(id string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	for _, _id := range s.ids {
-		if _id == id {
-			return "fixed bytes", nil
-		}
+	heightmap := s.heightmapByID[id]
+	if heightmap != "" {
+		return s.heightmapByID[id], nil
+	} else {
+		return "", HeightmapNotFoundError
 	}
-	return "", HeightmapNotFoundError
 }
