@@ -16,6 +16,13 @@ func AssertNoError(t testing.TB, err error) {
 	}
 }
 
+func AssertError(t testing.TB, got error, want error) {
+	t.Helper()
+	if got != want {
+		t.Fatalf("got %v want %v", got, want)
+	}
+}
+
 func AssertStatusCode(t testing.TB, response *http.Response, statusCode int) {
 	t.Helper()
 	if response.StatusCode != statusCode {

@@ -22,10 +22,7 @@ func TestService(t *testing.T) {
 	service := NewService(stubUuidService)
 	t.Run("get when missing", func(t *testing.T) {
 		_, got := service.Get("")
-		want := MapNotFoundError
-		if got != want {
-			t.Fatalf("got %v want %v", got, want)
-		}
+		AssertError(t, got, MapNotFoundError)
 	})
 
 	t.Run("create and get heightmap", func(t *testing.T) {
@@ -75,9 +72,6 @@ func TestService(t *testing.T) {
 		service.Post(Metadata{})
 		service.Delete("the id")
 		_, got := service.Get("the id")
-		want := MapNotFoundError
-		if got != want {
-			t.Fatalf("got %v want %v", got, want)
-		}
+		AssertError(t, got, MapNotFoundError)
 	})
 }

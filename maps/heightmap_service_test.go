@@ -15,10 +15,7 @@ func TestHeightmapService(t *testing.T) {
 		stubMapService.getWillReturnError = err
 
 		got := heightmapService.Put(id)
-		want := err
-		if got != want {
-			t.Errorf("got %v want %v", got, want)
-		}
+		AssertError(t, got, err)
 	})
 
 	t.Run("get when map not found", func(t *testing.T) {
@@ -27,22 +24,16 @@ func TestHeightmapService(t *testing.T) {
 		stubMapService.getWillReturnError = err
 
 		got := heightmapService.Get(id)
-		want := err
-		if got != want {
-			t.Errorf("got %v want %v", got, want)
-		}
+		AssertError(t, got, err)
 	})
 
 	t.Run("get when heightmap not found", func(t *testing.T) {
-		id, err := "weeknights", HeightmapNotFoundError
+		id := "weeknights"
 		stubMapService.whenGetCalledWith = id
 		stubMapService.getWillReturnError = nil
 
 		got := heightmapService.Get(id)
-		want := err
-		if got != want {
-			t.Errorf("got %v want %v", got, want)
-		}
+		AssertError(t, got, HeightmapNotFoundError)
 	})
 
 	t.Run("put and get", func(t *testing.T) {
