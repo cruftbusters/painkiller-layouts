@@ -69,9 +69,10 @@ func (c MapController) PutHeightmap(response http.ResponseWriter, request *http.
 }
 
 func (c MapController) GetHeightmap(response http.ResponseWriter, request *http.Request, ps httprouter.Params) {
-	heightmap, err := c.heightmapService.Get(ps.ByName("id"))
+	heightmap, contentType, err := c.heightmapService.Get(ps.ByName("id"))
 	if err != nil {
 		response.WriteHeader(404)
 	}
+	response.Header().Add("Content-Type", contentType)
 	response.Write(heightmap)
 }

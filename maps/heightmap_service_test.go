@@ -24,7 +24,7 @@ func TestHeightmapService(t *testing.T) {
 		stubMapService.whenGetCalledWith = id
 		stubMapService.getWillReturnError = err
 
-		_, got := heightmapService.Get(id)
+		_, _, got := heightmapService.Get(id)
 		AssertError(t, got, err)
 	})
 
@@ -33,23 +33,26 @@ func TestHeightmapService(t *testing.T) {
 		stubMapService.whenGetCalledWith = id
 		stubMapService.getWillReturnError = nil
 
-		_, got := heightmapService.Get(id)
+		_, _, got := heightmapService.Get(id)
 		AssertError(t, got, HeightmapNotFoundError)
 	})
 
 	t.Run("put and get", func(t *testing.T) {
-		id, heightmap := "bhan mi", []byte("vegan impossible burger")
+		id, heightmap, contentType := "bhan mi", []byte("vegan impossible burger"), "image/jpeg"
 		stubMapService.whenGetCalledWith = id
 		stubMapService.getWillReturnError = nil
 
 		err := heightmapService.Put(id, heightmap)
 		AssertNoError(t, err)
 
-		got, err := heightmapService.Get(id)
+		got, gotContentType, err := heightmapService.Get(id)
 		AssertNoError(t, err)
 		want := heightmap
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("got %v want %v", got, want)
+		}
+		if gotContentType != contentType {
+			t.Errorf("got %s want %s", gotContentType, contentType)
 		}
 	})
 }

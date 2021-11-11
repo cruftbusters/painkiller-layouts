@@ -6,7 +6,7 @@ import (
 
 type HeightmapService interface {
 	Put(id string, heightmap []byte) error
-	Get(id string) ([]byte, error)
+	Get(id string) ([]byte, string, error)
 }
 
 func NewHeightmapService(mapService Service) HeightmapService {
@@ -32,11 +32,11 @@ func (s *DefaultHeightmapService) Put(id string, heightmap []byte) error {
 	return nil
 }
 
-func (s *DefaultHeightmapService) Get(id string) ([]byte, error) {
+func (s *DefaultHeightmapService) Get(id string) ([]byte, string, error) {
 	if _, err := s.mapService.Get(id); err != nil {
-		return nil, err
+		return nil, "", err
 	} else if heightmap := s.heightmapByID[id]; heightmap != nil {
-		return heightmap, nil
+		return heightmap, "image/jpeg", nil
 	}
-	return nil, HeightmapNotFoundError
+	return nil, "", HeightmapNotFoundError
 }

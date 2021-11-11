@@ -36,13 +36,17 @@ func TestHeightmap(t *testing.T) {
 	})
 
 	t.Run("put and get heightmap", func(t *testing.T) {
-		id, heightmap := client.Create(Metadata{}).Id, []byte{65, 66, 67}
+		id, heightmap, contentType := client.Create(Metadata{}).Id, []byte{65, 66, 67}, "image/jpeg"
 		client.PutHeightmap(id, bytes.NewBuffer(heightmap))
-		got, err := io.ReadAll(client.GetHeightmap(id))
+		gotReadCloser, gotContentType := client.GetHeightmap(id)
+		got, err := io.ReadAll(gotReadCloser)
 		AssertNoError(t, err)
 		want := heightmap
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("got %v want %v", got, want)
+		}
+		if gotContentType != contentType {
+			t.Errorf("got %s want %s", gotContentType, contentType)
 		}
 	})
 }

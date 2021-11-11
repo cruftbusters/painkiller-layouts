@@ -10,6 +10,7 @@ type StubHeightmapService struct {
 	putWillReturn              error
 	whenGetCalledWith          string
 	getWillReturnHeightmap     []byte
+	getWillReturnContentType   string
 	getWillReturnError         error
 }
 
@@ -26,11 +27,11 @@ func (stub *StubHeightmapService) Put(gotId string, gotHeightmap []byte) error {
 	return stub.putWillReturn
 }
 
-func (stub *StubHeightmapService) Get(got string) ([]byte, error) {
+func (stub *StubHeightmapService) Get(got string) ([]byte, string, error) {
 	stub.t.Helper()
 	want := stub.whenGetCalledWith
 	if got != want {
 		stub.t.Errorf("got %s want %s", got, want)
 	}
-	return stub.getWillReturnHeightmap, stub.getWillReturnError
+	return stub.getWillReturnHeightmap, stub.getWillReturnContentType, stub.getWillReturnError
 }

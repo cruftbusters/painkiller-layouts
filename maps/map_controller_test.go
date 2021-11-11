@@ -125,16 +125,21 @@ func TestMapController(t *testing.T) {
 	})
 
 	t.Run("get heightmap", func(t *testing.T) {
-		id, heightmap := "inwards", []byte("buncha bytes")
+		id, heightmap, contentType := "inwards", []byte("buncha bytes"), "image/png"
 		stubHeightmapService.whenGetCalledWith = id
 		stubHeightmapService.getWillReturnHeightmap = heightmap
+		stubHeightmapService.getWillReturnContentType = contentType
 		stubHeightmapService.getWillReturnError = nil
 
-		got, err := io.ReadAll(client.GetHeightmap(id))
+		gotReadCloser, gotContentType := client.GetHeightmap(id)
+		got, err := io.ReadAll(gotReadCloser)
 		AssertNoError(t, err)
 		want := heightmap
 		if bytes.Compare(got, want) != 0 {
 			t.Errorf("got %v want %v", got, want)
+		}
+		if gotContentType != contentType {
+			t.Errorf("got %s want %s", gotContentType, contentType)
 		}
 	})
 }
