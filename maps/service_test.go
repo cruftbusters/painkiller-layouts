@@ -53,16 +53,22 @@ func TestService(t *testing.T) {
 		AssertAllMetadataUnordered(t, got, want)
 	})
 
+	t.Run("patch missing map", func(t *testing.T) {
+		_, err := service.Patch("pragmatism", Metadata{})
+		AssertError(t, err, MapNotFoundError)
+	})
+
 	t.Run("patch url onto metadata", func(t *testing.T) {
 		id, size, url := "the id", Size{1, 2}, "new image url"
 		stubUuidService.idQueue = []string{id}
 		service.Post(Metadata{Size: size})
 
-		got := service.Patch(id, Metadata{ImageURL: url})
+		got, err := service.Patch(id, Metadata{ImageURL: url})
+		AssertNoError(t, err)
 		want := Metadata{Id: id, Size: size, ImageURL: url}
 		AssertMetadata(t, got, want)
 
-		got, err := service.Get(id)
+		got, err = service.Get(id)
 		AssertNoError(t, err)
 		AssertMetadata(t, got, want)
 	})

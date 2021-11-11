@@ -10,7 +10,7 @@ type Service interface {
 	Post(metadata Metadata) Metadata
 	Get(id string) (Metadata, error)
 	GetAll() []Metadata
-	Patch(id string, metadata Metadata) Metadata
+	Patch(id string, metadata Metadata) (Metadata, error)
 	Delete(id string) error
 }
 
@@ -53,12 +53,15 @@ func (service *DefaultService) GetAll() []Metadata {
 	return all
 }
 
-func (service *DefaultService) Patch(id string, patch Metadata) Metadata {
-	oldMetadata := service.metadata[id]
-	newMetadata := &oldMetadata
-	newMetadata.ImageURL = patch.ImageURL
-	service.metadata[id] = *newMetadata
-	return *newMetadata
+func (service *DefaultService) Patch(id string, patch Metadata) (Metadata, error) {
+	if oldMetadata, ok := service.metadata[id]; ok {
+		newMetadata := &oldMetadata
+		newMetadata.ImageURL = patch.ImageURL
+		service.metadata[id] = *newMetadata
+		return *newMetadata, nil
+	} else {
+		return Metadata{}, MapNotFoundError
+	}
 }
 
 func (service *DefaultService) Delete(id string) error {

@@ -50,8 +50,12 @@ func (c MapController) GetAll(response http.ResponseWriter, request *http.Reques
 func (c MapController) Patch(response http.ResponseWriter, request *http.Request, ps httprouter.Params) {
 	up := &Metadata{}
 	json.NewDecoder(request.Body).Decode(up)
-	down := c.service.Patch(ps.ByName("id"), *up)
-	json.NewEncoder(response).Encode(down)
+	down, err := c.service.Patch(ps.ByName("id"), *up)
+	if err != nil {
+		response.WriteHeader(404)
+	} else {
+		json.NewEncoder(response).Encode(down)
+	}
 }
 
 func (c MapController) Delete(response http.ResponseWriter, request *http.Request, ps httprouter.Params) {

@@ -53,6 +53,18 @@ func (client ClientV2) Create(metadata Metadata) Metadata {
 	return decode(client.t, response)
 }
 
+func (client ClientV2) PatchExpectNotFound(id string) {
+	client.t.Helper()
+
+	requestURL := client.baseURLF("/v1/maps/%s", id)
+	request, err := http.NewRequest(http.MethodPatch, requestURL, nil)
+	AssertNoError(client.t, err)
+
+	response, err := (&http.Client{}).Do(request)
+	AssertNoError(client.t, err)
+	AssertStatusCode(client.t, response, 404)
+}
+
 func (client ClientV2) Patch(id string, metadata Metadata) Metadata {
 	client.t.Helper()
 

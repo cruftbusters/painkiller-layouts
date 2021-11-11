@@ -64,11 +64,21 @@ func TestMapController(t *testing.T) {
 		AssertAllMetadata(t, got, want)
 	})
 
+	t.Run("patch missing map", func(t *testing.T) {
+		id := "william"
+		stubService.whenPatchCalledWithId = id
+		stubService.whenPatchCalledWithMetadata = Metadata{}
+		stubService.patchWillReturnError = MapNotFoundError
+
+		client.PatchExpectNotFound(id)
+	})
+
 	t.Run("patch map by id", func(t *testing.T) {
 		id, up, down := "rafael", Metadata{ImageURL: "coming through"}, Metadata{Id: "rafael", ImageURL: "coming through for real"}
 		stubService.whenPatchCalledWithId = id
 		stubService.whenPatchCalledWithMetadata = up
-		stubService.patchWillReturn = down
+		stubService.patchWillReturnMetadata = down
+		stubService.patchWillReturnError = nil
 
 		got := client.Patch(id, up)
 		want := down

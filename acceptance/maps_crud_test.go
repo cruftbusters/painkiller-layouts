@@ -43,6 +43,10 @@ func TestMapsCrud(t *testing.T) {
 		client.Delete(second.Id)
 	})
 
+	t.Run("patch missing map", func(t *testing.T) {
+		client.PatchExpectNotFound("garbotron")
+	})
+
 	t.Run("patch heightmap url onto map", func(t *testing.T) {
 		oldSize, newImageURL := Size{1, 2}, "new heightmap url"
 		metadata := client.Create(Metadata{Size: oldSize})

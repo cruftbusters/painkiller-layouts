@@ -16,7 +16,8 @@ type StubService struct {
 	postWillReturn              Metadata
 	whenPatchCalledWithId       string
 	whenPatchCalledWithMetadata Metadata
-	patchWillReturn             Metadata
+	patchWillReturnMetadata     Metadata
+	patchWillReturnError        error
 	whenDeleteCalledWith        string
 	deleteWillRaise             error
 }
@@ -43,7 +44,7 @@ func (stub *StubService) GetAll() []Metadata {
 	return stub.getAllWillReturn
 }
 
-func (stub *StubService) Patch(gotId string, gotMetadata Metadata) Metadata {
+func (stub *StubService) Patch(gotId string, gotMetadata Metadata) (Metadata, error) {
 	stub.t.Helper()
 	wantId := stub.whenPatchCalledWithId
 	wantMetadata := stub.whenPatchCalledWithMetadata
@@ -53,7 +54,7 @@ func (stub *StubService) Patch(gotId string, gotMetadata Metadata) Metadata {
 	if gotMetadata != wantMetadata {
 		stub.t.Fatalf("got %#v want %#v", gotMetadata, wantMetadata)
 	}
-	return stub.patchWillReturn
+	return stub.patchWillReturnMetadata, stub.patchWillReturnError
 }
 
 func (stub *StubService) Delete(got string) error {
