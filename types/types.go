@@ -4,6 +4,7 @@ type Metadata struct {
 	Id       string   `json:"id"`
 	Size     Size     `json:"size"`
 	Position Position `json:"position"`
+	Bounds   Bounds   `json:"bounds"`
 	ImageURL string   `json:"imageURL"`
 }
 
@@ -13,6 +14,13 @@ type Size struct {
 }
 
 type Position struct {
-	Top  float64 `json:"top"`
 	Left float64 `json:"left"`
+	Top  float64 `json:"top"`
+}
+
+type Bounds struct {
+	Left   float64 `json:"left"`
+	Top    float64 `json:"top"`
+	Right  float64 `json:"right"`
+	Bottom float64 `json:"bottom"`
 }
