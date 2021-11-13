@@ -59,13 +59,13 @@ func TestService(t *testing.T) {
 	})
 
 	t.Run("patch url onto metadata", func(t *testing.T) {
-		id, size, url, heightmapURL := "the id", Size{1, 2}, "new image url", "new heightmap url"
+		id, size, heightmapURL := "the id", Size{1, 2}, "new heightmap url"
 		stubUuidService.idQueue = []string{id}
 		service.Post(Metadata{Size: size})
 
-		got, err := service.Patch(id, Metadata{ImageURL: url, HeightmapURL: heightmapURL})
+		got, err := service.Patch(id, Metadata{HeightmapURL: heightmapURL})
 		AssertNoError(t, err)
-		want := Metadata{Id: id, Size: size, ImageURL: url, HeightmapURL: heightmapURL}
+		want := Metadata{Id: id, Size: size, HeightmapURL: heightmapURL}
 		AssertMetadata(t, got, want)
 
 		got, err = service.Get(id)

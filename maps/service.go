@@ -56,7 +56,6 @@ func (service *DefaultService) GetAll() []Metadata {
 func (service *DefaultService) Patch(id string, patch Metadata) (Metadata, error) {
 	if oldMetadata, ok := service.metadata[id]; ok {
 		newMetadata := &oldMetadata
-		newMetadata.ImageURL = patch.ImageURL
 		newMetadata.HeightmapURL = patch.HeightmapURL
 		service.metadata[id] = *newMetadata
 		return *newMetadata, nil

@@ -49,7 +49,7 @@ func TestHeightmapService(t *testing.T) {
 		stubMapService.getWillReturnError = nil
 
 		stubMapService.whenPatchCalledWithId = id
-		stubMapService.whenPatchCalledWithMetadata = Metadata{ImageURL: heightmapURL, HeightmapURL: heightmapURL}
+		stubMapService.whenPatchCalledWithMetadata = Metadata{HeightmapURL: heightmapURL}
 		stubMapService.patchWillReturnMetadata = Metadata{}
 		stubMapService.patchWillReturnError = nil
 
@@ -74,7 +74,7 @@ func TestHeightmapService(t *testing.T) {
 		stubMapService.getWillReturnError = nil
 
 		stubMapService.whenPatchCalledWithId = id
-		stubMapService.whenPatchCalledWithMetadata = Metadata{ImageURL: heightmapURL, HeightmapURL: heightmapURL}
+		stubMapService.whenPatchCalledWithMetadata = Metadata{HeightmapURL: heightmapURL}
 		stubMapService.patchWillReturnMetadata = Metadata{}
 		stubMapService.patchWillReturnError = nil
 
@@ -88,7 +88,7 @@ func TestHeightmapService(t *testing.T) {
 		stubMapService.getWillReturnError = nil
 
 		stubMapService.whenPatchCalledWithId = id
-		stubMapService.whenPatchCalledWithMetadata = Metadata{ImageURL: heightmapURL, HeightmapURL: heightmapURL}
+		stubMapService.whenPatchCalledWithMetadata = Metadata{HeightmapURL: heightmapURL}
 		stubMapService.patchWillReturnMetadata = Metadata{}
 		stubMapService.patchWillReturnError = MapNotFoundError
 

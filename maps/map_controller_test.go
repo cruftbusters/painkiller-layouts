@@ -74,7 +74,7 @@ func TestMapController(t *testing.T) {
 	})
 
 	t.Run("patch map by id", func(t *testing.T) {
-		id, up, down := "rafael", Metadata{ImageURL: "coming through"}, Metadata{Id: "rafael", ImageURL: "coming through for real"}
+		id, up, down := "rafael", Metadata{HeightmapURL: "coming through"}, Metadata{Id: "rafael", HeightmapURL: "coming through for real"}
 		stubService.whenPatchCalledWithId = id
 		stubService.whenPatchCalledWithMetadata = up
 		stubService.patchWillReturnMetadata = down

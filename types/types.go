@@ -4,7 +4,6 @@ type Metadata struct {
 	Id           string `json:"id"`
 	Size         Size   `json:"size"`
 	Bounds       Bounds `json:"bounds"`
-	ImageURL     string `json:"imageURL"`
 	HeightmapURL string `json:"heightmapURL"`
 }
 

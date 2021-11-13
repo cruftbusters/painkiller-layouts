@@ -56,14 +56,8 @@ func TestHeightmap(t *testing.T) {
 
 		metadata := client.Get(id)
 
-		got := metadata.ImageURL
+		got := metadata.HeightmapURL
 		want := fmt.Sprintf("%s/v1/maps/%s/heightmap.jpg", baseURL, id)
-		if got != want {
-			t.Errorf("got %s want %s", got, want)
-		}
-
-		got = metadata.HeightmapURL
-		want = fmt.Sprintf("%s/v1/maps/%s/heightmap.jpg", baseURL, id)
 		if got != want {
 			t.Errorf("got %s want %s", got, want)
 		}
