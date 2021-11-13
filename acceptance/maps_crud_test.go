@@ -48,11 +48,11 @@ func TestMapsCrud(t *testing.T) {
 	})
 
 	t.Run("patch heightmap url onto map", func(t *testing.T) {
-		oldSize, newImageURL := Size{1, 2}, "new heightmap url"
+		oldSize, newHeightmapURL := Size{1, 2}, "new heightmap url"
 		metadata := client.Create(Metadata{Size: oldSize})
 
-		got := client.Patch(metadata.Id, Metadata{ImageURL: newImageURL})
-		want := Metadata{Id: metadata.Id, Size: oldSize, ImageURL: newImageURL}
+		got := client.Patch(metadata.Id, Metadata{HeightmapURL: newHeightmapURL})
+		want := Metadata{Id: metadata.Id, Size: oldSize, HeightmapURL: newHeightmapURL}
 		AssertMetadata(t, got, want)
 
 		got = client.Get(metadata.Id)

@@ -50,11 +50,20 @@ func TestHeightmap(t *testing.T) {
 		}
 	})
 
-	t.Run("put heightmap updates image URL", func(t *testing.T) {
+	t.Run("put heightmap updates heightmap URL", func(t *testing.T) {
 		id := client.Create(Metadata{}).Id
 		client.PutHeightmap(id, nil)
-		got := client.Get(id).ImageURL
+
+		metadata := client.Get(id)
+
+		got := metadata.ImageURL
 		want := fmt.Sprintf("%s/v1/maps/%s/heightmap.jpg", baseURL, id)
+		if got != want {
+			t.Errorf("got %s want %s", got, want)
+		}
+
+		got = metadata.HeightmapURL
+		want = fmt.Sprintf("%s/v1/maps/%s/heightmap.jpg", baseURL, id)
 		if got != want {
 			t.Errorf("got %s want %s", got, want)
 		}

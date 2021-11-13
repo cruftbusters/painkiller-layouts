@@ -43,12 +43,13 @@ func TestHeightmapService(t *testing.T) {
 
 	t.Run("put and get", func(t *testing.T) {
 		id, heightmap, contentType := "bhan mi", []byte("vegan impossible burger"), "image/jpeg"
+		heightmapURL := "http://baseURL/v1/maps/bhan mi/heightmap.jpg"
 
 		stubMapService.whenGetCalledWith = id
 		stubMapService.getWillReturnError = nil
 
 		stubMapService.whenPatchCalledWithId = id
-		stubMapService.whenPatchCalledWithMetadata = Metadata{ImageURL: "http://baseURL/v1/maps/bhan mi/heightmap.jpg"}
+		stubMapService.whenPatchCalledWithMetadata = Metadata{ImageURL: heightmapURL, HeightmapURL: heightmapURL}
 		stubMapService.patchWillReturnMetadata = Metadata{}
 		stubMapService.patchWillReturnError = nil
 
@@ -73,7 +74,7 @@ func TestHeightmapService(t *testing.T) {
 		stubMapService.getWillReturnError = nil
 
 		stubMapService.whenPatchCalledWithId = id
-		stubMapService.whenPatchCalledWithMetadata = Metadata{ImageURL: heightmapURL}
+		stubMapService.whenPatchCalledWithMetadata = Metadata{ImageURL: heightmapURL, HeightmapURL: heightmapURL}
 		stubMapService.patchWillReturnMetadata = Metadata{}
 		stubMapService.patchWillReturnError = nil
 
@@ -87,7 +88,7 @@ func TestHeightmapService(t *testing.T) {
 		stubMapService.getWillReturnError = nil
 
 		stubMapService.whenPatchCalledWithId = id
-		stubMapService.whenPatchCalledWithMetadata = Metadata{ImageURL: heightmapURL}
+		stubMapService.whenPatchCalledWithMetadata = Metadata{ImageURL: heightmapURL, HeightmapURL: heightmapURL}
 		stubMapService.patchWillReturnMetadata = Metadata{}
 		stubMapService.patchWillReturnError = MapNotFoundError
 
