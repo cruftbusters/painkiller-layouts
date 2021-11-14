@@ -9,25 +9,25 @@ import (
 )
 
 func TestHeightmapService(t *testing.T) {
-	stubMapService := &StubMapService{t: t}
+	stubLayoutService := &StubLayoutService{t: t}
 	heightmapService := NewHeightmapService(
 		"http://baseURL",
-		stubMapService,
+		stubLayoutService,
 	)
 
 	t.Run("put when map not found", func(t *testing.T) {
-		id, err := "not found", ErrMapNotFound
-		stubMapService.whenGetCalledWith = id
-		stubMapService.getWillReturnError = err
+		id, err := "not found", ErrLayoutNotFound
+		stubLayoutService.whenGetCalledWith = id
+		stubLayoutService.getWillReturnError = err
 
 		got := heightmapService.Put(id, nil)
 		AssertError(t, got, err)
 	})
 
 	t.Run("get when map not found", func(t *testing.T) {
-		id, err := "wimbly wombly", ErrMapNotFound
-		stubMapService.whenGetCalledWith = id
-		stubMapService.getWillReturnError = err
+		id, err := "wimbly wombly", ErrLayoutNotFound
+		stubLayoutService.whenGetCalledWith = id
+		stubLayoutService.getWillReturnError = err
 
 		_, _, got := heightmapService.Get(id)
 		AssertError(t, got, err)
@@ -35,8 +35,8 @@ func TestHeightmapService(t *testing.T) {
 
 	t.Run("get when heightmap not found", func(t *testing.T) {
 		id := "weeknights"
-		stubMapService.whenGetCalledWith = id
-		stubMapService.getWillReturnError = nil
+		stubLayoutService.whenGetCalledWith = id
+		stubLayoutService.getWillReturnError = nil
 
 		_, _, got := heightmapService.Get(id)
 		AssertError(t, got, ErrHeightmapNotFound)
@@ -46,13 +46,13 @@ func TestHeightmapService(t *testing.T) {
 		id, heightmap, contentType := "bhan mi", []byte("vegan impossible burger"), "image/jpeg"
 		heightmapURL := "http://baseURL/v1/maps/bhan mi/heightmap.jpg"
 
-		stubMapService.whenGetCalledWith = id
-		stubMapService.getWillReturnError = nil
+		stubLayoutService.whenGetCalledWith = id
+		stubLayoutService.getWillReturnError = nil
 
-		stubMapService.whenPatchCalledWithId = id
-		stubMapService.whenPatchCalledWithMetadata = Metadata{HeightmapURL: heightmapURL}
-		stubMapService.patchWillReturnMetadata = Metadata{}
-		stubMapService.patchWillReturnError = nil
+		stubLayoutService.whenPatchCalledWithId = id
+		stubLayoutService.whenPatchCalledWithMetadata = Metadata{HeightmapURL: heightmapURL}
+		stubLayoutService.patchWillReturnMetadata = Metadata{}
+		stubLayoutService.patchWillReturnError = nil
 
 		err := heightmapService.Put(id, heightmap)
 		AssertNoError(t, err)
@@ -71,13 +71,13 @@ func TestHeightmapService(t *testing.T) {
 	t.Run("put heightmap updates heightmap URL", func(t *testing.T) {
 		id, heightmapURL := "itchy", "http://baseURL/v1/maps/itchy/heightmap.jpg"
 
-		stubMapService.whenGetCalledWith = id
-		stubMapService.getWillReturnError = nil
+		stubLayoutService.whenGetCalledWith = id
+		stubLayoutService.getWillReturnError = nil
 
-		stubMapService.whenPatchCalledWithId = id
-		stubMapService.whenPatchCalledWithMetadata = Metadata{HeightmapURL: heightmapURL}
-		stubMapService.patchWillReturnMetadata = Metadata{}
-		stubMapService.patchWillReturnError = nil
+		stubLayoutService.whenPatchCalledWithId = id
+		stubLayoutService.whenPatchCalledWithMetadata = Metadata{HeightmapURL: heightmapURL}
+		stubLayoutService.patchWillReturnMetadata = Metadata{}
+		stubLayoutService.patchWillReturnError = nil
 
 		heightmapService.Put(id, nil)
 	})
@@ -85,15 +85,15 @@ func TestHeightmapService(t *testing.T) {
 	t.Run("put heightmap has error upon updating heightmap URL", func(t *testing.T) {
 		id, heightmapURL := "stitchy", "http://baseURL/v1/maps/stitchy/heightmap.jpg"
 
-		stubMapService.whenGetCalledWith = id
-		stubMapService.getWillReturnError = nil
+		stubLayoutService.whenGetCalledWith = id
+		stubLayoutService.getWillReturnError = nil
 
-		stubMapService.whenPatchCalledWithId = id
-		stubMapService.whenPatchCalledWithMetadata = Metadata{HeightmapURL: heightmapURL}
-		stubMapService.patchWillReturnMetadata = Metadata{}
-		stubMapService.patchWillReturnError = ErrMapNotFound
+		stubLayoutService.whenPatchCalledWithId = id
+		stubLayoutService.whenPatchCalledWithMetadata = Metadata{HeightmapURL: heightmapURL}
+		stubLayoutService.patchWillReturnMetadata = Metadata{}
+		stubLayoutService.patchWillReturnError = ErrLayoutNotFound
 
 		got := heightmapService.Put(id, nil)
-		AssertError(t, got, ErrMapNotFound)
+		AssertError(t, got, ErrLayoutNotFound)
 	})
 }

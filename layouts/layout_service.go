@@ -6,7 +6,7 @@ import (
 	. "github.com/cruftbusters/painkiller-gallery/types"
 )
 
-type MapService interface {
+type LayoutService interface {
 	Create(metadata Metadata) Metadata
 	Get(id string) (Metadata, error)
 	GetAll(excludeMapsWithHeightmap bool) []Metadata
@@ -14,22 +14,22 @@ type MapService interface {
 	Delete(id string) error
 }
 
-type DefaultMapService struct {
+type DefaultLayoutService struct {
 	uuidService UUIDService
 
 	metadata map[string]Metadata
 }
 
-func NewMapService(uuidService UUIDService) MapService {
-	return &DefaultMapService{
+func NewLayoutService(uuidService UUIDService) LayoutService {
+	return &DefaultLayoutService{
 		uuidService: uuidService,
 		metadata:    make(map[string]Metadata),
 	}
 }
 
-var ErrMapNotFound = errors.New("map not found")
+var ErrLayoutNotFound = errors.New("layout not found")
 
-func (service *DefaultMapService) Create(metadata Metadata) Metadata {
+func (service *DefaultLayoutService) Create(metadata Metadata) Metadata {
 	id := service.uuidService.NewUUID()
 	newMetadata := &metadata
 	newMetadata.Id = id
@@ -37,15 +37,15 @@ func (service *DefaultMapService) Create(metadata Metadata) Metadata {
 	return *newMetadata
 }
 
-func (service *DefaultMapService) Get(id string) (Metadata, error) {
+func (service *DefaultLayoutService) Get(id string) (Metadata, error) {
 	if metadata, hasKey := service.metadata[id]; hasKey {
 		return metadata, nil
 	} else {
-		return Metadata{}, ErrMapNotFound
+		return Metadata{}, ErrLayoutNotFound
 	}
 }
 
-func (service *DefaultMapService) GetAll(excludeMapsWithHeightmap bool) []Metadata {
+func (service *DefaultLayoutService) GetAll(excludeMapsWithHeightmap bool) []Metadata {
 	all := make([]Metadata, 0, len(service.metadata))
 	for _, metadata := range service.metadata {
 		if !excludeMapsWithHeightmap || metadata.HeightmapURL == "" {
@@ -55,18 +55,18 @@ func (service *DefaultMapService) GetAll(excludeMapsWithHeightmap bool) []Metada
 	return all
 }
 
-func (service *DefaultMapService) Patch(id string, patch Metadata) (Metadata, error) {
+func (service *DefaultLayoutService) Patch(id string, patch Metadata) (Metadata, error) {
 	if oldMetadata, ok := service.metadata[id]; ok {
 		newMetadata := &oldMetadata
 		newMetadata.HeightmapURL = patch.HeightmapURL
 		service.metadata[id] = *newMetadata
 		return *newMetadata, nil
 	} else {
-		return Metadata{}, ErrMapNotFound
+		return Metadata{}, ErrLayoutNotFound
 	}
 }
 
-func (service *DefaultMapService) Delete(id string) error {
+func (service *DefaultLayoutService) Delete(id string) error {
 	delete(service.metadata, id)
 	return nil
 }

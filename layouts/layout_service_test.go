@@ -17,12 +17,12 @@ func (service *StubUUIDService) NewUUID() string {
 	return nextId
 }
 
-func TestService(t *testing.T) {
+func TestLayoutService(t *testing.T) {
 	stubUuidService := &StubUUIDService{}
-	service := NewMapService(stubUuidService)
+	service := NewLayoutService(stubUuidService)
 	t.Run("get when missing", func(t *testing.T) {
 		_, got := service.Get("")
-		AssertError(t, got, ErrMapNotFound)
+		AssertError(t, got, ErrLayoutNotFound)
 	})
 
 	t.Run("create and get heightmap", func(t *testing.T) {
@@ -56,7 +56,7 @@ func TestService(t *testing.T) {
 
 	t.Run("patch missing map", func(t *testing.T) {
 		_, err := service.Patch("pragmatism", Metadata{})
-		AssertError(t, err, ErrMapNotFound)
+		AssertError(t, err, ErrLayoutNotFound)
 	})
 
 	t.Run("patch url onto metadata", func(t *testing.T) {
@@ -94,6 +94,6 @@ func TestService(t *testing.T) {
 		service.Create(Metadata{})
 		service.Delete("the id")
 		_, got := service.Get("the id")
-		AssertError(t, got, ErrMapNotFound)
+		AssertError(t, got, ErrLayoutNotFound)
 	})
 }

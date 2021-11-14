@@ -13,14 +13,14 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-func TestMapController(t *testing.T) {
+func TestLayoutController(t *testing.T) {
 	listener, port := RandomPortListener()
 	client := NewClientV2(t, fmt.Sprintf("http://localhost:%d", port))
 
-	stubMapService := &StubMapService{t: t}
+	stubLayoutService := &StubLayoutService{t: t}
 	stubHeightmapService := &StubHeightmapService{t: t}
-	controller := MapController{
-		stubMapService,
+	controller := LayoutController{
+		stubLayoutService,
 		stubHeightmapService,
 	}
 	router := httprouter.New()
@@ -31,25 +31,25 @@ func TestMapController(t *testing.T) {
 	}()
 
 	t.Run("get missing map", func(t *testing.T) {
-		stubMapService.whenGetCalledWith = "deadbeef"
-		stubMapService.getWillReturnError = ErrMapNotFound
+		stubLayoutService.whenGetCalledWith = "deadbeef"
+		stubLayoutService.getWillReturnError = ErrLayoutNotFound
 
 		client.GetExpectNotFound("deadbeef")
 	})
 
 	t.Run("create map", func(t *testing.T) {
 		up, down := Metadata{Id: "up"}, Metadata{Id: "down"}
-		stubMapService.whenPostCalledWith = up
-		stubMapService.postWillReturn = down
+		stubLayoutService.whenPostCalledWith = up
+		stubLayoutService.postWillReturn = down
 
 		got := client.Create(up)
 		AssertMetadata(t, got, down)
 	})
 
 	t.Run("get map", func(t *testing.T) {
-		stubMapService.whenGetCalledWith = "path-id"
-		stubMapService.getWillReturnMetadata = Metadata{Id: "beefdead"}
-		stubMapService.getWillReturnError = nil
+		stubLayoutService.whenGetCalledWith = "path-id"
+		stubLayoutService.getWillReturnMetadata = Metadata{Id: "beefdead"}
+		stubLayoutService.getWillReturnError = nil
 
 		got := client.Get("path-id")
 		want := Metadata{Id: "beefdead"}
@@ -57,8 +57,8 @@ func TestMapController(t *testing.T) {
 	})
 
 	t.Run("get all maps", func(t *testing.T) {
-		stubMapService.whenGetAllCalledWith = false
-		stubMapService.getAllWillReturn = []Metadata{{Id: "beefdead"}}
+		stubLayoutService.whenGetAllCalledWith = false
+		stubLayoutService.getAllWillReturn = []Metadata{{Id: "beefdead"}}
 
 		got := client.GetAll()
 		want := []Metadata{{Id: "beefdead"}}
@@ -66,8 +66,8 @@ func TestMapController(t *testing.T) {
 	})
 
 	t.Run("get all maps with heightmap URL filter", func(t *testing.T) {
-		stubMapService.whenGetAllCalledWith = true
-		stubMapService.getAllWillReturn = []Metadata{{Id: "look ma no heightmap"}}
+		stubLayoutService.whenGetAllCalledWith = true
+		stubLayoutService.getAllWillReturn = []Metadata{{Id: "look ma no heightmap"}}
 
 		got := client.GetAllWithoutHeightmap()
 		want := []Metadata{{Id: "look ma no heightmap"}}
@@ -76,19 +76,19 @@ func TestMapController(t *testing.T) {
 
 	t.Run("patch missing map", func(t *testing.T) {
 		id := "william"
-		stubMapService.whenPatchCalledWithId = id
-		stubMapService.whenPatchCalledWithMetadata = Metadata{}
-		stubMapService.patchWillReturnError = ErrMapNotFound
+		stubLayoutService.whenPatchCalledWithId = id
+		stubLayoutService.whenPatchCalledWithMetadata = Metadata{}
+		stubLayoutService.patchWillReturnError = ErrLayoutNotFound
 
 		client.PatchExpectNotFound(id)
 	})
 
 	t.Run("patch map by id", func(t *testing.T) {
 		id, up, down := "rafael", Metadata{HeightmapURL: "coming through"}, Metadata{Id: "rafael", HeightmapURL: "coming through for real"}
-		stubMapService.whenPatchCalledWithId = id
-		stubMapService.whenPatchCalledWithMetadata = up
-		stubMapService.patchWillReturnMetadata = down
-		stubMapService.patchWillReturnError = nil
+		stubLayoutService.whenPatchCalledWithId = id
+		stubLayoutService.whenPatchCalledWithMetadata = up
+		stubLayoutService.patchWillReturnMetadata = down
+		stubLayoutService.patchWillReturnError = nil
 
 		got := client.Patch(id, up)
 		want := down
@@ -97,16 +97,16 @@ func TestMapController(t *testing.T) {
 
 	t.Run("delete map has error", func(t *testing.T) {
 		id, want := "some id", errors.New("uh oh")
-		stubMapService.whenDeleteCalledWith = id
-		stubMapService.deleteWillRaise = want
+		stubLayoutService.whenDeleteCalledWith = id
+		stubLayoutService.deleteWillRaise = want
 
 		client.DeleteExpectInternalServerError(id)
 	})
 
 	t.Run("delete map", func(t *testing.T) {
 		id := "some id"
-		stubMapService.whenDeleteCalledWith = id
-		stubMapService.deleteWillRaise = nil
+		stubLayoutService.whenDeleteCalledWith = id
+		stubLayoutService.deleteWillRaise = nil
 
 		client.Delete(id)
 	})
@@ -114,7 +114,7 @@ func TestMapController(t *testing.T) {
 	t.Run("put heightmap on missing map is not found", func(t *testing.T) {
 		id := "there is no creativity"
 		stubHeightmapService.whenPutCalledWithId = id
-		stubHeightmapService.putWillReturn = ErrMapNotFound
+		stubHeightmapService.putWillReturn = ErrLayoutNotFound
 
 		client.PutHeightmapExpectNotFound(id)
 	})
@@ -122,7 +122,7 @@ func TestMapController(t *testing.T) {
 	t.Run("get heightmap on missing map is not found", func(t *testing.T) {
 		id := "walrus"
 		stubHeightmapService.whenGetCalledWith = id
-		stubHeightmapService.getWillReturnError = ErrMapNotFound
+		stubHeightmapService.getWillReturnError = ErrLayoutNotFound
 
 		client.GetHeightmapExpectNotFound(id)
 	})

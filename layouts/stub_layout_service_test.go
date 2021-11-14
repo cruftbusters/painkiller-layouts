@@ -6,7 +6,7 @@ import (
 	. "github.com/cruftbusters/painkiller-gallery/types"
 )
 
-type StubMapService struct {
+type StubLayoutService struct {
 	t                           testing.TB
 	whenGetCalledWith           string
 	getWillReturnMetadata       Metadata
@@ -23,7 +23,7 @@ type StubMapService struct {
 	deleteWillRaise             error
 }
 
-func (stub *StubMapService) Create(got Metadata) Metadata {
+func (stub *StubLayoutService) Create(got Metadata) Metadata {
 	stub.t.Helper()
 	want := stub.whenPostCalledWith
 	if got != want {
@@ -32,7 +32,7 @@ func (stub *StubMapService) Create(got Metadata) Metadata {
 	return stub.postWillReturn
 }
 
-func (stub *StubMapService) Get(got string) (Metadata, error) {
+func (stub *StubLayoutService) Get(got string) (Metadata, error) {
 	stub.t.Helper()
 	want := stub.whenGetCalledWith
 	if got != want {
@@ -41,7 +41,7 @@ func (stub *StubMapService) Get(got string) (Metadata, error) {
 	return stub.getWillReturnMetadata, stub.getWillReturnError
 }
 
-func (stub *StubMapService) GetAll(got bool) []Metadata {
+func (stub *StubLayoutService) GetAll(got bool) []Metadata {
 	stub.t.Helper()
 	want := stub.whenGetAllCalledWith
 	if got != want {
@@ -50,7 +50,7 @@ func (stub *StubMapService) GetAll(got bool) []Metadata {
 	return stub.getAllWillReturn
 }
 
-func (stub *StubMapService) Patch(gotId string, gotMetadata Metadata) (Metadata, error) {
+func (stub *StubLayoutService) Patch(gotId string, gotMetadata Metadata) (Metadata, error) {
 	stub.t.Helper()
 	wantId := stub.whenPatchCalledWithId
 	wantMetadata := stub.whenPatchCalledWithMetadata
@@ -63,7 +63,7 @@ func (stub *StubMapService) Patch(gotId string, gotMetadata Metadata) (Metadata,
 	return stub.patchWillReturnMetadata, stub.patchWillReturnError
 }
 
-func (stub *StubMapService) Delete(got string) error {
+func (stub *StubLayoutService) Delete(got string) error {
 	stub.t.Helper()
 	if got != stub.whenDeleteCalledWith {
 		stub.t.Errorf("got id %s want %s", got, stub.whenDeleteCalledWith)
