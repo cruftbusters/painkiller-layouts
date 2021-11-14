@@ -1,7 +1,9 @@
 package maps
 
-import "bytes"
-import "testing"
+import (
+	"bytes"
+	"testing"
+)
 
 type StubHeightmapService struct {
 	t                          testing.TB
@@ -21,7 +23,7 @@ func (stub *StubHeightmapService) Put(gotId string, gotHeightmap []byte) error {
 		stub.t.Errorf("got %s want %s", gotId, wantId)
 	}
 	wantHeightmap := stub.whenPutCalledWithHeightmap
-	if bytes.Compare(gotHeightmap, wantHeightmap) != 0 {
+	if !bytes.Equal(gotHeightmap, wantHeightmap) {
 		stub.t.Errorf("got %v want %v", gotHeightmap, wantHeightmap)
 	}
 	return stub.putWillReturn

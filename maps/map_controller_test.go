@@ -145,7 +145,7 @@ func TestMapController(t *testing.T) {
 		got, err := io.ReadAll(gotReadCloser)
 		AssertNoError(t, err)
 		want := heightmap
-		if bytes.Compare(got, want) != 0 {
+		if !bytes.Equal(got, want) {
 			t.Errorf("got %v want %v", got, want)
 		}
 		if gotContentType != contentType {
