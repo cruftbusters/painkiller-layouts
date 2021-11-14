@@ -22,5 +22,5 @@ $ go test github.com/cruftbusters/painkiller-layouts/acceptance -overrideBaseURL
 
 ```
 $ go build
-$ build/painkiller-layouts # opens http server on port 8080
+$ build/painkiller-layouts 8080 http://localhost:8080 # opens http server on port 8080
 ```

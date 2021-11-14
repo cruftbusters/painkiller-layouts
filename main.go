@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 
@@ -8,5 +9,8 @@ import (
 )
 
 func main() {
-	http.ListenAndServe(":8080", layouts.Handler(os.Args[1]))
+	http.ListenAndServe(
+		fmt.Sprintf(":%s", os.Args[1]),
+		layouts.Handler(os.Args[2]),
+	)
 }
