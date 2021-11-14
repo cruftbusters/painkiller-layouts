@@ -9,7 +9,7 @@ import (
 )
 
 func TestMapsCrud(t *testing.T) {
-	client, _ := NewClientV2(t, layouts.Handler)
+	client, _ := NewTestClient(t, layouts.Handler)
 
 	t.Run("get missing map", func(t *testing.T) {
 		client.GetExpectNotFound("deadbeef")

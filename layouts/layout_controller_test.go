@@ -18,7 +18,7 @@ func TestLayoutController(t *testing.T) {
 		stubLayoutService,
 		stubHeightmapService,
 	}
-	client, _ := NewClientV2(t, func(string) *httprouter.Router {
+	client, _ := NewTestClient(t, func(string) *httprouter.Router {
 		router := httprouter.New()
 		controller.AddRoutes(router)
 		return router

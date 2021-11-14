@@ -15,7 +15,7 @@ type ClientV2 struct {
 	baseURL string
 }
 
-func NewClientV2(t testing.TB, routerSupplier func(baseURL string) *httprouter.Router) (ClientV2, string) {
+func NewTestClient(t testing.TB, routerSupplier func(baseURL string) *httprouter.Router) (ClientV2, string) {
 	listener, baseURL := RandomPortListener()
 	go func() { http.Serve(listener, routerSupplier(baseURL)) }()
 	return ClientV2{t: t, baseURL: baseURL}, baseURL

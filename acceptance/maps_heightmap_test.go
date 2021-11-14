@@ -13,7 +13,7 @@ import (
 )
 
 func TestHeightmap(t *testing.T) {
-	client, baseURL := NewClientV2(t, layouts.Handler)
+	client, baseURL := NewTestClient(t, layouts.Handler)
 
 	t.Run("put heightmap on missing map is not found", func(t *testing.T) {
 		client.PutHeightmapExpectNotFound("deadbeef")

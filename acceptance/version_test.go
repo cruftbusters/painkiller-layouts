@@ -8,7 +8,7 @@ import (
 )
 
 func TestVersion(t *testing.T) {
-	client, _ := NewClientV2(t, layouts.Handler)
+	client, _ := NewTestClient(t, layouts.Handler)
 
 	got := client.GetVersion().Version
 	want := "1"
