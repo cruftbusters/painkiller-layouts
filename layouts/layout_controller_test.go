@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"io"
-	"net/http"
 	"testing"
 
 	. "github.com/cruftbusters/painkiller-gallery/testing"
@@ -13,19 +12,17 @@ import (
 )
 
 func TestLayoutController(t *testing.T) {
-	listener, baseURL := RandomPortListener()
-	client := NewClientV2(t, baseURL)
-
 	stubLayoutService := &StubLayoutService{t: t}
 	stubHeightmapService := &StubHeightmapService{t: t}
 	controller := LayoutController{
 		stubLayoutService,
 		stubHeightmapService,
 	}
-	router := httprouter.New()
-	controller.AddRoutes(router)
-
-	go func() { http.Serve(listener, router) }()
+	client, _ := NewClientV2(t, func(string) *httprouter.Router {
+		router := httprouter.New()
+		controller.AddRoutes(router)
+		return router
+	})
 
 	t.Run("get missing map", func(t *testing.T) {
 		stubLayoutService.whenGetCalledWith = "deadbeef"

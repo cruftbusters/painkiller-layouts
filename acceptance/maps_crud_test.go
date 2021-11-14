@@ -1,7 +1,6 @@
 package acceptance
 
 import (
-	"net/http"
 	"testing"
 
 	"github.com/cruftbusters/painkiller-gallery/layouts"
@@ -10,10 +9,7 @@ import (
 )
 
 func TestMapsCrud(t *testing.T) {
-	listener, baseURL := RandomPortListener()
-	go func() { http.Serve(listener, layouts.Handler(baseURL)) }()
-
-	client := NewClientV2(t, baseURL)
+	client, _ := NewClientV2(t, layouts.Handler)
 
 	t.Run("get missing map", func(t *testing.T) {
 		client.GetExpectNotFound("deadbeef")

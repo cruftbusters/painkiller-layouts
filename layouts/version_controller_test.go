@@ -1,7 +1,6 @@
 package layouts
 
 import (
-	"net/http"
 	"testing"
 
 	. "github.com/cruftbusters/painkiller-gallery/testing"
@@ -9,14 +8,12 @@ import (
 )
 
 func TestVersionController(t *testing.T) {
-	listener, baseURL := RandomPortListener()
-	client := NewClientV2(t, baseURL)
-
 	controller := VersionController{}
-	router := httprouter.New()
-	controller.AddRoutes(router)
-
-	go func() { http.Serve(listener, router) }()
+	client, _ := NewClientV2(t, func(string) *httprouter.Router {
+		router := httprouter.New()
+		controller.AddRoutes(router)
+		return router
+	})
 
 	got := client.GetVersion().Version
 	want := "1"

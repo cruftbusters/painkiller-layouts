@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	. "github.com/cruftbusters/painkiller-gallery/types"
+	"github.com/julienschmidt/httprouter"
 )
 
 type ClientV2 struct {
@@ -14,8 +15,10 @@ type ClientV2 struct {
 	baseURL string
 }
 
-func NewClientV2(t testing.TB, baseURL string) ClientV2 {
-	return ClientV2{t: t, baseURL: baseURL}
+func NewClientV2(t testing.TB, routerSupplier func(baseURL string) *httprouter.Router) (ClientV2, string) {
+	listener, baseURL := RandomPortListener()
+	go func() { http.Serve(listener, routerSupplier(baseURL)) }()
+	return ClientV2{t: t, baseURL: baseURL}, baseURL
 }
 
 func (client ClientV2) GetVersion() Version {

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"net/http"
 	"reflect"
 	"testing"
 
@@ -14,10 +13,7 @@ import (
 )
 
 func TestHeightmap(t *testing.T) {
-	listener, baseURL := RandomPortListener()
-	go func() { http.Serve(listener, layouts.Handler(baseURL)) }()
-
-	client := NewClientV2(t, baseURL)
+	client, baseURL := NewClientV2(t, layouts.Handler)
 
 	t.Run("put heightmap on missing map is not found", func(t *testing.T) {
 		client.PutHeightmapExpectNotFound("deadbeef")
