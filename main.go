@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/cruftbusters/painkiller-gallery/layouts"
+	"github.com/cruftbusters/painkiller-layouts/layouts"
 )
 
 func main() {

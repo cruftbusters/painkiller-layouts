@@ -1,0 +1,12 @@
+[Unit]
+Description=painkiller/layouts
+
+[Service]
+ExecStart=/home/arctair/painkiller/layouts/build/server https://layouts.painkillergis.com
+StandardOutput=file:/home/arctair/painkiller/layouts/application.log
+StandardError=file:/home/arctair/painkiller/layouts/error.log
+Type=simple
+WorkingDirectory=/home/arctair/painkiller/layouts
+
+[Install]
+WantedBy=default.target

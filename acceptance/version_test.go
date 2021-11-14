@@ -3,8 +3,8 @@ package acceptance
 import (
 	"testing"
 
-	"github.com/cruftbusters/painkiller-gallery/layouts"
-	. "github.com/cruftbusters/painkiller-gallery/testing"
+	"github.com/cruftbusters/painkiller-layouts/layouts"
+	. "github.com/cruftbusters/painkiller-layouts/testing"
 )
 
 func TestVersion(t *testing.T) {

@@ -3,7 +3,7 @@ package layouts
 import (
 	"errors"
 
-	. "github.com/cruftbusters/painkiller-gallery/types"
+	. "github.com/cruftbusters/painkiller-layouts/types"
 )
 
 type LayoutService interface {

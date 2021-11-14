@@ -3,7 +3,7 @@ package layouts
 import (
 	"testing"
 
-	. "github.com/cruftbusters/painkiller-gallery/types"
+	. "github.com/cruftbusters/painkiller-layouts/types"
 )
 
 type StubLayoutService struct {

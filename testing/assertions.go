@@ -6,7 +6,7 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/cruftbusters/painkiller-gallery/types"
+	"github.com/cruftbusters/painkiller-layouts/types"
 )
 
 func AssertNoError(t testing.TB, err error) {

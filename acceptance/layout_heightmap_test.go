@@ -7,9 +7,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/cruftbusters/painkiller-gallery/layouts"
-	. "github.com/cruftbusters/painkiller-gallery/testing"
-	. "github.com/cruftbusters/painkiller-gallery/types"
+	"github.com/cruftbusters/painkiller-layouts/layouts"
+	. "github.com/cruftbusters/painkiller-layouts/testing"
+	. "github.com/cruftbusters/painkiller-layouts/types"
 )
 
 func TestLayoutHeightmap(t *testing.T) {

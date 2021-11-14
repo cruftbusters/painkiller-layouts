@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/cruftbusters/painkiller-gallery/types"
+	"github.com/cruftbusters/painkiller-layouts/types"
 )
 
 func encode(t testing.TB, layout types.Layout) *bytes.Buffer {

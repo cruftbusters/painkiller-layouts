@@ -6,8 +6,8 @@ import (
 	"io"
 	"testing"
 
-	. "github.com/cruftbusters/painkiller-gallery/testing"
-	. "github.com/cruftbusters/painkiller-gallery/types"
+	. "github.com/cruftbusters/painkiller-layouts/testing"
+	. "github.com/cruftbusters/painkiller-layouts/types"
 	"github.com/julienschmidt/httprouter"
 )
 

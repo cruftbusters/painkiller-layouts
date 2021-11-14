@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/cruftbusters/painkiller-gallery/types"
+	"github.com/cruftbusters/painkiller-layouts/types"
 )
 
 type HeightmapService interface {

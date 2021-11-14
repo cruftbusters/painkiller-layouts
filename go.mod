@@ -1,4 +1,4 @@
-module github.com/cruftbusters/painkiller-gallery
+module github.com/cruftbusters/painkiller-layouts
 
 go 1.17
 

@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"testing"
 
-	. "github.com/cruftbusters/painkiller-gallery/types"
+	. "github.com/cruftbusters/painkiller-layouts/types"
 	"github.com/julienschmidt/httprouter"
 )
 
