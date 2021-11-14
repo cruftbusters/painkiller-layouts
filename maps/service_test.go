@@ -22,7 +22,7 @@ func TestService(t *testing.T) {
 	service := NewService(stubUuidService)
 	t.Run("get when missing", func(t *testing.T) {
 		_, got := service.Get("")
-		AssertError(t, got, MapNotFoundError)
+		AssertError(t, got, ErrMapNotFound)
 	})
 
 	t.Run("create and get heightmap", func(t *testing.T) {
@@ -55,7 +55,7 @@ func TestService(t *testing.T) {
 
 	t.Run("patch missing map", func(t *testing.T) {
 		_, err := service.Patch("pragmatism", Metadata{})
-		AssertError(t, err, MapNotFoundError)
+		AssertError(t, err, ErrMapNotFound)
 	})
 
 	t.Run("patch url onto metadata", func(t *testing.T) {
@@ -78,6 +78,6 @@ func TestService(t *testing.T) {
 		service.Post(Metadata{})
 		service.Delete("the id")
 		_, got := service.Get("the id")
-		AssertError(t, got, MapNotFoundError)
+		AssertError(t, got, ErrMapNotFound)
 	})
 }

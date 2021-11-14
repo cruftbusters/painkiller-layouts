@@ -27,7 +27,7 @@ func NewService(uuidService UUIDService) Service {
 	}
 }
 
-var MapNotFoundError = errors.New("map not found")
+var ErrMapNotFound = errors.New("map not found")
 
 func (service *DefaultService) Post(metadata Metadata) Metadata {
 	id := service.uuidService.NewUUID()
@@ -41,7 +41,7 @@ func (service *DefaultService) Get(id string) (Metadata, error) {
 	if metadata, hasKey := service.metadata[id]; hasKey {
 		return metadata, nil
 	} else {
-		return Metadata{}, MapNotFoundError
+		return Metadata{}, ErrMapNotFound
 	}
 }
 
@@ -60,7 +60,7 @@ func (service *DefaultService) Patch(id string, patch Metadata) (Metadata, error
 		service.metadata[id] = *newMetadata
 		return *newMetadata, nil
 	} else {
-		return Metadata{}, MapNotFoundError
+		return Metadata{}, ErrMapNotFound
 	}
 }
 

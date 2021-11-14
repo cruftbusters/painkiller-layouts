@@ -3,6 +3,7 @@ package maps
 import (
 	"errors"
 	"fmt"
+
 	. "github.com/cruftbusters/painkiller-gallery/types"
 )
 
@@ -25,7 +26,7 @@ type DefaultHeightmapService struct {
 	heightmapByID map[string][]byte
 }
 
-var HeightmapNotFoundError = errors.New("heightmap not found")
+var ErrHeightmapNotFound = errors.New("heightmap not found")
 
 func (s *DefaultHeightmapService) Put(id string, heightmap []byte) error {
 	_, err := s.mapService.Get(id)
@@ -44,5 +45,5 @@ func (s *DefaultHeightmapService) Get(id string) ([]byte, string, error) {
 	} else if heightmap := s.heightmapByID[id]; heightmap != nil {
 		return heightmap, "image/jpeg", nil
 	}
-	return nil, "", HeightmapNotFoundError
+	return nil, "", ErrHeightmapNotFound
 }

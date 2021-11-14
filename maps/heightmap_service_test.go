@@ -1,10 +1,11 @@
 package maps
 
 import (
-	. "github.com/cruftbusters/painkiller-gallery/testing"
-	. "github.com/cruftbusters/painkiller-gallery/types"
 	"reflect"
 	"testing"
+
+	. "github.com/cruftbusters/painkiller-gallery/testing"
+	. "github.com/cruftbusters/painkiller-gallery/types"
 )
 
 func TestHeightmapService(t *testing.T) {
@@ -15,7 +16,7 @@ func TestHeightmapService(t *testing.T) {
 	)
 
 	t.Run("put when map not found", func(t *testing.T) {
-		id, err := "not found", MapNotFoundError
+		id, err := "not found", ErrMapNotFound
 		stubMapService.whenGetCalledWith = id
 		stubMapService.getWillReturnError = err
 
@@ -24,7 +25,7 @@ func TestHeightmapService(t *testing.T) {
 	})
 
 	t.Run("get when map not found", func(t *testing.T) {
-		id, err := "wimbly wombly", MapNotFoundError
+		id, err := "wimbly wombly", ErrMapNotFound
 		stubMapService.whenGetCalledWith = id
 		stubMapService.getWillReturnError = err
 
@@ -38,7 +39,7 @@ func TestHeightmapService(t *testing.T) {
 		stubMapService.getWillReturnError = nil
 
 		_, _, got := heightmapService.Get(id)
-		AssertError(t, got, HeightmapNotFoundError)
+		AssertError(t, got, ErrHeightmapNotFound)
 	})
 
 	t.Run("put and get", func(t *testing.T) {
@@ -90,9 +91,9 @@ func TestHeightmapService(t *testing.T) {
 		stubMapService.whenPatchCalledWithId = id
 		stubMapService.whenPatchCalledWithMetadata = Metadata{HeightmapURL: heightmapURL}
 		stubMapService.patchWillReturnMetadata = Metadata{}
-		stubMapService.patchWillReturnError = MapNotFoundError
+		stubMapService.patchWillReturnError = ErrMapNotFound
 
 		got := heightmapService.Put(id, nil)
-		AssertError(t, got, MapNotFoundError)
+		AssertError(t, got, ErrMapNotFound)
 	})
 }
