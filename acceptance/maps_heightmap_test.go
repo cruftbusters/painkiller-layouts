@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/cruftbusters/painkiller-gallery/maps"
+	"github.com/cruftbusters/painkiller-gallery/layouts"
 	. "github.com/cruftbusters/painkiller-gallery/testing"
 	. "github.com/cruftbusters/painkiller-gallery/types"
 )
@@ -17,7 +17,7 @@ func TestHeightmap(t *testing.T) {
 	listener, port := RandomPortListener()
 	baseURL := fmt.Sprintf("http://localhost:%d", port)
 	go func() {
-		http.Serve(listener, maps.Handler(baseURL))
+		http.Serve(listener, layouts.Handler(baseURL))
 	}()
 
 	client := NewClientV2(t, baseURL)
