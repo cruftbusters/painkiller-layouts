@@ -1,7 +1,6 @@
 package layouts
 
 import (
-	"fmt"
 	"net/http"
 	"testing"
 
@@ -10,18 +9,14 @@ import (
 )
 
 func TestVersionController(t *testing.T) {
-	listener, port := RandomPortListener()
-	baseURL := fmt.Sprintf("http://localhost:%d", port)
+	listener, baseURL := RandomPortListener()
+	client := NewClientV2(t, baseURL)
 
 	controller := VersionController{}
 	router := httprouter.New()
 	controller.AddRoutes(router)
 
-	go func() {
-		http.Serve(listener, router)
-	}()
-
-	client := NewClientV2(t, baseURL)
+	go func() { http.Serve(listener, router) }()
 
 	got := client.GetVersion().Version
 	want := "1"

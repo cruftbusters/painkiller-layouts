@@ -1,7 +1,6 @@
 package acceptance
 
 import (
-	"fmt"
 	"net/http"
 	"testing"
 
@@ -11,11 +10,8 @@ import (
 )
 
 func TestMapsCrud(t *testing.T) {
-	listener, port := RandomPortListener()
-	baseURL := fmt.Sprintf("http://localhost:%d", port)
-	go func() {
-		http.Serve(listener, layouts.Handler(baseURL))
-	}()
+	listener, baseURL := RandomPortListener()
+	go func() { http.Serve(listener, layouts.Handler(baseURL)) }()
 
 	client := NewClientV2(t, baseURL)
 

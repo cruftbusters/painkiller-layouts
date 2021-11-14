@@ -3,7 +3,6 @@ package layouts
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"testing"
@@ -14,8 +13,8 @@ import (
 )
 
 func TestLayoutController(t *testing.T) {
-	listener, port := RandomPortListener()
-	client := NewClientV2(t, fmt.Sprintf("http://localhost:%d", port))
+	listener, baseURL := RandomPortListener()
+	client := NewClientV2(t, baseURL)
 
 	stubLayoutService := &StubLayoutService{t: t}
 	stubHeightmapService := &StubHeightmapService{t: t}
@@ -26,9 +25,7 @@ func TestLayoutController(t *testing.T) {
 	router := httprouter.New()
 	controller.AddRoutes(router)
 
-	go func() {
-		http.Serve(listener, router)
-	}()
+	go func() { http.Serve(listener, router) }()
 
 	t.Run("get missing map", func(t *testing.T) {
 		stubLayoutService.whenGetCalledWith = "deadbeef"
