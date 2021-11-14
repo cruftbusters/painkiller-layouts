@@ -1,6 +1,7 @@
 package testing
 
 import (
+	"flag"
 	"fmt"
 	"io"
 	"net/http"
@@ -15,10 +16,21 @@ type ClientV2 struct {
 	baseURL string
 }
 
-func NewTestClient(t testing.TB, routerSupplier func(baseURL string) *httprouter.Router) (ClientV2, string) {
-	listener, baseURL := RandomPortListener()
-	go func() { http.Serve(listener, routerSupplier(baseURL)) }()
-	return ClientV2{t: t, baseURL: baseURL}, baseURL
+var overrideBaseURL string
+
+func init() { flag.StringVar(&overrideBaseURL, "overrideBaseURL", "", "override base URL") }
+
+func NewTestClient(
+	t testing.TB,
+	routerSupplier func(baseURL string) *httprouter.Router,
+) (ClientV2, string) {
+	if overrideBaseURL == "" {
+		listener, baseURL := RandomPortListener()
+		go func() { http.Serve(listener, routerSupplier(baseURL)) }()
+		return ClientV2{t: t, baseURL: baseURL}, baseURL
+	} else {
+		return ClientV2{t: t, baseURL: overrideBaseURL}, overrideBaseURL
+	}
 }
 
 func (client ClientV2) GetVersion() Version {
