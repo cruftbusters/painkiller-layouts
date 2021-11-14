@@ -28,7 +28,7 @@ func TestService(t *testing.T) {
 	t.Run("create and get heightmap", func(t *testing.T) {
 		stubUuidService.idQueue = []string{"the id"}
 
-		got := service.Post(Metadata{})
+		got := service.Create(Metadata{})
 		want := Metadata{Id: "the id"}
 		AssertMetadata(t, got, want)
 
@@ -43,8 +43,8 @@ func TestService(t *testing.T) {
 		stubUuidService.idQueue = []string{"first", "second"}
 		heightmapURL := "better not drop me"
 
-		service.Post(Metadata{})
-		service.Post(Metadata{HeightmapURL: heightmapURL})
+		service.Create(Metadata{})
+		service.Create(Metadata{HeightmapURL: heightmapURL})
 
 		got := service.GetAll(false)
 		want := []Metadata{{Id: "first"}, {Id: "second", HeightmapURL: "better not drop me"}}
@@ -62,7 +62,7 @@ func TestService(t *testing.T) {
 	t.Run("patch url onto metadata", func(t *testing.T) {
 		id, size, heightmapURL := "the id", Size{Width: 1, Height: 2}, "new heightmap url"
 		stubUuidService.idQueue = []string{id}
-		service.Post(Metadata{Size: size})
+		service.Create(Metadata{Size: size})
 
 		got, err := service.Patch(id, Metadata{HeightmapURL: heightmapURL})
 		AssertNoError(t, err)
@@ -78,8 +78,8 @@ func TestService(t *testing.T) {
 
 	t.Run("filter for maps with no heightmap", func(t *testing.T) {
 		stubUuidService.idQueue = []string{"first", "second"}
-		withoutHeightmap := service.Post(Metadata{})
-		withHeightmap := service.Post(Metadata{HeightmapURL: "heightmap url"})
+		withoutHeightmap := service.Create(Metadata{})
+		withHeightmap := service.Create(Metadata{HeightmapURL: "heightmap url"})
 		AssertAllMetadata(t,
 			service.GetAll(true),
 			[]Metadata{withoutHeightmap},
@@ -91,7 +91,7 @@ func TestService(t *testing.T) {
 
 	t.Run("delete heightmap", func(t *testing.T) {
 		stubUuidService.idQueue = []string{"the id"}
-		service.Post(Metadata{})
+		service.Create(Metadata{})
 		service.Delete("the id")
 		_, got := service.Get("the id")
 		AssertError(t, got, ErrMapNotFound)

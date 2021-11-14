@@ -28,7 +28,7 @@ func (c MapController) Create(response http.ResponseWriter, request *http.Reques
 	response.WriteHeader(201)
 	up := &types.Metadata{}
 	json.NewDecoder(request.Body).Decode(up)
-	down := c.service.Post(*up)
+	down := c.service.Create(*up)
 	json.NewEncoder(response).Encode(down)
 }
 

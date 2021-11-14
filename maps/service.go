@@ -7,7 +7,7 @@ import (
 )
 
 type Service interface {
-	Post(metadata Metadata) Metadata
+	Create(metadata Metadata) Metadata
 	Get(id string) (Metadata, error)
 	GetAll(excludeMapsWithHeightmap bool) []Metadata
 	Patch(id string, metadata Metadata) (Metadata, error)
@@ -29,7 +29,7 @@ func NewService(uuidService UUIDService) Service {
 
 var ErrMapNotFound = errors.New("map not found")
 
-func (service *DefaultService) Post(metadata Metadata) Metadata {
+func (service *DefaultService) Create(metadata Metadata) Metadata {
 	id := service.uuidService.NewUUID()
 	newMetadata := &metadata
 	newMetadata.Id = id

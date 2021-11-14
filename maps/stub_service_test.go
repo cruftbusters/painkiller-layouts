@@ -23,7 +23,7 @@ type StubService struct {
 	deleteWillRaise             error
 }
 
-func (stub *StubService) Post(got Metadata) Metadata {
+func (stub *StubService) Create(got Metadata) Metadata {
 	stub.t.Helper()
 	want := stub.whenPostCalledWith
 	if got != want {
