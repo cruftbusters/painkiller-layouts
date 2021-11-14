@@ -11,7 +11,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-func TestLayoutController(t *testing.T) {
+func TestMapController(t *testing.T) {
 	stubLayoutService := &StubLayoutService{t: t}
 	stubHeightmapService := &StubHeightmapService{t: t}
 	controller := LayoutController{
@@ -28,7 +28,7 @@ func TestLayoutController(t *testing.T) {
 		stubLayoutService.whenGetCalledWith = "deadbeef"
 		stubLayoutService.getWillReturnError = ErrLayoutNotFound
 
-		client.GetLayoutExpectNotFound("deadbeef")
+		client.GetExpectNotFound("deadbeef")
 	})
 
 	t.Run("create map", func(t *testing.T) {
@@ -36,7 +36,7 @@ func TestLayoutController(t *testing.T) {
 		stubLayoutService.whenPostCalledWith = up
 		stubLayoutService.postWillReturn = down
 
-		got := client.CreateLayout(up)
+		got := client.Create(up)
 		AssertLayout(t, got, down)
 	})
 
@@ -45,7 +45,7 @@ func TestLayoutController(t *testing.T) {
 		stubLayoutService.getWillReturnLayout = Layout{Id: "beefdead"}
 		stubLayoutService.getWillReturnError = nil
 
-		got := client.GetLayout("path-id")
+		got := client.Get("path-id")
 		want := Layout{Id: "beefdead"}
 		AssertLayout(t, got, want)
 	})
@@ -54,7 +54,7 @@ func TestLayoutController(t *testing.T) {
 		stubLayoutService.whenGetAllCalledWith = false
 		stubLayoutService.getAllWillReturn = []Layout{{Id: "beefdead"}}
 
-		got := client.GetLayouts()
+		got := client.GetAll()
 		want := []Layout{{Id: "beefdead"}}
 		AssertLayouts(t, got, want)
 	})
@@ -63,7 +63,7 @@ func TestLayoutController(t *testing.T) {
 		stubLayoutService.whenGetAllCalledWith = true
 		stubLayoutService.getAllWillReturn = []Layout{{Id: "look ma no heightmap"}}
 
-		got := client.GetLayoutsWithoutHeightmap()
+		got := client.GetAllWithoutHeightmap()
 		want := []Layout{{Id: "look ma no heightmap"}}
 		AssertLayouts(t, got, want)
 	})
@@ -74,7 +74,7 @@ func TestLayoutController(t *testing.T) {
 		stubLayoutService.whenPatchCalledWithLayout = Layout{}
 		stubLayoutService.patchWillReturnError = ErrLayoutNotFound
 
-		client.PatchLayoutExpectNotFound(id)
+		client.PatchExpectNotFound(id)
 	})
 
 	t.Run("patch map by id", func(t *testing.T) {
@@ -84,7 +84,7 @@ func TestLayoutController(t *testing.T) {
 		stubLayoutService.patchWillReturnLayout = down
 		stubLayoutService.patchWillReturnError = nil
 
-		got := client.PatchLayout(id, up)
+		got := client.Patch(id, up)
 		want := down
 		AssertLayout(t, got, want)
 	})
@@ -102,7 +102,7 @@ func TestLayoutController(t *testing.T) {
 		stubLayoutService.whenDeleteCalledWith = id
 		stubLayoutService.deleteWillReturn = nil
 
-		client.DeleteLayout(id)
+		client.Delete(id)
 	})
 
 	t.Run("put heightmap on missing map is not found", func(t *testing.T) {
@@ -110,7 +110,7 @@ func TestLayoutController(t *testing.T) {
 		stubHeightmapService.whenPutCalledWithId = id
 		stubHeightmapService.putWillReturn = ErrLayoutNotFound
 
-		client.PutLayoutHeightmapExpectNotFound(id)
+		client.PutHeightmapExpectNotFound(id)
 	})
 
 	t.Run("get heightmap on missing map is not found", func(t *testing.T) {
@@ -118,7 +118,7 @@ func TestLayoutController(t *testing.T) {
 		stubHeightmapService.whenGetCalledWith = id
 		stubHeightmapService.getWillReturnError = ErrLayoutNotFound
 
-		client.GetLayoutHeightmapExpectNotFound(id)
+		client.GetHeightmapExpectNotFound(id)
 	})
 
 	t.Run("get heightmap is not found", func(t *testing.T) {
@@ -126,7 +126,7 @@ func TestLayoutController(t *testing.T) {
 		stubHeightmapService.whenGetCalledWith = id
 		stubHeightmapService.getWillReturnError = ErrHeightmapNotFound
 
-		client.GetLayoutHeightmapExpectNotFound(id)
+		client.GetHeightmapExpectNotFound(id)
 	})
 
 	t.Run("put heightmap", func(t *testing.T) {
@@ -135,7 +135,7 @@ func TestLayoutController(t *testing.T) {
 		stubHeightmapService.whenPutCalledWithHeightmap = up
 		stubHeightmapService.putWillReturn = nil
 
-		client.PutLayoutHeightmap(id, bytes.NewBuffer(up))
+		client.PutHeightmap(id, bytes.NewBuffer(up))
 	})
 
 	t.Run("get heightmap", func(t *testing.T) {
@@ -145,7 +145,7 @@ func TestLayoutController(t *testing.T) {
 		stubHeightmapService.getWillReturnContentType = contentType
 		stubHeightmapService.getWillReturnError = nil
 
-		gotReadCloser, gotContentType := client.GetLayoutHeightmap(id)
+		gotReadCloser, gotContentType := client.GetHeightmap(id)
 		got, err := io.ReadAll(gotReadCloser)
 		AssertNoError(t, err)
 		want := heightmap
