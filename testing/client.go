@@ -51,7 +51,25 @@ func (client ClientV2) Get(id string) Layout {
 	return decode(client.t, response)
 }
 
+func (client ClientV2) GetLayout(id string) Layout {
+	client.t.Helper()
+	response, err := http.Get(client.baseURLF("/v1/maps/%s", id))
+	AssertNoError(client.t, err)
+	AssertStatusCode(client.t, response, 200)
+
+	return decode(client.t, response)
+}
+
 func (client ClientV2) GetAll() []Layout {
+	client.t.Helper()
+	response, err := http.Get(client.baseURLF("/v1/maps"))
+	AssertNoError(client.t, err)
+	AssertStatusCode(client.t, response, 200)
+
+	return decodeLayouts(client.t, response)
+}
+
+func (client ClientV2) GetLayouts() []Layout {
 	client.t.Helper()
 	response, err := http.Get(client.baseURLF("/v1/maps"))
 	AssertNoError(client.t, err)
@@ -69,7 +87,23 @@ func (client ClientV2) GetAllWithoutHeightmap() []Layout {
 	return decodeLayouts(client.t, response)
 }
 
+func (client ClientV2) GetLayoutsWithoutHeightmap() []Layout {
+	client.t.Helper()
+	response, err := http.Get(client.baseURLF("/v1/maps?excludeMapsWithHeightmap=true"))
+	AssertNoError(client.t, err)
+	AssertStatusCode(client.t, response, 200)
+
+	return decodeLayouts(client.t, response)
+}
+
 func (client ClientV2) GetExpectNotFound(id string) {
+	client.t.Helper()
+	response, err := http.Get(client.baseURLF("/v1/maps/%s", id))
+	AssertNoError(client.t, err)
+	AssertStatusCode(client.t, response, 404)
+}
+
+func (client ClientV2) GetLayoutExpectNotFound(id string) {
 	client.t.Helper()
 	response, err := http.Get(client.baseURLF("/v1/maps/%s", id))
 	AssertNoError(client.t, err)
@@ -86,7 +120,29 @@ func (client ClientV2) Create(layout Layout) Layout {
 	return decode(client.t, response)
 }
 
+func (client ClientV2) CreateLayout(layout Layout) Layout {
+	client.t.Helper()
+	up := encode(client.t, layout)
+	response, err := http.Post(client.baseURLF("/v1/maps"), "", up)
+	AssertNoError(client.t, err)
+	AssertStatusCode(client.t, response, 201)
+
+	return decode(client.t, response)
+}
+
 func (client ClientV2) PatchExpectNotFound(id string) {
+	client.t.Helper()
+
+	requestURL := client.baseURLF("/v1/maps/%s", id)
+	request, err := http.NewRequest(http.MethodPatch, requestURL, nil)
+	AssertNoError(client.t, err)
+
+	response, err := (&http.Client{}).Do(request)
+	AssertNoError(client.t, err)
+	AssertStatusCode(client.t, response, 404)
+}
+
+func (client ClientV2) PatchLayoutExpectNotFound(id string) {
 	client.t.Helper()
 
 	requestURL := client.baseURLF("/v1/maps/%s", id)
@@ -113,7 +169,32 @@ func (client ClientV2) Patch(id string, layout Layout) Layout {
 	return decode(client.t, response)
 }
 
+func (client ClientV2) PatchLayout(id string, layout Layout) Layout {
+	client.t.Helper()
+
+	up := encode(client.t, layout)
+	requestURL := client.baseURLF("/v1/maps/%s", id)
+	request, err := http.NewRequest(http.MethodPatch, requestURL, up)
+	AssertNoError(client.t, err)
+
+	response, err := (&http.Client{}).Do(request)
+	AssertNoError(client.t, err)
+	AssertStatusCode(client.t, response, 200)
+
+	return decode(client.t, response)
+}
+
 func (client ClientV2) Delete(id string) {
+	client.t.Helper()
+	requestURL := client.baseURLF("/v1/maps/%s", id)
+	request, err := http.NewRequest(http.MethodDelete, requestURL, nil)
+	AssertNoError(client.t, err)
+	response, err := (&http.Client{}).Do(request)
+	AssertNoError(client.t, err)
+	AssertStatusCode(client.t, response, 204)
+}
+
+func (client ClientV2) DeleteLayout(id string) {
 	client.t.Helper()
 	requestURL := client.baseURLF("/v1/maps/%s", id)
 	request, err := http.NewRequest(http.MethodDelete, requestURL, nil)
@@ -133,7 +214,27 @@ func (client ClientV2) DeleteExpectInternalServerError(id string) {
 	AssertStatusCode(client.t, response, 500)
 }
 
+func (client ClientV2) DeleteLayoutExpectInternalServerError(id string) {
+	client.t.Helper()
+	requestURL := client.baseURLF("/v1/maps/%s", id)
+	request, err := http.NewRequest(http.MethodDelete, requestURL, nil)
+	AssertNoError(client.t, err)
+	response, err := (&http.Client{}).Do(request)
+	AssertNoError(client.t, err)
+	AssertStatusCode(client.t, response, 500)
+}
+
 func (client ClientV2) PutHeightmapExpectNotFound(id string) {
+	client.t.Helper()
+	requestURL := client.baseURLF("/v1/maps/%s/heightmap.jpg", id)
+	request, err := http.NewRequest(http.MethodPut, requestURL, nil)
+	AssertNoError(client.t, err)
+	response, err := (&http.Client{}).Do(request)
+	AssertNoError(client.t, err)
+	AssertStatusCode(client.t, response, 404)
+}
+
+func (client ClientV2) PutLayoutHeightmapExpectNotFound(id string) {
 	client.t.Helper()
 	requestURL := client.baseURLF("/v1/maps/%s/heightmap.jpg", id)
 	request, err := http.NewRequest(http.MethodPut, requestURL, nil)
@@ -153,6 +254,16 @@ func (client ClientV2) PutHeightmap(id string, heightmap io.Reader) {
 	AssertStatusCode(client.t, response, 200)
 }
 
+func (client ClientV2) PutLayoutHeightmap(id string, heightmap io.Reader) {
+	client.t.Helper()
+	requestURL := client.baseURLF("/v1/maps/%s/heightmap.jpg", id)
+	request, err := http.NewRequest(http.MethodPut, requestURL, heightmap)
+	AssertNoError(client.t, err)
+	response, err := (&http.Client{}).Do(request)
+	AssertNoError(client.t, err)
+	AssertStatusCode(client.t, response, 200)
+}
+
 func (client ClientV2) GetHeightmapExpectNotFound(id string) {
 	client.t.Helper()
 	response, err := http.Get(client.baseURLF("/v1/maps/%s/heightmap.jpg", id))
@@ -160,7 +271,22 @@ func (client ClientV2) GetHeightmapExpectNotFound(id string) {
 	AssertStatusCode(client.t, response, 404)
 }
 
+func (client ClientV2) GetLayoutHeightmapExpectNotFound(id string) {
+	client.t.Helper()
+	response, err := http.Get(client.baseURLF("/v1/maps/%s/heightmap.jpg", id))
+	AssertNoError(client.t, err)
+	AssertStatusCode(client.t, response, 404)
+}
+
 func (client ClientV2) GetHeightmap(id string) (io.ReadCloser, string) {
+	client.t.Helper()
+	response, err := http.Get(client.baseURLF("/v1/maps/%s/heightmap.jpg", id))
+	AssertNoError(client.t, err)
+	AssertStatusCode(client.t, response, 200)
+	return response.Body, response.Header.Get("Content-Type")
+}
+
+func (client ClientV2) GetLayoutHeightmap(id string) (io.ReadCloser, string) {
 	client.t.Helper()
 	response, err := http.Get(client.baseURLF("/v1/maps/%s/heightmap.jpg", id))
 	AssertNoError(client.t, err)
