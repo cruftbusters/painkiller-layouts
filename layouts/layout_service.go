@@ -7,66 +7,66 @@ import (
 )
 
 type LayoutService interface {
-	Create(metadata Metadata) Metadata
-	Get(id string) (Metadata, error)
-	GetAll(excludeMapsWithHeightmap bool) []Metadata
-	Patch(id string, metadata Metadata) (Metadata, error)
+	Create(layout Layout) Layout
+	Get(id string) (Layout, error)
+	GetAll(excludeMapsWithHeightmap bool) []Layout
+	Patch(id string, layout Layout) (Layout, error)
 	Delete(id string) error
 }
 
 type DefaultLayoutService struct {
 	uuidService UUIDService
 
-	metadata map[string]Metadata
+	layout map[string]Layout
 }
 
 func NewLayoutService(uuidService UUIDService) LayoutService {
 	return &DefaultLayoutService{
 		uuidService: uuidService,
-		metadata:    make(map[string]Metadata),
+		layout:      make(map[string]Layout),
 	}
 }
 
 var ErrLayoutNotFound = errors.New("layout not found")
 
-func (service *DefaultLayoutService) Create(metadata Metadata) Metadata {
+func (service *DefaultLayoutService) Create(requestLayout Layout) Layout {
 	id := service.uuidService.NewUUID()
-	newMetadata := &metadata
-	newMetadata.Id = id
-	service.metadata[id] = *newMetadata
-	return *newMetadata
+	layout := &requestLayout
+	layout.Id = id
+	service.layout[id] = *layout
+	return *layout
 }
 
-func (service *DefaultLayoutService) Get(id string) (Metadata, error) {
-	if metadata, hasKey := service.metadata[id]; hasKey {
-		return metadata, nil
+func (service *DefaultLayoutService) Get(id string) (Layout, error) {
+	if layout, hasKey := service.layout[id]; hasKey {
+		return layout, nil
 	} else {
-		return Metadata{}, ErrLayoutNotFound
+		return Layout{}, ErrLayoutNotFound
 	}
 }
 
-func (service *DefaultLayoutService) GetAll(excludeMapsWithHeightmap bool) []Metadata {
-	all := make([]Metadata, 0, len(service.metadata))
-	for _, metadata := range service.metadata {
-		if !excludeMapsWithHeightmap || metadata.HeightmapURL == "" {
-			all = append(all, metadata)
+func (service *DefaultLayoutService) GetAll(excludeMapsWithHeightmap bool) []Layout {
+	layouts := make([]Layout, 0, len(service.layout))
+	for _, layout := range service.layout {
+		if !excludeMapsWithHeightmap || layout.HeightmapURL == "" {
+			layouts = append(layouts, layout)
 		}
 	}
-	return all
+	return layouts
 }
 
-func (service *DefaultLayoutService) Patch(id string, patch Metadata) (Metadata, error) {
-	if oldMetadata, ok := service.metadata[id]; ok {
-		newMetadata := &oldMetadata
-		newMetadata.HeightmapURL = patch.HeightmapURL
-		service.metadata[id] = *newMetadata
-		return *newMetadata, nil
+func (service *DefaultLayoutService) Patch(id string, patch Layout) (Layout, error) {
+	if oldLayout, ok := service.layout[id]; ok {
+		newLayout := &oldLayout
+		newLayout.HeightmapURL = patch.HeightmapURL
+		service.layout[id] = *newLayout
+		return *newLayout, nil
 	} else {
-		return Metadata{}, ErrLayoutNotFound
+		return Layout{}, ErrLayoutNotFound
 	}
 }
 
 func (service *DefaultLayoutService) Delete(id string) error {
-	delete(service.metadata, id)
+	delete(service.layout, id)
 	return nil
 }

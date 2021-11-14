@@ -50,8 +50,8 @@ func TestHeightmapService(t *testing.T) {
 		stubLayoutService.getWillReturnError = nil
 
 		stubLayoutService.whenPatchCalledWithId = id
-		stubLayoutService.whenPatchCalledWithMetadata = Metadata{HeightmapURL: heightmapURL}
-		stubLayoutService.patchWillReturnMetadata = Metadata{}
+		stubLayoutService.whenPatchCalledWithLayout = Layout{HeightmapURL: heightmapURL}
+		stubLayoutService.patchWillReturnLayout = Layout{}
 		stubLayoutService.patchWillReturnError = nil
 
 		err := heightmapService.Put(id, heightmap)
@@ -75,8 +75,8 @@ func TestHeightmapService(t *testing.T) {
 		stubLayoutService.getWillReturnError = nil
 
 		stubLayoutService.whenPatchCalledWithId = id
-		stubLayoutService.whenPatchCalledWithMetadata = Metadata{HeightmapURL: heightmapURL}
-		stubLayoutService.patchWillReturnMetadata = Metadata{}
+		stubLayoutService.whenPatchCalledWithLayout = Layout{HeightmapURL: heightmapURL}
+		stubLayoutService.patchWillReturnLayout = Layout{}
 		stubLayoutService.patchWillReturnError = nil
 
 		heightmapService.Put(id, nil)
@@ -89,8 +89,8 @@ func TestHeightmapService(t *testing.T) {
 		stubLayoutService.getWillReturnError = nil
 
 		stubLayoutService.whenPatchCalledWithId = id
-		stubLayoutService.whenPatchCalledWithMetadata = Metadata{HeightmapURL: heightmapURL}
-		stubLayoutService.patchWillReturnMetadata = Metadata{}
+		stubLayoutService.whenPatchCalledWithLayout = Layout{HeightmapURL: heightmapURL}
+		stubLayoutService.patchWillReturnLayout = Layout{}
 		stubLayoutService.patchWillReturnError = ErrLayoutNotFound
 
 		got := heightmapService.Put(id, nil)

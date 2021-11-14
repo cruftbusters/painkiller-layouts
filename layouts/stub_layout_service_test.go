@@ -7,23 +7,23 @@ import (
 )
 
 type StubLayoutService struct {
-	t                           testing.TB
-	whenGetCalledWith           string
-	getWillReturnMetadata       Metadata
-	getWillReturnError          error
-	whenGetAllCalledWith        bool
-	getAllWillReturn            []Metadata
-	whenPostCalledWith          Metadata
-	postWillReturn              Metadata
-	whenPatchCalledWithId       string
-	whenPatchCalledWithMetadata Metadata
-	patchWillReturnMetadata     Metadata
-	patchWillReturnError        error
-	whenDeleteCalledWith        string
-	deleteWillReturn            error
+	t                         testing.TB
+	whenGetCalledWith         string
+	getWillReturnLayout       Layout
+	getWillReturnError        error
+	whenGetAllCalledWith      bool
+	getAllWillReturn          []Layout
+	whenPostCalledWith        Layout
+	postWillReturn            Layout
+	whenPatchCalledWithId     string
+	whenPatchCalledWithLayout Layout
+	patchWillReturnLayout     Layout
+	patchWillReturnError      error
+	whenDeleteCalledWith      string
+	deleteWillReturn          error
 }
 
-func (stub *StubLayoutService) Create(got Metadata) Metadata {
+func (stub *StubLayoutService) Create(got Layout) Layout {
 	stub.t.Helper()
 	want := stub.whenPostCalledWith
 	if got != want {
@@ -32,16 +32,16 @@ func (stub *StubLayoutService) Create(got Metadata) Metadata {
 	return stub.postWillReturn
 }
 
-func (stub *StubLayoutService) Get(got string) (Metadata, error) {
+func (stub *StubLayoutService) Get(got string) (Layout, error) {
 	stub.t.Helper()
 	want := stub.whenGetCalledWith
 	if got != want {
 		stub.t.Fatalf("got %#v want %#v", got, want)
 	}
-	return stub.getWillReturnMetadata, stub.getWillReturnError
+	return stub.getWillReturnLayout, stub.getWillReturnError
 }
 
-func (stub *StubLayoutService) GetAll(got bool) []Metadata {
+func (stub *StubLayoutService) GetAll(got bool) []Layout {
 	stub.t.Helper()
 	want := stub.whenGetAllCalledWith
 	if got != want {
@@ -50,17 +50,17 @@ func (stub *StubLayoutService) GetAll(got bool) []Metadata {
 	return stub.getAllWillReturn
 }
 
-func (stub *StubLayoutService) Patch(gotId string, gotMetadata Metadata) (Metadata, error) {
+func (stub *StubLayoutService) Patch(gotId string, gotLayout Layout) (Layout, error) {
 	stub.t.Helper()
 	wantId := stub.whenPatchCalledWithId
-	wantMetadata := stub.whenPatchCalledWithMetadata
+	wantLayout := stub.whenPatchCalledWithLayout
 	if gotId != wantId {
 		stub.t.Fatalf("got %s want %s", gotId, wantId)
 	}
-	if gotMetadata != wantMetadata {
-		stub.t.Fatalf("got %#v want %#v", gotMetadata, wantMetadata)
+	if gotLayout != wantLayout {
+		stub.t.Fatalf("got %#v want %#v", gotLayout, wantLayout)
 	}
-	return stub.patchWillReturnMetadata, stub.patchWillReturnError
+	return stub.patchWillReturnLayout, stub.patchWillReturnError
 }
 
 func (stub *StubLayoutService) Delete(got string) error {

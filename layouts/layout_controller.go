@@ -26,30 +26,30 @@ func (c LayoutController) AddRoutes(router *httprouter.Router) {
 
 func (c LayoutController) Create(response http.ResponseWriter, request *http.Request, _ httprouter.Params) {
 	response.WriteHeader(201)
-	up := &types.Metadata{}
+	up := &types.Layout{}
 	json.NewDecoder(request.Body).Decode(up)
 	down := c.mapService.Create(*up)
 	json.NewEncoder(response).Encode(down)
 }
 
 func (c LayoutController) Get(response http.ResponseWriter, request *http.Request, ps httprouter.Params) {
-	metadata, err := c.mapService.Get(ps.ByName("id"))
+	layout, err := c.mapService.Get(ps.ByName("id"))
 	if err != nil {
 		response.WriteHeader(404)
 	} else {
 		response.WriteHeader(200)
-		json.NewEncoder(response).Encode(metadata)
+		json.NewEncoder(response).Encode(layout)
 	}
 }
 
 func (c LayoutController) GetAll(response http.ResponseWriter, request *http.Request, ps httprouter.Params) {
 	excludeMapsWithHeightmap := request.URL.Query().Get("excludeMapsWithHeightmap") == "true"
-	allMetadata := c.mapService.GetAll(excludeMapsWithHeightmap)
-	json.NewEncoder(response).Encode(allMetadata)
+	layouts := c.mapService.GetAll(excludeMapsWithHeightmap)
+	json.NewEncoder(response).Encode(layouts)
 }
 
 func (c LayoutController) Patch(response http.ResponseWriter, request *http.Request, ps httprouter.Params) {
-	up := &types.Metadata{}
+	up := &types.Layout{}
 	json.NewDecoder(request.Body).Decode(up)
 	down, err := c.mapService.Patch(ps.ByName("id"), *up)
 	if err != nil {

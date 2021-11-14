@@ -28,13 +28,13 @@ func TestLayoutService(t *testing.T) {
 	t.Run("create and get heightmap", func(t *testing.T) {
 		stubUuidService.idQueue = []string{"the id"}
 
-		got := service.Create(Metadata{})
-		want := Metadata{Id: "the id"}
-		AssertMetadata(t, got, want)
+		got := service.Create(Layout{})
+		want := Layout{Id: "the id"}
+		AssertLayout(t, got, want)
 
-		metadata, err := service.Get(got.Id)
+		layout, err := service.Get(got.Id)
 		AssertNoError(t, err)
-		AssertMetadata(t, metadata, got)
+		AssertLayout(t, layout, got)
 
 		service.Delete("the id")
 	})
@@ -43,46 +43,46 @@ func TestLayoutService(t *testing.T) {
 		stubUuidService.idQueue = []string{"first", "second"}
 		heightmapURL := "better not drop me"
 
-		service.Create(Metadata{})
-		service.Create(Metadata{HeightmapURL: heightmapURL})
+		service.Create(Layout{})
+		service.Create(Layout{HeightmapURL: heightmapURL})
 
 		got := service.GetAll(false)
-		want := []Metadata{{Id: "first"}, {Id: "second", HeightmapURL: "better not drop me"}}
-		AssertAllMetadataUnordered(t, got, want)
+		want := []Layout{{Id: "first"}, {Id: "second", HeightmapURL: "better not drop me"}}
+		AssertLayoutsUnordered(t, got, want)
 
 		service.Delete("first")
 		service.Delete("second")
 	})
 
 	t.Run("patch missing map", func(t *testing.T) {
-		_, err := service.Patch("pragmatism", Metadata{})
+		_, err := service.Patch("pragmatism", Layout{})
 		AssertError(t, err, ErrLayoutNotFound)
 	})
 
-	t.Run("patch url onto metadata", func(t *testing.T) {
+	t.Run("patch url onto layout", func(t *testing.T) {
 		id, size, heightmapURL := "the id", Size{Width: 1, Height: 2}, "new heightmap url"
 		stubUuidService.idQueue = []string{id}
-		service.Create(Metadata{Size: size})
+		service.Create(Layout{Size: size})
 
-		got, err := service.Patch(id, Metadata{HeightmapURL: heightmapURL})
+		got, err := service.Patch(id, Layout{HeightmapURL: heightmapURL})
 		AssertNoError(t, err)
-		want := Metadata{Id: id, Size: size, HeightmapURL: heightmapURL}
-		AssertMetadata(t, got, want)
+		want := Layout{Id: id, Size: size, HeightmapURL: heightmapURL}
+		AssertLayout(t, got, want)
 
 		got, err = service.Get(id)
 		AssertNoError(t, err)
-		AssertMetadata(t, got, want)
+		AssertLayout(t, got, want)
 
 		service.Delete(id)
 	})
 
 	t.Run("filter for maps with no heightmap", func(t *testing.T) {
 		stubUuidService.idQueue = []string{"first", "second"}
-		withoutHeightmap := service.Create(Metadata{})
-		withHeightmap := service.Create(Metadata{HeightmapURL: "heightmap url"})
-		AssertAllMetadata(t,
+		withoutHeightmap := service.Create(Layout{})
+		withHeightmap := service.Create(Layout{HeightmapURL: "heightmap url"})
+		AssertLayouts(t,
 			service.GetAll(true),
-			[]Metadata{withoutHeightmap},
+			[]Layout{withoutHeightmap},
 		)
 
 		service.Delete(withoutHeightmap.Id)
@@ -91,7 +91,7 @@ func TestLayoutService(t *testing.T) {
 
 	t.Run("delete heightmap", func(t *testing.T) {
 		stubUuidService.idQueue = []string{"the id"}
-		service.Create(Metadata{})
+		service.Create(Layout{})
 		service.Delete("the id")
 		_, got := service.Get("the id")
 		AssertError(t, got, ErrLayoutNotFound)

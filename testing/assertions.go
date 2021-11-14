@@ -30,14 +30,14 @@ func AssertStatusCode(t testing.TB, response *http.Response, statusCode int) {
 	}
 }
 
-func AssertMetadata(t testing.TB, got, want types.Metadata) {
+func AssertLayout(t testing.TB, got, want types.Layout) {
 	t.Helper()
 	if got != want {
 		t.Fatalf("got %#v want %#v", got, want)
 	}
 }
 
-func AssertAllMetadataUnordered(t testing.TB, got, want []types.Metadata) {
+func AssertLayoutsUnordered(t testing.TB, got, want []types.Layout) {
 	t.Helper()
 	sort.SliceStable(got, func(i, j int) bool {
 		return got[i].Id < got[j].Id
@@ -45,10 +45,10 @@ func AssertAllMetadataUnordered(t testing.TB, got, want []types.Metadata) {
 	sort.SliceStable(want, func(i, j int) bool {
 		return want[i].Id < want[j].Id
 	})
-	AssertAllMetadata(t, got, want)
+	AssertLayouts(t, got, want)
 }
 
-func AssertAllMetadata(t testing.TB, got, want []types.Metadata) {
+func AssertLayouts(t testing.TB, got, want []types.Layout) {
 	t.Helper()
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("got %#v want %#v", got, want)

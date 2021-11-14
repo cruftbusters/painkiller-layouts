@@ -24,13 +24,13 @@ func TestHeightmap(t *testing.T) {
 	})
 
 	t.Run("get heightmap is not found", func(t *testing.T) {
-		id := client.Create(Metadata{}).Id
+		id := client.Create(Layout{}).Id
 		defer func() { client.Delete(id) }()
 		client.GetHeightmapExpectNotFound(id)
 	})
 
 	t.Run("put and get heightmap", func(t *testing.T) {
-		id, heightmap, contentType := client.Create(Metadata{}).Id, []byte{65, 66, 67}, "image/jpeg"
+		id, heightmap, contentType := client.Create(Layout{}).Id, []byte{65, 66, 67}, "image/jpeg"
 		defer func() { client.Delete(id) }()
 		client.PutHeightmap(id, bytes.NewBuffer(heightmap))
 		gotReadCloser, gotContentType := client.GetHeightmap(id)
@@ -46,13 +46,13 @@ func TestHeightmap(t *testing.T) {
 	})
 
 	t.Run("put heightmap updates heightmap URL", func(t *testing.T) {
-		id := client.Create(Metadata{}).Id
+		id := client.Create(Layout{}).Id
 		defer func() { client.Delete(id) }()
 		client.PutHeightmap(id, nil)
 
-		metadata := client.Get(id)
+		layout := client.Get(id)
 
-		got := metadata.HeightmapURL
+		got := layout.HeightmapURL
 		want := fmt.Sprintf("%s/v1/maps/%s/heightmap.jpg", baseURL, id)
 		if got != want {
 			t.Errorf("got %s want %s", got, want)

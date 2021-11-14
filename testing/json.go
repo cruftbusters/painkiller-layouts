@@ -9,22 +9,22 @@ import (
 	"github.com/cruftbusters/painkiller-gallery/types"
 )
 
-func encode(t testing.TB, metadata types.Metadata) *bytes.Buffer {
+func encode(t testing.TB, layout types.Layout) *bytes.Buffer {
 	up := &bytes.Buffer{}
-	err := json.NewEncoder(up).Encode(metadata)
+	err := json.NewEncoder(up).Encode(layout)
 	AssertNoError(t, err)
 	return up
 }
 
-func decode(t testing.TB, response *http.Response) types.Metadata {
-	down := &types.Metadata{}
+func decode(t testing.TB, response *http.Response) types.Layout {
+	down := &types.Layout{}
 	err := json.NewDecoder(response.Body).Decode(down)
 	AssertNoError(t, err)
 	return *down
 }
 
-func decodeAllMetadata(t testing.TB, response *http.Response) []types.Metadata {
-	var down *[]types.Metadata = &[]types.Metadata{}
+func decodeLayouts(t testing.TB, response *http.Response) []types.Layout {
+	var down *[]types.Layout = &[]types.Layout{}
 	err := json.NewDecoder(response.Body).Decode(down)
 	AssertNoError(t, err)
 	return *down

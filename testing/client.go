@@ -42,7 +42,7 @@ func (client ClientV2) GetVersion() Version {
 	return versionContainer
 }
 
-func (client ClientV2) Get(id string) Metadata {
+func (client ClientV2) Get(id string) Layout {
 	client.t.Helper()
 	response, err := http.Get(client.baseURLF("/v1/maps/%s", id))
 	AssertNoError(client.t, err)
@@ -51,22 +51,22 @@ func (client ClientV2) Get(id string) Metadata {
 	return decode(client.t, response)
 }
 
-func (client ClientV2) GetAll() []Metadata {
+func (client ClientV2) GetAll() []Layout {
 	client.t.Helper()
 	response, err := http.Get(client.baseURLF("/v1/maps"))
 	AssertNoError(client.t, err)
 	AssertStatusCode(client.t, response, 200)
 
-	return decodeAllMetadata(client.t, response)
+	return decodeLayouts(client.t, response)
 }
 
-func (client ClientV2) GetAllWithoutHeightmap() []Metadata {
+func (client ClientV2) GetAllWithoutHeightmap() []Layout {
 	client.t.Helper()
 	response, err := http.Get(client.baseURLF("/v1/maps?excludeMapsWithHeightmap=true"))
 	AssertNoError(client.t, err)
 	AssertStatusCode(client.t, response, 200)
 
-	return decodeAllMetadata(client.t, response)
+	return decodeLayouts(client.t, response)
 }
 
 func (client ClientV2) GetExpectNotFound(id string) {
@@ -76,9 +76,9 @@ func (client ClientV2) GetExpectNotFound(id string) {
 	AssertStatusCode(client.t, response, 404)
 }
 
-func (client ClientV2) Create(metadata Metadata) Metadata {
+func (client ClientV2) Create(layout Layout) Layout {
 	client.t.Helper()
-	up := encode(client.t, metadata)
+	up := encode(client.t, layout)
 	response, err := http.Post(client.baseURLF("/v1/maps"), "", up)
 	AssertNoError(client.t, err)
 	AssertStatusCode(client.t, response, 201)
@@ -98,10 +98,10 @@ func (client ClientV2) PatchExpectNotFound(id string) {
 	AssertStatusCode(client.t, response, 404)
 }
 
-func (client ClientV2) Patch(id string, metadata Metadata) Metadata {
+func (client ClientV2) Patch(id string, layout Layout) Layout {
 	client.t.Helper()
 
-	up := encode(client.t, metadata)
+	up := encode(client.t, layout)
 	requestURL := client.baseURLF("/v1/maps/%s", id)
 	request, err := http.NewRequest(http.MethodPatch, requestURL, up)
 	AssertNoError(client.t, err)

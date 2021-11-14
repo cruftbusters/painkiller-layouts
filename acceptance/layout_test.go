@@ -16,22 +16,22 @@ func TestLayout(t *testing.T) {
 	})
 
 	t.Run("create and get map", func(t *testing.T) {
-		got := client.Create(Metadata{})
+		got := client.Create(Layout{})
 		defer func() { client.Delete(got.Id) }()
-		AssertMetadata(t, got, Metadata{Id: got.Id})
-		AssertMetadata(t, client.Get(got.Id), got)
+		AssertLayout(t, got, Layout{Id: got.Id})
+		AssertLayout(t, client.Get(got.Id), got)
 
 	})
 
 	t.Run("create and get all maps", func(t *testing.T) {
-		first := client.Create(Metadata{})
+		first := client.Create(Layout{})
 		defer func() { client.Delete(first.Id) }()
-		second := client.Create(Metadata{})
+		second := client.Create(Layout{})
 		defer func() { client.Delete(second.Id) }()
 
 		got := client.GetAll()
-		want := []Metadata{first, second}
-		AssertAllMetadataUnordered(t, got, want)
+		want := []Layout{first, second}
+		AssertLayoutsUnordered(t, got, want)
 	})
 
 	t.Run("patch missing map", func(t *testing.T) {
@@ -40,33 +40,33 @@ func TestLayout(t *testing.T) {
 
 	t.Run("patch heightmap url onto map", func(t *testing.T) {
 		oldSize, newHeightmapURL := Size{Width: 1, Height: 2}, "new heightmap url"
-		metadata := client.Create(Metadata{Size: oldSize})
-		defer func() { client.Delete(metadata.Id) }()
+		layout := client.Create(Layout{Size: oldSize})
+		defer func() { client.Delete(layout.Id) }()
 
-		got := client.Patch(metadata.Id, Metadata{HeightmapURL: newHeightmapURL})
-		want := Metadata{Id: metadata.Id, Size: oldSize, HeightmapURL: newHeightmapURL}
-		AssertMetadata(t, got, want)
+		got := client.Patch(layout.Id, Layout{HeightmapURL: newHeightmapURL})
+		want := Layout{Id: layout.Id, Size: oldSize, HeightmapURL: newHeightmapURL}
+		AssertLayout(t, got, want)
 
-		got = client.Get(metadata.Id)
-		AssertMetadata(t, got, want)
+		got = client.Get(layout.Id)
+		AssertLayout(t, got, want)
 
 	})
 
 	t.Run("filter for maps with no heightmap", func(t *testing.T) {
-		withoutHeightmap := client.Create(Metadata{})
+		withoutHeightmap := client.Create(Layout{})
 		defer func() { client.Delete(withoutHeightmap.Id) }()
-		withHeightmap := client.Create(Metadata{HeightmapURL: "heightmap url"})
+		withHeightmap := client.Create(Layout{HeightmapURL: "heightmap url"})
 		defer func() { client.Delete(withHeightmap.Id) }()
 
-		AssertAllMetadata(t,
+		AssertLayouts(t,
 			client.GetAllWithoutHeightmap(),
-			[]Metadata{withoutHeightmap},
+			[]Layout{withoutHeightmap},
 		)
 	})
 
 	t.Run("delete map", func(t *testing.T) {
-		metadata := client.Create(Metadata{})
-		client.Delete(metadata.Id)
-		client.GetExpectNotFound(metadata.Id)
+		layout := client.Create(Layout{})
+		client.Delete(layout.Id)
+		client.GetExpectNotFound(layout.Id)
 	})
 }

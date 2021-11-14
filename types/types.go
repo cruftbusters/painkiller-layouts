@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-type Metadata struct {
+type Layout struct {
 	Id           string `json:"id"`
 	Size         Size   `json:"size"`
 	Bounds       Bounds `json:"bounds"`

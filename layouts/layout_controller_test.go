@@ -32,61 +32,61 @@ func TestLayoutController(t *testing.T) {
 	})
 
 	t.Run("create map", func(t *testing.T) {
-		up, down := Metadata{Id: "up"}, Metadata{Id: "down"}
+		up, down := Layout{Id: "up"}, Layout{Id: "down"}
 		stubLayoutService.whenPostCalledWith = up
 		stubLayoutService.postWillReturn = down
 
 		got := client.Create(up)
-		AssertMetadata(t, got, down)
+		AssertLayout(t, got, down)
 	})
 
 	t.Run("get map", func(t *testing.T) {
 		stubLayoutService.whenGetCalledWith = "path-id"
-		stubLayoutService.getWillReturnMetadata = Metadata{Id: "beefdead"}
+		stubLayoutService.getWillReturnLayout = Layout{Id: "beefdead"}
 		stubLayoutService.getWillReturnError = nil
 
 		got := client.Get("path-id")
-		want := Metadata{Id: "beefdead"}
-		AssertMetadata(t, got, want)
+		want := Layout{Id: "beefdead"}
+		AssertLayout(t, got, want)
 	})
 
 	t.Run("get all maps", func(t *testing.T) {
 		stubLayoutService.whenGetAllCalledWith = false
-		stubLayoutService.getAllWillReturn = []Metadata{{Id: "beefdead"}}
+		stubLayoutService.getAllWillReturn = []Layout{{Id: "beefdead"}}
 
 		got := client.GetAll()
-		want := []Metadata{{Id: "beefdead"}}
-		AssertAllMetadata(t, got, want)
+		want := []Layout{{Id: "beefdead"}}
+		AssertLayouts(t, got, want)
 	})
 
 	t.Run("get all maps with heightmap URL filter", func(t *testing.T) {
 		stubLayoutService.whenGetAllCalledWith = true
-		stubLayoutService.getAllWillReturn = []Metadata{{Id: "look ma no heightmap"}}
+		stubLayoutService.getAllWillReturn = []Layout{{Id: "look ma no heightmap"}}
 
 		got := client.GetAllWithoutHeightmap()
-		want := []Metadata{{Id: "look ma no heightmap"}}
-		AssertAllMetadata(t, got, want)
+		want := []Layout{{Id: "look ma no heightmap"}}
+		AssertLayouts(t, got, want)
 	})
 
 	t.Run("patch missing map", func(t *testing.T) {
 		id := "william"
 		stubLayoutService.whenPatchCalledWithId = id
-		stubLayoutService.whenPatchCalledWithMetadata = Metadata{}
+		stubLayoutService.whenPatchCalledWithLayout = Layout{}
 		stubLayoutService.patchWillReturnError = ErrLayoutNotFound
 
 		client.PatchExpectNotFound(id)
 	})
 
 	t.Run("patch map by id", func(t *testing.T) {
-		id, up, down := "rafael", Metadata{HeightmapURL: "coming through"}, Metadata{Id: "rafael", HeightmapURL: "coming through for real"}
+		id, up, down := "rafael", Layout{HeightmapURL: "coming through"}, Layout{Id: "rafael", HeightmapURL: "coming through for real"}
 		stubLayoutService.whenPatchCalledWithId = id
-		stubLayoutService.whenPatchCalledWithMetadata = up
-		stubLayoutService.patchWillReturnMetadata = down
+		stubLayoutService.whenPatchCalledWithLayout = up
+		stubLayoutService.patchWillReturnLayout = down
 		stubLayoutService.patchWillReturnError = nil
 
 		got := client.Patch(id, up)
 		want := down
-		AssertMetadata(t, got, want)
+		AssertLayout(t, got, want)
 	})
 
 	t.Run("delete map has error", func(t *testing.T) {
