@@ -32,11 +32,13 @@ func TestHeightmap(t *testing.T) {
 
 	t.Run("get heightmap is not found", func(t *testing.T) {
 		id := client.Create(Metadata{}).Id
+		defer func() { client.Delete(id) }()
 		client.GetHeightmapExpectNotFound(id)
 	})
 
 	t.Run("put and get heightmap", func(t *testing.T) {
 		id, heightmap, contentType := client.Create(Metadata{}).Id, []byte{65, 66, 67}, "image/jpeg"
+		defer func() { client.Delete(id) }()
 		client.PutHeightmap(id, bytes.NewBuffer(heightmap))
 		gotReadCloser, gotContentType := client.GetHeightmap(id)
 		got, err := io.ReadAll(gotReadCloser)
@@ -52,6 +54,7 @@ func TestHeightmap(t *testing.T) {
 
 	t.Run("put heightmap updates heightmap URL", func(t *testing.T) {
 		id := client.Create(Metadata{}).Id
+		defer func() { client.Delete(id) }()
 		client.PutHeightmap(id, nil)
 
 		metadata := client.Get(id)
