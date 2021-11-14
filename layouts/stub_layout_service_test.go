@@ -20,7 +20,7 @@ type StubLayoutService struct {
 	patchWillReturnMetadata     Metadata
 	patchWillReturnError        error
 	whenDeleteCalledWith        string
-	deleteWillRaise             error
+	deleteWillReturn            error
 }
 
 func (stub *StubLayoutService) Create(got Metadata) Metadata {
@@ -68,5 +68,5 @@ func (stub *StubLayoutService) Delete(got string) error {
 	if got != stub.whenDeleteCalledWith {
 		stub.t.Errorf("got id %s want %s", got, stub.whenDeleteCalledWith)
 	}
-	return stub.deleteWillRaise
+	return stub.deleteWillReturn
 }

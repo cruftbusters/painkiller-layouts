@@ -98,7 +98,7 @@ func TestLayoutController(t *testing.T) {
 	t.Run("delete map has error", func(t *testing.T) {
 		id, want := "some id", errors.New("uh oh")
 		stubLayoutService.whenDeleteCalledWith = id
-		stubLayoutService.deleteWillRaise = want
+		stubLayoutService.deleteWillReturn = want
 
 		client.DeleteExpectInternalServerError(id)
 	})
@@ -106,7 +106,7 @@ func TestLayoutController(t *testing.T) {
 	t.Run("delete map", func(t *testing.T) {
 		id := "some id"
 		stubLayoutService.whenDeleteCalledWith = id
-		stubLayoutService.deleteWillRaise = nil
+		stubLayoutService.deleteWillReturn = nil
 
 		client.Delete(id)
 	})
