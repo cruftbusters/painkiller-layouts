@@ -57,6 +57,21 @@ func TestMapsCrud(t *testing.T) {
 
 		got = client.Get(metadata.Id)
 		AssertMetadata(t, got, want)
+
+		client.Delete(metadata.Id)
+	})
+
+	t.Run("filter for maps with no heightmap", func(t *testing.T) {
+		withoutHeightmap := client.Create(Metadata{})
+		withHeightmap := client.Create(Metadata{HeightmapURL: "heightmap url"})
+
+		AssertAllMetadata(t,
+			client.GetAllWithoutHeightmap(),
+			[]Metadata{withoutHeightmap},
+		)
+
+		client.Delete(withoutHeightmap.Id)
+		client.Delete(withHeightmap.Id)
 	})
 
 	t.Run("delete map", func(t *testing.T) {

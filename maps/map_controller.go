@@ -42,8 +42,9 @@ func (c MapController) Get(response http.ResponseWriter, request *http.Request, 
 	}
 }
 
-func (c MapController) GetAll(response http.ResponseWriter, request *http.Request, _ httprouter.Params) {
-	allMetadata := c.service.GetAll()
+func (c MapController) GetAll(response http.ResponseWriter, request *http.Request, ps httprouter.Params) {
+	excludeMapsWithHeightmap := request.URL.Query().Get("excludeMapsWithHeightmap") == "true"
+	allMetadata := c.service.GetAll(excludeMapsWithHeightmap)
 	json.NewEncoder(response).Encode(allMetadata)
 }
 

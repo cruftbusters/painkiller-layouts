@@ -36,6 +36,15 @@ func (client ClientV2) GetAll() []Metadata {
 	return decodeAllMetadata(client.t, response)
 }
 
+func (client ClientV2) GetAllWithoutHeightmap() []Metadata {
+	client.t.Helper()
+	response, err := http.Get(client.baseURLF("/v1/maps?excludeMapsWithHeightmap=true"))
+	AssertNoError(client.t, err)
+	AssertStatusCode(client.t, response, 200)
+
+	return decodeAllMetadata(client.t, response)
+}
+
 func (client ClientV2) GetExpectNotFound(id string) {
 	client.t.Helper()
 	response, err := http.Get(client.baseURLF("/v1/maps/%s", id))

@@ -57,10 +57,20 @@ func TestMapController(t *testing.T) {
 	})
 
 	t.Run("get all maps", func(t *testing.T) {
+		stubService.whenGetAllCalledWith = false
 		stubService.getAllWillReturn = []Metadata{{Id: "beefdead"}}
 
 		got := client.GetAll()
 		want := []Metadata{{Id: "beefdead"}}
+		AssertAllMetadata(t, got, want)
+	})
+
+	t.Run("get all maps with heightmap URL filter", func(t *testing.T) {
+		stubService.whenGetAllCalledWith = true
+		stubService.getAllWillReturn = []Metadata{{Id: "look ma no heightmap"}}
+
+		got := client.GetAllWithoutHeightmap()
+		want := []Metadata{{Id: "look ma no heightmap"}}
 		AssertAllMetadata(t, got, want)
 	})
 

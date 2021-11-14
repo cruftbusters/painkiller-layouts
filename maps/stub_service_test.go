@@ -11,6 +11,7 @@ type StubService struct {
 	whenGetCalledWith           string
 	getWillReturnMetadata       Metadata
 	getWillReturnError          error
+	whenGetAllCalledWith        bool
 	getAllWillReturn            []Metadata
 	whenPostCalledWith          Metadata
 	postWillReturn              Metadata
@@ -40,7 +41,12 @@ func (stub *StubService) Get(got string) (Metadata, error) {
 	return stub.getWillReturnMetadata, stub.getWillReturnError
 }
 
-func (stub *StubService) GetAll() []Metadata {
+func (stub *StubService) GetAll(got bool) []Metadata {
+	stub.t.Helper()
+	want := stub.whenGetAllCalledWith
+	if got != want {
+		stub.t.Fatalf("got %t want %t", got, want)
+	}
 	return stub.getAllWillReturn
 }
 

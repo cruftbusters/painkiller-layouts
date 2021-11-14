@@ -9,7 +9,7 @@ import (
 type Service interface {
 	Post(metadata Metadata) Metadata
 	Get(id string) (Metadata, error)
-	GetAll() []Metadata
+	GetAll(excludeMapsWithHeightmap bool) []Metadata
 	Patch(id string, metadata Metadata) (Metadata, error)
 	Delete(id string) error
 }
@@ -45,10 +45,12 @@ func (service *DefaultService) Get(id string) (Metadata, error) {
 	}
 }
 
-func (service *DefaultService) GetAll() []Metadata {
+func (service *DefaultService) GetAll(excludeMapsWithHeightmap bool) []Metadata {
 	all := make([]Metadata, 0, len(service.metadata))
 	for _, metadata := range service.metadata {
-		all = append(all, metadata)
+		if !excludeMapsWithHeightmap || metadata.HeightmapURL == "" {
+			all = append(all, metadata)
+		}
 	}
 	return all
 }
