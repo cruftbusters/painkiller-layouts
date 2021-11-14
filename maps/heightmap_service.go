@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	. "github.com/cruftbusters/painkiller-gallery/types"
+	"github.com/cruftbusters/painkiller-gallery/types"
 )
 
 type HeightmapService interface {
@@ -35,7 +35,7 @@ func (s *DefaultHeightmapService) Put(id string, heightmap []byte) error {
 	}
 	s.heightmapByID[id] = heightmap
 	heightmapURL := fmt.Sprintf("%s/v1/maps/%s/heightmap.jpg", s.baseURL, id)
-	_, err = s.mapService.Patch(id, Metadata{HeightmapURL: heightmapURL})
+	_, err = s.mapService.Patch(id, types.Metadata{HeightmapURL: heightmapURL})
 	return err
 }
 

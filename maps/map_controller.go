@@ -5,7 +5,7 @@ import (
 	"io"
 	"net/http"
 
-	. "github.com/cruftbusters/painkiller-gallery/types"
+	"github.com/cruftbusters/painkiller-gallery/types"
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -26,7 +26,7 @@ func (c MapController) AddRoutes(router *httprouter.Router) {
 
 func (c MapController) Create(response http.ResponseWriter, request *http.Request, _ httprouter.Params) {
 	response.WriteHeader(201)
-	up := &Metadata{}
+	up := &types.Metadata{}
 	json.NewDecoder(request.Body).Decode(up)
 	down := c.service.Post(*up)
 	json.NewEncoder(response).Encode(down)
@@ -48,7 +48,7 @@ func (c MapController) GetAll(response http.ResponseWriter, request *http.Reques
 }
 
 func (c MapController) Patch(response http.ResponseWriter, request *http.Request, ps httprouter.Params) {
-	up := &Metadata{}
+	up := &types.Metadata{}
 	json.NewDecoder(request.Body).Decode(up)
 	down, err := c.service.Patch(ps.ByName("id"), *up)
 	if err != nil {
