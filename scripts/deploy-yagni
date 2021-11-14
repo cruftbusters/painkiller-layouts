@@ -3,6 +3,7 @@ cat <<EOF | ssh yagni -T
   git fetch
   git reset origin/main --hard
   go build -o build/server
+  mkdir -p /home/arctair/warehouse/painkiller/layouts
   systemctl daemon-reload --user
   systemctl restart painkiller.layouts --user
 EOF
