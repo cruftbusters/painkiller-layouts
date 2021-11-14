@@ -10,7 +10,7 @@ import (
 )
 
 type MapController struct {
-	service          Service
+	mapService       MapService
 	heightmapService HeightmapService
 }
 
@@ -28,12 +28,12 @@ func (c MapController) Create(response http.ResponseWriter, request *http.Reques
 	response.WriteHeader(201)
 	up := &types.Metadata{}
 	json.NewDecoder(request.Body).Decode(up)
-	down := c.service.Create(*up)
+	down := c.mapService.Create(*up)
 	json.NewEncoder(response).Encode(down)
 }
 
 func (c MapController) Get(response http.ResponseWriter, request *http.Request, ps httprouter.Params) {
-	metadata, err := c.service.Get(ps.ByName("id"))
+	metadata, err := c.mapService.Get(ps.ByName("id"))
 	if err != nil {
 		response.WriteHeader(404)
 	} else {
@@ -44,14 +44,14 @@ func (c MapController) Get(response http.ResponseWriter, request *http.Request, 
 
 func (c MapController) GetAll(response http.ResponseWriter, request *http.Request, ps httprouter.Params) {
 	excludeMapsWithHeightmap := request.URL.Query().Get("excludeMapsWithHeightmap") == "true"
-	allMetadata := c.service.GetAll(excludeMapsWithHeightmap)
+	allMetadata := c.mapService.GetAll(excludeMapsWithHeightmap)
 	json.NewEncoder(response).Encode(allMetadata)
 }
 
 func (c MapController) Patch(response http.ResponseWriter, request *http.Request, ps httprouter.Params) {
 	up := &types.Metadata{}
 	json.NewDecoder(request.Body).Decode(up)
-	down, err := c.service.Patch(ps.ByName("id"), *up)
+	down, err := c.mapService.Patch(ps.ByName("id"), *up)
 	if err != nil {
 		response.WriteHeader(404)
 	} else {
@@ -60,7 +60,7 @@ func (c MapController) Patch(response http.ResponseWriter, request *http.Request
 }
 
 func (c MapController) Delete(response http.ResponseWriter, request *http.Request, ps httprouter.Params) {
-	if err := c.service.Delete(ps.ByName("id")); err != nil {
+	if err := c.mapService.Delete(ps.ByName("id")); err != nil {
 		response.WriteHeader(500)
 	}
 	response.WriteHeader(204)

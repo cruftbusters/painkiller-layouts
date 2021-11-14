@@ -19,7 +19,7 @@ func (service *StubUUIDService) NewUUID() string {
 
 func TestService(t *testing.T) {
 	stubUuidService := &StubUUIDService{}
-	service := NewService(stubUuidService)
+	service := NewMapService(stubUuidService)
 	t.Run("get when missing", func(t *testing.T) {
 		_, got := service.Get("")
 		AssertError(t, got, ErrMapNotFound)

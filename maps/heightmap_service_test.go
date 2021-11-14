@@ -9,7 +9,7 @@ import (
 )
 
 func TestHeightmapService(t *testing.T) {
-	stubMapService := &StubService{t: t}
+	stubMapService := &StubMapService{t: t}
 	heightmapService := NewHeightmapService(
 		"http://baseURL",
 		stubMapService,

@@ -12,7 +12,7 @@ type HeightmapService interface {
 	Get(id string) ([]byte, string, error)
 }
 
-func NewHeightmapService(baseURL string, mapService Service) HeightmapService {
+func NewHeightmapService(baseURL string, mapService MapService) HeightmapService {
 	return &DefaultHeightmapService{
 		baseURL,
 		mapService,
@@ -22,7 +22,7 @@ func NewHeightmapService(baseURL string, mapService Service) HeightmapService {
 
 type DefaultHeightmapService struct {
 	baseURL       string
-	mapService    Service
+	mapService    MapService
 	heightmapByID map[string][]byte
 }
 

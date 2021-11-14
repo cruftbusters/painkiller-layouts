@@ -17,10 +17,10 @@ func TestMapController(t *testing.T) {
 	listener, port := RandomPortListener()
 	client := NewClientV2(t, fmt.Sprintf("http://localhost:%d", port))
 
-	stubService := &StubService{t: t}
+	stubMapService := &StubMapService{t: t}
 	stubHeightmapService := &StubHeightmapService{t: t}
 	controller := MapController{
-		stubService,
+		stubMapService,
 		stubHeightmapService,
 	}
 	router := httprouter.New()
@@ -31,25 +31,25 @@ func TestMapController(t *testing.T) {
 	}()
 
 	t.Run("get missing map", func(t *testing.T) {
-		stubService.whenGetCalledWith = "deadbeef"
-		stubService.getWillReturnError = ErrMapNotFound
+		stubMapService.whenGetCalledWith = "deadbeef"
+		stubMapService.getWillReturnError = ErrMapNotFound
 
 		client.GetExpectNotFound("deadbeef")
 	})
 
 	t.Run("create map", func(t *testing.T) {
 		up, down := Metadata{Id: "up"}, Metadata{Id: "down"}
-		stubService.whenPostCalledWith = up
-		stubService.postWillReturn = down
+		stubMapService.whenPostCalledWith = up
+		stubMapService.postWillReturn = down
 
 		got := client.Create(up)
 		AssertMetadata(t, got, down)
 	})
 
 	t.Run("get map", func(t *testing.T) {
-		stubService.whenGetCalledWith = "path-id"
-		stubService.getWillReturnMetadata = Metadata{Id: "beefdead"}
-		stubService.getWillReturnError = nil
+		stubMapService.whenGetCalledWith = "path-id"
+		stubMapService.getWillReturnMetadata = Metadata{Id: "beefdead"}
+		stubMapService.getWillReturnError = nil
 
 		got := client.Get("path-id")
 		want := Metadata{Id: "beefdead"}
@@ -57,8 +57,8 @@ func TestMapController(t *testing.T) {
 	})
 
 	t.Run("get all maps", func(t *testing.T) {
-		stubService.whenGetAllCalledWith = false
-		stubService.getAllWillReturn = []Metadata{{Id: "beefdead"}}
+		stubMapService.whenGetAllCalledWith = false
+		stubMapService.getAllWillReturn = []Metadata{{Id: "beefdead"}}
 
 		got := client.GetAll()
 		want := []Metadata{{Id: "beefdead"}}
@@ -66,8 +66,8 @@ func TestMapController(t *testing.T) {
 	})
 
 	t.Run("get all maps with heightmap URL filter", func(t *testing.T) {
-		stubService.whenGetAllCalledWith = true
-		stubService.getAllWillReturn = []Metadata{{Id: "look ma no heightmap"}}
+		stubMapService.whenGetAllCalledWith = true
+		stubMapService.getAllWillReturn = []Metadata{{Id: "look ma no heightmap"}}
 
 		got := client.GetAllWithoutHeightmap()
 		want := []Metadata{{Id: "look ma no heightmap"}}
@@ -76,19 +76,19 @@ func TestMapController(t *testing.T) {
 
 	t.Run("patch missing map", func(t *testing.T) {
 		id := "william"
-		stubService.whenPatchCalledWithId = id
-		stubService.whenPatchCalledWithMetadata = Metadata{}
-		stubService.patchWillReturnError = ErrMapNotFound
+		stubMapService.whenPatchCalledWithId = id
+		stubMapService.whenPatchCalledWithMetadata = Metadata{}
+		stubMapService.patchWillReturnError = ErrMapNotFound
 
 		client.PatchExpectNotFound(id)
 	})
 
 	t.Run("patch map by id", func(t *testing.T) {
 		id, up, down := "rafael", Metadata{HeightmapURL: "coming through"}, Metadata{Id: "rafael", HeightmapURL: "coming through for real"}
-		stubService.whenPatchCalledWithId = id
-		stubService.whenPatchCalledWithMetadata = up
-		stubService.patchWillReturnMetadata = down
-		stubService.patchWillReturnError = nil
+		stubMapService.whenPatchCalledWithId = id
+		stubMapService.whenPatchCalledWithMetadata = up
+		stubMapService.patchWillReturnMetadata = down
+		stubMapService.patchWillReturnError = nil
 
 		got := client.Patch(id, up)
 		want := down
@@ -97,16 +97,16 @@ func TestMapController(t *testing.T) {
 
 	t.Run("delete map has error", func(t *testing.T) {
 		id, want := "some id", errors.New("uh oh")
-		stubService.whenDeleteCalledWith = id
-		stubService.deleteWillRaise = want
+		stubMapService.whenDeleteCalledWith = id
+		stubMapService.deleteWillRaise = want
 
 		client.DeleteExpectInternalServerError(id)
 	})
 
 	t.Run("delete map", func(t *testing.T) {
 		id := "some id"
-		stubService.whenDeleteCalledWith = id
-		stubService.deleteWillRaise = nil
+		stubMapService.whenDeleteCalledWith = id
+		stubMapService.deleteWillRaise = nil
 
 		client.Delete(id)
 	})

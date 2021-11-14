@@ -4,7 +4,7 @@ import "github.com/julienschmidt/httprouter"
 
 func Handler(baseURL string) *httprouter.Router {
 	router := httprouter.New()
-	mapService := NewService(
+	mapService := NewMapService(
 		&DefaultUUIDService{},
 	)
 	MapController{

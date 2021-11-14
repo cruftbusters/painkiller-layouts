@@ -6,7 +6,7 @@ import (
 	. "github.com/cruftbusters/painkiller-gallery/types"
 )
 
-type StubService struct {
+type StubMapService struct {
 	t                           testing.TB
 	whenGetCalledWith           string
 	getWillReturnMetadata       Metadata
@@ -23,7 +23,7 @@ type StubService struct {
 	deleteWillRaise             error
 }
 
-func (stub *StubService) Create(got Metadata) Metadata {
+func (stub *StubMapService) Create(got Metadata) Metadata {
 	stub.t.Helper()
 	want := stub.whenPostCalledWith
 	if got != want {
@@ -32,7 +32,7 @@ func (stub *StubService) Create(got Metadata) Metadata {
 	return stub.postWillReturn
 }
 
-func (stub *StubService) Get(got string) (Metadata, error) {
+func (stub *StubMapService) Get(got string) (Metadata, error) {
 	stub.t.Helper()
 	want := stub.whenGetCalledWith
 	if got != want {
@@ -41,7 +41,7 @@ func (stub *StubService) Get(got string) (Metadata, error) {
 	return stub.getWillReturnMetadata, stub.getWillReturnError
 }
 
-func (stub *StubService) GetAll(got bool) []Metadata {
+func (stub *StubMapService) GetAll(got bool) []Metadata {
 	stub.t.Helper()
 	want := stub.whenGetAllCalledWith
 	if got != want {
@@ -50,7 +50,7 @@ func (stub *StubService) GetAll(got bool) []Metadata {
 	return stub.getAllWillReturn
 }
 
-func (stub *StubService) Patch(gotId string, gotMetadata Metadata) (Metadata, error) {
+func (stub *StubMapService) Patch(gotId string, gotMetadata Metadata) (Metadata, error) {
 	stub.t.Helper()
 	wantId := stub.whenPatchCalledWithId
 	wantMetadata := stub.whenPatchCalledWithMetadata
@@ -63,7 +63,7 @@ func (stub *StubService) Patch(gotId string, gotMetadata Metadata) (Metadata, er
 	return stub.patchWillReturnMetadata, stub.patchWillReturnError
 }
 
-func (stub *StubService) Delete(got string) error {
+func (stub *StubMapService) Delete(got string) error {
 	stub.t.Helper()
 	if got != stub.whenDeleteCalledWith {
 		stub.t.Errorf("got id %s want %s", got, stub.whenDeleteCalledWith)
