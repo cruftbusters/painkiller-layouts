@@ -8,7 +8,7 @@ import (
 	. "github.com/cruftbusters/painkiller-gallery/types"
 )
 
-func TestMapsCrud(t *testing.T) {
+func TestLayout(t *testing.T) {
 	client, _ := NewTestClient(t, layouts.Handler)
 
 	t.Run("get missing map", func(t *testing.T) {
