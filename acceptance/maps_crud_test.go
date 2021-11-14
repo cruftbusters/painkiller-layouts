@@ -48,7 +48,7 @@ func TestMapsCrud(t *testing.T) {
 	})
 
 	t.Run("patch heightmap url onto map", func(t *testing.T) {
-		oldSize, newHeightmapURL := Size{1, 2}, "new heightmap url"
+		oldSize, newHeightmapURL := Size{Width: 1, Height: 2}, "new heightmap url"
 		metadata := client.Create(Metadata{Size: oldSize})
 
 		got := client.Patch(metadata.Id, Metadata{HeightmapURL: newHeightmapURL})
