@@ -1,5 +1,11 @@
 package types
 
+import (
+	"encoding/json"
+	"io"
+	"net/http"
+)
+
 type Metadata struct {
 	Id           string `json:"id"`
 	Size         Size   `json:"size"`
@@ -17,4 +23,20 @@ type Bounds struct {
 	Top    float64 `json:"top"`
 	Right  float64 `json:"right"`
 	Bottom float64 `json:"bottom"`
+}
+
+type Version struct {
+	Version string `json:"version"`
+}
+
+func EncodeVersion(response io.Writer, version Version) error {
+	return json.NewEncoder(response).Encode(version)
+}
+
+func DecodeVersion(response *http.Response) (Version, error) {
+	down := &Version{}
+	if err := json.NewDecoder(response.Body).Decode(down); err != nil {
+		return Version{}, err
+	}
+	return *down, nil
 }

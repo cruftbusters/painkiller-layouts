@@ -18,6 +18,15 @@ func NewClientV2(t testing.TB, baseURL string) ClientV2 {
 	return ClientV2{t: t, baseURL: baseURL}
 }
 
+func (client ClientV2) GetVersion() Version {
+	response, err := http.Get(client.baseURLF("/version"))
+	AssertNoError(client.t, err)
+	AssertStatusCode(client.t, response, 200)
+	versionContainer, err := DecodeVersion(response)
+	AssertNoError(client.t, err)
+	return versionContainer
+}
+
 func (client ClientV2) Get(id string) Metadata {
 	client.t.Helper()
 	response, err := http.Get(client.baseURLF("/v1/maps/%s", id))

@@ -11,5 +11,6 @@ func Handler(baseURL string) *httprouter.Router {
 		mapService,
 		NewHeightmapService(baseURL, mapService),
 	}.AddRoutes(router)
+	VersionController{}.AddRoutes(router)
 	return router
 }
