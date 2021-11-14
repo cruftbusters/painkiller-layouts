@@ -89,7 +89,7 @@ func (client ClientV2) GetAllWithoutHeightmap() []Layout {
 
 func (client ClientV2) GetLayoutsWithoutHeightmap() []Layout {
 	client.t.Helper()
-	response, err := http.Get(client.baseURLF("/v1/layouts?excludeMapsWithHeightmap=true"))
+	response, err := http.Get(client.baseURLF("/v1/layouts?excludeLayoutsWithHeightmap=true"))
 	AssertNoError(client.t, err)
 	AssertStatusCode(client.t, response, 200)
 

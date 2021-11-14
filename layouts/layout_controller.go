@@ -50,7 +50,8 @@ func (c LayoutController) Get(response http.ResponseWriter, request *http.Reques
 }
 
 func (c LayoutController) GetAll(response http.ResponseWriter, request *http.Request, ps httprouter.Params) {
-	excludeMapsWithHeightmap := request.URL.Query().Get("excludeMapsWithHeightmap") == "true"
+	excludeMapsWithHeightmap := request.URL.Query().Get("excludeLayoutsWithHeightmap") == "true" ||
+		request.URL.Query().Get("excludeMapsWithHeightmap") == "true"
 	layouts := c.mapService.GetAll(excludeMapsWithHeightmap)
 	json.NewEncoder(response).Encode(layouts)
 }
