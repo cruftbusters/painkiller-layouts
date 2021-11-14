@@ -46,10 +46,7 @@ func TestService(t *testing.T) {
 		service.Post(Metadata{})
 
 		got := service.GetAll()
-		want := []Metadata{
-			Metadata{Id: "first"},
-			Metadata{Id: "second"},
-		}
+		want := []Metadata{{Id: "first"}, {Id: "second"}}
 		AssertAllMetadataUnordered(t, got, want)
 	})
 
@@ -59,7 +56,7 @@ func TestService(t *testing.T) {
 	})
 
 	t.Run("patch url onto metadata", func(t *testing.T) {
-		id, size, heightmapURL := "the id", Size{1, 2}, "new heightmap url"
+		id, size, heightmapURL := "the id", Size{Width: 1, Height: 2}, "new heightmap url"
 		stubUuidService.idQueue = []string{id}
 		service.Post(Metadata{Size: size})
 
