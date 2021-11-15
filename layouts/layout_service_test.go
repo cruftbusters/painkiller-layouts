@@ -47,14 +47,16 @@ func TestLayoutService(t *testing.T) {
 		stubUuidService.idQueue = []string{"first", "second"}
 		heightmapURL := "better not drop me"
 
-		service.Create(Layout{})
+		withoutHeightmap := service.Create(Layout{})
 		defer func() { service.Delete("first") }()
-		service.Create(Layout{HeightmapURL: heightmapURL})
+		withHeightmap := service.Create(Layout{HeightmapURL: heightmapURL})
 		defer func() { service.Delete("second") }()
 
 		got := service.GetAll(false)
-		want := []Layout{{Id: "first"}, {Id: "second", HeightmapURL: "better not drop me"}}
-		AssertLayoutsUnordered(t, got, want)
+		AssertLayoutsUnordered(t, got, []Layout{withoutHeightmap, withHeightmap})
+
+		got = service.GetAll(true)
+		AssertLayoutsUnordered(t, got, []Layout{withoutHeightmap})
 	})
 
 	t.Run("patch missing map", func(t *testing.T) {
@@ -63,31 +65,34 @@ func TestLayoutService(t *testing.T) {
 	})
 
 	t.Run("patch url onto layout", func(t *testing.T) {
-		id, size, heightmapURL := "the id", Size{Width: 1, Height: 2}, "new heightmap url"
+		id := "the id"
 		stubUuidService.idQueue = []string{id}
-		service.Create(Layout{Size: size})
+		service.Create(
+			Layout{
+				Size:         Size{Width: 1, Height: 2},
+				Bounds:       Bounds{Left: 3, Top: 4, Right: 5, Bottom: 6},
+				HeightmapURL: "old heightmap URL",
+			},
+		)
 		defer func() { service.Delete(id) }()
 
-		got, err := service.Patch(id, Layout{HeightmapURL: heightmapURL})
+		got, err := service.Patch(id, Layout{HeightmapURL: "new heightmap URL"})
 		AssertNoError(t, err)
-		want := Layout{Id: id, Size: size, HeightmapURL: heightmapURL}
-		AssertLayout(t, got, want)
+		AssertLayout(t, got, Layout{
+			Id:           id,
+			Size:         Size{Width: 1, Height: 2},
+			Bounds:       Bounds{Left: 3, Top: 4, Right: 5, Bottom: 6},
+			HeightmapURL: "new heightmap URL",
+		})
 
 		got, err = service.Get(id)
 		AssertNoError(t, err)
-		AssertLayout(t, got, want)
-	})
-
-	t.Run("filter for maps with no heightmap", func(t *testing.T) {
-		stubUuidService.idQueue = []string{"first", "second"}
-		withoutHeightmap := service.Create(Layout{})
-		defer func() { service.Delete(withoutHeightmap.Id) }()
-		withHeightmap := service.Create(Layout{HeightmapURL: "heightmap url"})
-		defer func() { service.Delete(withHeightmap.Id) }()
-		AssertLayouts(t,
-			service.GetAll(true),
-			[]Layout{withoutHeightmap},
-		)
+		AssertLayout(t, got, Layout{
+			Id:           id,
+			Size:         Size{Width: 1, Height: 2},
+			Bounds:       Bounds{Left: 3, Top: 4, Right: 5, Bottom: 6},
+			HeightmapURL: "new heightmap URL",
+		})
 	})
 
 	t.Run("delete heightmap", func(t *testing.T) {
