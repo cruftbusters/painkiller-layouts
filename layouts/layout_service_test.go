@@ -1,6 +1,7 @@
 package layouts
 
 import (
+	"database/sql"
 	"testing"
 
 	. "github.com/cruftbusters/painkiller-layouts/testing"
@@ -18,8 +19,12 @@ func (service *StubUUIDService) NewUUID() string {
 }
 
 func TestLayoutService(t *testing.T) {
+	db, err := sql.Open("sqlite3", "file::memory:?cache=shared")
+	if err != nil {
+		t.Fatal(err)
+	}
 	stubUuidService := &StubUUIDService{}
-	service := NewLayoutService(stubUuidService)
+	service := NewLayoutService(db, stubUuidService)
 	t.Run("get when missing", func(t *testing.T) {
 		_, got := service.Get("")
 		AssertError(t, got, ErrLayoutNotFound)

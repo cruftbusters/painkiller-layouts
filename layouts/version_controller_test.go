@@ -9,7 +9,7 @@ import (
 
 func TestVersionController(t *testing.T) {
 	controller := VersionController{}
-	client, _ := NewTestClient(t, func(string) *httprouter.Router {
+	client, _ := NewTestClient(t, func(string, string) *httprouter.Router {
 		router := httprouter.New()
 		controller.AddRoutes(router)
 		return router

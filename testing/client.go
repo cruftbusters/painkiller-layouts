@@ -22,11 +22,12 @@ func init() { flag.StringVar(&overrideBaseURL, "overrideBaseURL", "", "override 
 
 func NewTestClient(
 	t testing.TB,
-	routerSupplier func(baseURL string) *httprouter.Router,
+	routerSupplier func(sqlite3Connection, baseURL string) *httprouter.Router,
 ) (ClientV2, string) {
 	if overrideBaseURL == "" {
 		listener, baseURL := RandomPortListener()
-		go func() { http.Serve(listener, routerSupplier(baseURL)) }()
+		router := routerSupplier("file::memory:?cache=shared", baseURL)
+		go func() { http.Serve(listener, router) }()
 		return ClientV2{t: t, baseURL: baseURL}, baseURL
 	} else {
 		return ClientV2{t: t, baseURL: overrideBaseURL}, overrideBaseURL

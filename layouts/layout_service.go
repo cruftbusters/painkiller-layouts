@@ -1,6 +1,7 @@
 package layouts
 
 import (
+	"database/sql"
 	"errors"
 
 	. "github.com/cruftbusters/painkiller-layouts/types"
@@ -15,13 +16,15 @@ type LayoutService interface {
 }
 
 type DefaultLayoutService struct {
+	db          *sql.DB
 	uuidService UUIDService
 
 	layout map[string]Layout
 }
 
-func NewLayoutService(uuidService UUIDService) LayoutService {
+func NewLayoutService(db *sql.DB, uuidService UUIDService) LayoutService {
 	return &DefaultLayoutService{
+		db:          db,
 		uuidService: uuidService,
 		layout:      make(map[string]Layout),
 	}
