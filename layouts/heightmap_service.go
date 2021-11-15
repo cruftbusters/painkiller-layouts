@@ -20,7 +20,7 @@ func NewHeightmapService(
 ) HeightmapService {
 	if _, err := db.Exec(`
 create table if not exists heightmaps(
-	id text primary key,
+	id text primary key on conflict replace,
 	heightmap blob
 )`); err != nil {
 		panic(err)

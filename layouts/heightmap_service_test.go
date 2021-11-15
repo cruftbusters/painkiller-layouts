@@ -102,4 +102,19 @@ func TestHeightmapService(t *testing.T) {
 		got := heightmapService.Put(id, nil)
 		AssertError(t, got, ErrLayoutNotFound)
 	})
+
+	t.Run("update heightmap", func(t *testing.T) {
+		id, heightmapURL := "why am i specifying this again", "http://baseURL/v1/layouts/why am i specifying this again/heightmap.jpg"
+
+		stubLayoutService.whenGetCalledWith = id
+		stubLayoutService.getWillReturnError = nil
+
+		stubLayoutService.whenPatchCalledWithId = id
+		stubLayoutService.whenPatchCalledWithLayout = Layout{HeightmapURL: heightmapURL}
+		stubLayoutService.patchWillReturnLayout = Layout{}
+		stubLayoutService.patchWillReturnError = nil
+
+		heightmapService.Put(id, []byte("deja vu"))
+		heightmapService.Put(id, []byte("deja vu"))
+	})
 }
