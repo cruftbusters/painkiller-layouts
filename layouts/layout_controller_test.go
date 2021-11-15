@@ -94,7 +94,7 @@ func TestLayoutController(t *testing.T) {
 		stubLayoutService.whenDeleteCalledWith = id
 		stubLayoutService.deleteWillReturn = want
 
-		client.DeleteExpectInternalServerError(id)
+		client.DeleteLayoutExpectInternalServerError(id)
 	})
 
 	t.Run("delete map", func(t *testing.T) {
@@ -110,7 +110,7 @@ func TestLayoutController(t *testing.T) {
 		stubHeightmapService.whenPutCalledWithId = id
 		stubHeightmapService.putWillReturn = ErrLayoutNotFound
 
-		client.PutLayoutHeightmapExpectNotFound(id)
+		client.PutHeightmapExpectNotFound(id)
 	})
 
 	t.Run("get heightmap on missing map is not found", func(t *testing.T) {
@@ -118,7 +118,7 @@ func TestLayoutController(t *testing.T) {
 		stubHeightmapService.whenGetCalledWith = id
 		stubHeightmapService.getWillReturnError = ErrLayoutNotFound
 
-		client.GetLayoutHeightmapExpectNotFound(id)
+		client.GetHeightmapExpectNotFound(id)
 	})
 
 	t.Run("get heightmap is not found", func(t *testing.T) {
@@ -126,7 +126,7 @@ func TestLayoutController(t *testing.T) {
 		stubHeightmapService.whenGetCalledWith = id
 		stubHeightmapService.getWillReturnError = ErrHeightmapNotFound
 
-		client.GetLayoutHeightmapExpectNotFound(id)
+		client.GetHeightmapExpectNotFound(id)
 	})
 
 	t.Run("put heightmap", func(t *testing.T) {
@@ -135,7 +135,7 @@ func TestLayoutController(t *testing.T) {
 		stubHeightmapService.whenPutCalledWithHeightmap = up
 		stubHeightmapService.putWillReturn = nil
 
-		client.PutLayoutHeightmap(id, bytes.NewBuffer(up))
+		client.PutHeightmap(id, bytes.NewBuffer(up))
 	})
 
 	t.Run("get heightmap", func(t *testing.T) {
@@ -145,7 +145,7 @@ func TestLayoutController(t *testing.T) {
 		stubHeightmapService.getWillReturnContentType = contentType
 		stubHeightmapService.getWillReturnError = nil
 
-		gotReadCloser, gotContentType := client.GetLayoutHeightmap(id)
+		gotReadCloser, gotContentType := client.GetHeightmap(id)
 		got, err := io.ReadAll(gotReadCloser)
 		AssertNoError(t, err)
 		want := heightmap

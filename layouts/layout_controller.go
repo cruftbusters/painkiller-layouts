@@ -15,19 +15,12 @@ type LayoutController struct {
 }
 
 func (c LayoutController) AddRoutes(router *httprouter.Router) {
-	router.POST("/v1/maps", c.Create)
 	router.POST("/v1/layouts", c.Create)
-	router.GET("/v1/maps/:id", c.Get)
 	router.GET("/v1/layouts/:id", c.Get)
-	router.GET("/v1/maps", c.GetAll)
 	router.GET("/v1/layouts", c.GetAll)
-	router.PATCH("/v1/maps/:id", c.Patch)
 	router.PATCH("/v1/layouts/:id", c.Patch)
-	router.DELETE("/v1/maps/:id", c.Delete)
 	router.DELETE("/v1/layouts/:id", c.Delete)
-	router.PUT("/v1/maps/:id/heightmap.jpg", c.PutHeightmap)
 	router.PUT("/v1/layouts/:id/heightmap.jpg", c.PutHeightmap)
-	router.GET("/v1/maps/:id/heightmap.jpg", c.GetHeightmap)
 	router.GET("/v1/layouts/:id/heightmap.jpg", c.GetHeightmap)
 }
 
