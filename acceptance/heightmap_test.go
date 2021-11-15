@@ -53,7 +53,7 @@ func TestHeightmap(t *testing.T) {
 		layout := client.GetLayout(id)
 
 		got := layout.HeightmapURL
-		want := fmt.Sprintf("%s/v1/maps/%s/heightmap.jpg", baseURL, id)
+		want := fmt.Sprintf("%s/v1/layouts/%s/heightmap.jpg", baseURL, id)
 		if got != want {
 			t.Errorf("got %s want %s", got, want)
 		}

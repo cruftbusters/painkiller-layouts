@@ -44,7 +44,7 @@ func TestHeightmapService(t *testing.T) {
 
 	t.Run("put and get", func(t *testing.T) {
 		id, heightmap, contentType := "bhan mi", []byte("vegan impossible burger"), "image/jpeg"
-		heightmapURL := "http://baseURL/v1/maps/bhan mi/heightmap.jpg"
+		heightmapURL := "http://baseURL/v1/layouts/bhan mi/heightmap.jpg"
 
 		stubLayoutService.whenGetCalledWith = id
 		stubLayoutService.getWillReturnError = nil
@@ -69,7 +69,7 @@ func TestHeightmapService(t *testing.T) {
 	})
 
 	t.Run("put heightmap updates heightmap URL", func(t *testing.T) {
-		id, heightmapURL := "itchy", "http://baseURL/v1/maps/itchy/heightmap.jpg"
+		id, heightmapURL := "itchy", "http://baseURL/v1/layouts/itchy/heightmap.jpg"
 
 		stubLayoutService.whenGetCalledWith = id
 		stubLayoutService.getWillReturnError = nil
@@ -83,7 +83,7 @@ func TestHeightmapService(t *testing.T) {
 	})
 
 	t.Run("put heightmap has error upon updating heightmap URL", func(t *testing.T) {
-		id, heightmapURL := "stitchy", "http://baseURL/v1/maps/stitchy/heightmap.jpg"
+		id, heightmapURL := "stitchy", "http://baseURL/v1/layouts/stitchy/heightmap.jpg"
 
 		stubLayoutService.whenGetCalledWith = id
 		stubLayoutService.getWillReturnError = nil

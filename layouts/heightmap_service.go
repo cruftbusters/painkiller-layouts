@@ -34,7 +34,7 @@ func (s *DefaultHeightmapService) Put(id string, heightmap []byte) error {
 		return err
 	}
 	s.heightmapByID[id] = heightmap
-	heightmapURL := fmt.Sprintf("%s/v1/maps/%s/heightmap.jpg", s.baseURL, id)
+	heightmapURL := fmt.Sprintf("%s/v1/layouts/%s/heightmap.jpg", s.baseURL, id)
 	_, err = s.layoutService.Patch(id, types.Layout{HeightmapURL: heightmapURL})
 	return err
 }
