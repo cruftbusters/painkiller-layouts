@@ -10,7 +10,7 @@ type StubLayerService struct {
 	whenPutCalledWithId      string
 	whenPutCalledWithLayer   []byte
 	putWillReturn            error
-	whenGetCalledWith        string
+	whenGetCalledWithId      string
 	getWillReturnLayer       []byte
 	getWillReturnContentType string
 	getWillReturnError       error
@@ -31,7 +31,7 @@ func (stub *StubLayerService) Put(gotId string, gotLayer []byte) error {
 
 func (stub *StubLayerService) Get(got string) ([]byte, string, error) {
 	stub.t.Helper()
-	want := stub.whenGetCalledWith
+	want := stub.whenGetCalledWithId
 	if got != want {
 		stub.t.Errorf("got %s want %s", got, want)
 	}

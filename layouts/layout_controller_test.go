@@ -1,9 +1,7 @@
 package layouts
 
 import (
-	"bytes"
 	"errors"
-	"io"
 	"testing"
 
 	. "github.com/cruftbusters/painkiller-layouts/testing"
@@ -13,10 +11,8 @@ import (
 
 func TestLayoutController(t *testing.T) {
 	stubLayoutService := &StubLayoutService{t: t}
-	stubLayerService := &StubLayerService{t: t}
 	controller := LayoutController{
 		stubLayoutService,
-		stubLayerService,
 	}
 	client, _ := NewTestClient(t, func(string, string) *httprouter.Router {
 		router := httprouter.New()
@@ -103,57 +99,5 @@ func TestLayoutController(t *testing.T) {
 		stubLayoutService.deleteWillReturn = nil
 
 		client.DeleteLayout(id)
-	})
-
-	t.Run("put heightmap on missing map is not found", func(t *testing.T) {
-		id := "there is no creativity"
-		stubLayerService.whenPutCalledWithId = id
-		stubLayerService.putWillReturn = ErrLayoutNotFound
-
-		client.PutLayerExpectNotFound(id, "heightmap.jpg")
-	})
-
-	t.Run("get heightmap on missing map is not found", func(t *testing.T) {
-		id := "walrus"
-		stubLayerService.whenGetCalledWith = id
-		stubLayerService.getWillReturnError = ErrLayoutNotFound
-
-		client.GetLayerExpectNotFound(id, "heightmap.jpg")
-	})
-
-	t.Run("get heightmap is not found", func(t *testing.T) {
-		id := "serendipity"
-		stubLayerService.whenGetCalledWith = id
-		stubLayerService.getWillReturnError = ErrLayerNotFound
-
-		client.GetLayerExpectNotFound(id, "heightmap.jpg")
-	})
-
-	t.Run("put heightmap", func(t *testing.T) {
-		id, up := "john denver", []byte("was a bear")
-		stubLayerService.whenPutCalledWithId = id
-		stubLayerService.whenPutCalledWithLayer = up
-		stubLayerService.putWillReturn = nil
-
-		client.PutLayer(id, "heightmap.jpg", bytes.NewBuffer(up))
-	})
-
-	t.Run("get heightmap", func(t *testing.T) {
-		id, layer, contentType := "inwards", []byte("buncha bytes"), "image/png"
-		stubLayerService.whenGetCalledWith = id
-		stubLayerService.getWillReturnLayer = layer
-		stubLayerService.getWillReturnContentType = contentType
-		stubLayerService.getWillReturnError = nil
-
-		gotReadCloser, gotContentType := client.GetLayer(id, "heightmap.jpg")
-		got, err := io.ReadAll(gotReadCloser)
-		AssertNoError(t, err)
-		want := layer
-		if !bytes.Equal(got, want) {
-			t.Errorf("got %v want %v", got, want)
-		}
-		if gotContentType != contentType {
-			t.Errorf("got %s want %s", gotContentType, contentType)
-		}
 	})
 }
