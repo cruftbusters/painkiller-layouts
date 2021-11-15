@@ -47,7 +47,10 @@ func TestLayoutService(t *testing.T) {
 		stubUuidService.idQueue = []string{"first", "second"}
 		heightmapURL := "better not drop me"
 
-		withoutHeightmap := service.Create(Layout{})
+		withoutHeightmap := service.Create(Layout{
+			Size:   Size{Width: 1, Height: 2},
+			Bounds: Bounds{Left: 3, Top: 4, Right: 5, Bottom: 6},
+		})
 		defer func() { service.Delete("first") }()
 		withHeightmap := service.Create(Layout{HeightmapURL: heightmapURL})
 		defer func() { service.Delete("second") }()
