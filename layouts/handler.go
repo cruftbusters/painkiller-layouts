@@ -21,7 +21,7 @@ func Handler(sqlite3Connection, baseURL string) *httprouter.Router {
 	)
 	LayoutController{
 		layoutService,
-		NewHeightmapService(baseURL, layoutService),
+		NewHeightmapService(baseURL, db, layoutService),
 	}.AddRoutes(router)
 	VersionController{}.AddRoutes(router)
 	return router

@@ -1,6 +1,7 @@
 package layouts
 
 import (
+	"database/sql"
 	"reflect"
 	"testing"
 
@@ -9,9 +10,14 @@ import (
 )
 
 func TestHeightmapService(t *testing.T) {
+	db, err := sql.Open("sqlite3", "file::memory:?cache=shared")
+	if err != nil {
+		t.Fatal(err)
+	}
 	stubLayoutService := &StubLayoutService{t: t}
 	heightmapService := NewHeightmapService(
 		"http://baseURL",
+		db,
 		stubLayoutService,
 	)
 
