@@ -5,35 +5,35 @@ import (
 	"testing"
 )
 
-type StubHeightmapService struct {
-	t                          testing.TB
-	whenPutCalledWithId        string
-	whenPutCalledWithHeightmap []byte
-	putWillReturn              error
-	whenGetCalledWith          string
-	getWillReturnHeightmap     []byte
-	getWillReturnContentType   string
-	getWillReturnError         error
+type StubLayerService struct {
+	t                        testing.TB
+	whenPutCalledWithId      string
+	whenPutCalledWithLayer   []byte
+	putWillReturn            error
+	whenGetCalledWith        string
+	getWillReturnLayer       []byte
+	getWillReturnContentType string
+	getWillReturnError       error
 }
 
-func (stub *StubHeightmapService) Put(gotId string, gotHeightmap []byte) error {
+func (stub *StubLayerService) Put(gotId string, gotLayer []byte) error {
 	stub.t.Helper()
 	wantId := stub.whenPutCalledWithId
 	if gotId != wantId {
 		stub.t.Errorf("got %s want %s", gotId, wantId)
 	}
-	wantHeightmap := stub.whenPutCalledWithHeightmap
-	if !bytes.Equal(gotHeightmap, wantHeightmap) {
-		stub.t.Errorf("got %v want %v", gotHeightmap, wantHeightmap)
+	wantLayer := stub.whenPutCalledWithLayer
+	if !bytes.Equal(gotLayer, wantLayer) {
+		stub.t.Errorf("got %v want %v", gotLayer, wantLayer)
 	}
 	return stub.putWillReturn
 }
 
-func (stub *StubHeightmapService) Get(got string) ([]byte, string, error) {
+func (stub *StubLayerService) Get(got string) ([]byte, string, error) {
 	stub.t.Helper()
 	want := stub.whenGetCalledWith
 	if got != want {
 		stub.t.Errorf("got %s want %s", got, want)
 	}
-	return stub.getWillReturnHeightmap, stub.getWillReturnContentType, stub.getWillReturnError
+	return stub.getWillReturnLayer, stub.getWillReturnContentType, stub.getWillReturnError
 }

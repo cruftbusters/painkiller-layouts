@@ -10,8 +10,8 @@ import (
 )
 
 type LayoutController struct {
-	mapService       LayoutService
-	heightmapService HeightmapService
+	mapService   LayoutService
+	layerService LayerService
 }
 
 func (c LayoutController) AddRoutes(router *httprouter.Router) {
@@ -20,8 +20,8 @@ func (c LayoutController) AddRoutes(router *httprouter.Router) {
 	router.GET("/v1/layouts", c.GetAll)
 	router.PATCH("/v1/layouts/:id", c.Patch)
 	router.DELETE("/v1/layouts/:id", c.Delete)
-	router.PUT("/v1/layouts/:id/heightmap.jpg", c.PutHeightmap)
-	router.GET("/v1/layouts/:id/heightmap.jpg", c.GetHeightmap)
+	router.PUT("/v1/layouts/:id/heightmap.jpg", c.PutLayer)
+	router.GET("/v1/layouts/:id/heightmap.jpg", c.GetLayer)
 }
 
 func (c LayoutController) Create(response http.ResponseWriter, request *http.Request, _ httprouter.Params) {
@@ -67,18 +67,18 @@ func (c LayoutController) Delete(response http.ResponseWriter, request *http.Req
 	response.WriteHeader(204)
 }
 
-func (c LayoutController) PutHeightmap(response http.ResponseWriter, request *http.Request, ps httprouter.Params) {
-	heightmap, _ := io.ReadAll(request.Body)
-	if c.heightmapService.Put(ps.ByName("id"), heightmap) != nil {
+func (c LayoutController) PutLayer(response http.ResponseWriter, request *http.Request, ps httprouter.Params) {
+	layer, _ := io.ReadAll(request.Body)
+	if c.layerService.Put(ps.ByName("id"), layer) != nil {
 		response.WriteHeader(404)
 	}
 }
 
-func (c LayoutController) GetHeightmap(response http.ResponseWriter, request *http.Request, ps httprouter.Params) {
-	heightmap, contentType, err := c.heightmapService.Get(ps.ByName("id"))
+func (c LayoutController) GetLayer(response http.ResponseWriter, request *http.Request, ps httprouter.Params) {
+	layer, contentType, err := c.layerService.Get(ps.ByName("id"))
 	if err != nil {
 		response.WriteHeader(404)
 	}
 	response.Header().Add("Content-Type", contentType)
-	response.Write(heightmap)
+	response.Write(layer)
 }

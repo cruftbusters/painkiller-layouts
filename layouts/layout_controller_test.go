@@ -13,10 +13,10 @@ import (
 
 func TestLayoutController(t *testing.T) {
 	stubLayoutService := &StubLayoutService{t: t}
-	stubHeightmapService := &StubHeightmapService{t: t}
+	stubLayerService := &StubLayerService{t: t}
 	controller := LayoutController{
 		stubLayoutService,
-		stubHeightmapService,
+		stubLayerService,
 	}
 	client, _ := NewTestClient(t, func(string, string) *httprouter.Router {
 		router := httprouter.New()
@@ -107,48 +107,48 @@ func TestLayoutController(t *testing.T) {
 
 	t.Run("put heightmap on missing map is not found", func(t *testing.T) {
 		id := "there is no creativity"
-		stubHeightmapService.whenPutCalledWithId = id
-		stubHeightmapService.putWillReturn = ErrLayoutNotFound
+		stubLayerService.whenPutCalledWithId = id
+		stubLayerService.putWillReturn = ErrLayoutNotFound
 
-		client.PutHeightmapExpectNotFound(id)
+		client.PutLayerExpectNotFound(id, "heightmap.jpg")
 	})
 
 	t.Run("get heightmap on missing map is not found", func(t *testing.T) {
 		id := "walrus"
-		stubHeightmapService.whenGetCalledWith = id
-		stubHeightmapService.getWillReturnError = ErrLayoutNotFound
+		stubLayerService.whenGetCalledWith = id
+		stubLayerService.getWillReturnError = ErrLayoutNotFound
 
-		client.GetHeightmapExpectNotFound(id)
+		client.GetLayerExpectNotFound(id, "heightmap.jpg")
 	})
 
 	t.Run("get heightmap is not found", func(t *testing.T) {
 		id := "serendipity"
-		stubHeightmapService.whenGetCalledWith = id
-		stubHeightmapService.getWillReturnError = ErrHeightmapNotFound
+		stubLayerService.whenGetCalledWith = id
+		stubLayerService.getWillReturnError = ErrLayerNotFound
 
-		client.GetHeightmapExpectNotFound(id)
+		client.GetLayerExpectNotFound(id, "heightmap.jpg")
 	})
 
 	t.Run("put heightmap", func(t *testing.T) {
 		id, up := "john denver", []byte("was a bear")
-		stubHeightmapService.whenPutCalledWithId = id
-		stubHeightmapService.whenPutCalledWithHeightmap = up
-		stubHeightmapService.putWillReturn = nil
+		stubLayerService.whenPutCalledWithId = id
+		stubLayerService.whenPutCalledWithLayer = up
+		stubLayerService.putWillReturn = nil
 
-		client.PutHeightmap(id, bytes.NewBuffer(up))
+		client.PutLayer(id, "heightmap.jpg", bytes.NewBuffer(up))
 	})
 
 	t.Run("get heightmap", func(t *testing.T) {
-		id, heightmap, contentType := "inwards", []byte("buncha bytes"), "image/png"
-		stubHeightmapService.whenGetCalledWith = id
-		stubHeightmapService.getWillReturnHeightmap = heightmap
-		stubHeightmapService.getWillReturnContentType = contentType
-		stubHeightmapService.getWillReturnError = nil
+		id, layer, contentType := "inwards", []byte("buncha bytes"), "image/png"
+		stubLayerService.whenGetCalledWith = id
+		stubLayerService.getWillReturnLayer = layer
+		stubLayerService.getWillReturnContentType = contentType
+		stubLayerService.getWillReturnError = nil
 
-		gotReadCloser, gotContentType := client.GetHeightmap(id)
+		gotReadCloser, gotContentType := client.GetLayer(id, "heightmap.jpg")
 		got, err := io.ReadAll(gotReadCloser)
 		AssertNoError(t, err)
-		want := heightmap
+		want := layer
 		if !bytes.Equal(got, want) {
 			t.Errorf("got %v want %v", got, want)
 		}

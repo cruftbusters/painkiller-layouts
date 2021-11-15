@@ -134,9 +134,9 @@ func (client ClientV2) DeleteLayoutExpectInternalServerError(id string) {
 	AssertStatusCode(client.t, response, 500)
 }
 
-func (client ClientV2) PutHeightmapExpectNotFound(id string) {
+func (client ClientV2) PutLayerExpectNotFound(id, name string) {
 	client.t.Helper()
-	requestURL := client.baseURLF("/v1/layouts/%s/heightmap.jpg", id)
+	requestURL := client.baseURLF("/v1/layouts/%s/%s", id, name)
 	request, err := http.NewRequest(http.MethodPut, requestURL, nil)
 	AssertNoError(client.t, err)
 	response, err := (&http.Client{}).Do(request)
@@ -144,26 +144,26 @@ func (client ClientV2) PutHeightmapExpectNotFound(id string) {
 	AssertStatusCode(client.t, response, 404)
 }
 
-func (client ClientV2) PutHeightmap(id string, heightmap io.Reader) {
+func (client ClientV2) PutLayer(id, name string, reader io.Reader) {
 	client.t.Helper()
-	requestURL := client.baseURLF("/v1/layouts/%s/heightmap.jpg", id)
-	request, err := http.NewRequest(http.MethodPut, requestURL, heightmap)
+	requestURL := client.baseURLF("/v1/layouts/%s/%s", id, name)
+	request, err := http.NewRequest(http.MethodPut, requestURL, reader)
 	AssertNoError(client.t, err)
 	response, err := (&http.Client{}).Do(request)
 	AssertNoError(client.t, err)
 	AssertStatusCode(client.t, response, 200)
 }
 
-func (client ClientV2) GetHeightmapExpectNotFound(id string) {
+func (client ClientV2) GetLayerExpectNotFound(id, name string) {
 	client.t.Helper()
-	response, err := http.Get(client.baseURLF("/v1/layouts/%s/heightmap.jpg", id))
+	response, err := http.Get(client.baseURLF("/v1/layouts/%s/%s", id, name))
 	AssertNoError(client.t, err)
 	AssertStatusCode(client.t, response, 404)
 }
 
-func (client ClientV2) GetHeightmap(id string) (io.ReadCloser, string) {
+func (client ClientV2) GetLayer(id, name string) (io.ReadCloser, string) {
 	client.t.Helper()
-	response, err := http.Get(client.baseURLF("/v1/layouts/%s/heightmap.jpg", id))
+	response, err := http.Get(client.baseURLF("/v1/layouts/%s/%s", id, name))
 	AssertNoError(client.t, err)
 	AssertStatusCode(client.t, response, 200)
 	return response.Body, response.Header.Get("Content-Type")

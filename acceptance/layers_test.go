@@ -12,28 +12,28 @@ import (
 	. "github.com/cruftbusters/painkiller-layouts/types"
 )
 
-func TestHeightmap(t *testing.T) {
+func TestLayers(t *testing.T) {
 	client, baseURL := NewTestClient(t, layouts.Handler)
 
 	t.Run("put heightmap on missing map is not found", func(t *testing.T) {
-		client.PutHeightmapExpectNotFound("deadbeef")
+		client.PutLayerExpectNotFound("deadbeef", "heightmap.jpg")
 	})
 
 	t.Run("get heightmap on missing map is not found", func(t *testing.T) {
-		client.GetHeightmapExpectNotFound("deadbeef")
+		client.GetLayerExpectNotFound("deadbeef", "heightmap.jpg")
 	})
 
 	t.Run("get heightmap is not found", func(t *testing.T) {
 		id := client.CreateLayout(Layout{}).Id
 		defer func() { client.DeleteLayout(id) }()
-		client.GetHeightmapExpectNotFound(id)
+		client.GetLayerExpectNotFound(id, "heightmap.jpg")
 	})
 
 	t.Run("put and get heightmap", func(t *testing.T) {
 		id, heightmap, contentType := client.CreateLayout(Layout{}).Id, []byte{65, 66, 67}, "image/jpeg"
 		defer func() { client.DeleteLayout(id) }()
-		client.PutHeightmap(id, bytes.NewBuffer(heightmap))
-		gotReadCloser, gotContentType := client.GetHeightmap(id)
+		client.PutLayer(id, "heightmap.jpg", bytes.NewBuffer(heightmap))
+		gotReadCloser, gotContentType := client.GetLayer(id, "heightmap.jpg")
 		got, err := io.ReadAll(gotReadCloser)
 		AssertNoError(t, err)
 		want := heightmap
@@ -48,7 +48,7 @@ func TestHeightmap(t *testing.T) {
 	t.Run("put heightmap updates heightmap URL", func(t *testing.T) {
 		id := client.CreateLayout(Layout{}).Id
 		defer func() { client.DeleteLayout(id) }()
-		client.PutHeightmap(id, nil)
+		client.PutLayer(id, "heightmap.jpg", nil)
 
 		layout := client.GetLayout(id)
 

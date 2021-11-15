@@ -9,13 +9,13 @@ import (
 	. "github.com/cruftbusters/painkiller-layouts/types"
 )
 
-func TestHeightmapService(t *testing.T) {
+func TestLayerService(t *testing.T) {
 	db, err := sql.Open("sqlite3", "file::memory:?cache=shared")
 	if err != nil {
 		t.Fatal(err)
 	}
 	stubLayoutService := &StubLayoutService{t: t}
-	heightmapService := NewHeightmapService(
+	layerService := NewLayerService(
 		"http://baseURL",
 		db,
 		stubLayoutService,
@@ -26,7 +26,7 @@ func TestHeightmapService(t *testing.T) {
 		stubLayoutService.whenGetCalledWith = id
 		stubLayoutService.getWillReturnError = err
 
-		got := heightmapService.Put(id, nil)
+		got := layerService.Put(id, nil)
 		AssertError(t, got, err)
 	})
 
@@ -35,7 +35,7 @@ func TestHeightmapService(t *testing.T) {
 		stubLayoutService.whenGetCalledWith = id
 		stubLayoutService.getWillReturnError = err
 
-		_, _, got := heightmapService.Get(id)
+		_, _, got := layerService.Get(id)
 		AssertError(t, got, err)
 	})
 
@@ -44,12 +44,12 @@ func TestHeightmapService(t *testing.T) {
 		stubLayoutService.whenGetCalledWith = id
 		stubLayoutService.getWillReturnError = nil
 
-		_, _, got := heightmapService.Get(id)
-		AssertError(t, got, ErrHeightmapNotFound)
+		_, _, got := layerService.Get(id)
+		AssertError(t, got, ErrLayerNotFound)
 	})
 
 	t.Run("put and get", func(t *testing.T) {
-		id, heightmap, contentType := "bhan mi", []byte("vegan impossible burger"), "image/jpeg"
+		id, layer, contentType := "bhan mi", []byte("vegan impossible burger"), "image/jpeg"
 		heightmapURL := "http://baseURL/v1/layouts/bhan mi/heightmap.jpg"
 
 		stubLayoutService.whenGetCalledWith = id
@@ -60,12 +60,12 @@ func TestHeightmapService(t *testing.T) {
 		stubLayoutService.patchWillReturnLayout = Layout{}
 		stubLayoutService.patchWillReturnError = nil
 
-		err := heightmapService.Put(id, heightmap)
+		err := layerService.Put(id, layer)
 		AssertNoError(t, err)
 
-		got, gotContentType, err := heightmapService.Get(id)
+		got, gotContentType, err := layerService.Get(id)
 		AssertNoError(t, err)
-		want := heightmap
+		want := layer
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("got %v want %v", got, want)
 		}
@@ -85,7 +85,7 @@ func TestHeightmapService(t *testing.T) {
 		stubLayoutService.patchWillReturnLayout = Layout{}
 		stubLayoutService.patchWillReturnError = nil
 
-		heightmapService.Put(id, nil)
+		layerService.Put(id, nil)
 	})
 
 	t.Run("put heightmap has error upon updating heightmap URL", func(t *testing.T) {
@@ -99,7 +99,7 @@ func TestHeightmapService(t *testing.T) {
 		stubLayoutService.patchWillReturnLayout = Layout{}
 		stubLayoutService.patchWillReturnError = ErrLayoutNotFound
 
-		got := heightmapService.Put(id, nil)
+		got := layerService.Put(id, nil)
 		AssertError(t, got, ErrLayoutNotFound)
 	})
 
@@ -114,7 +114,7 @@ func TestHeightmapService(t *testing.T) {
 		stubLayoutService.patchWillReturnLayout = Layout{}
 		stubLayoutService.patchWillReturnError = nil
 
-		heightmapService.Put(id, []byte("deja vu"))
-		heightmapService.Put(id, []byte("deja vu"))
+		layerService.Put(id, []byte("deja vu"))
+		layerService.Put(id, []byte("deja vu"))
 	})
 }

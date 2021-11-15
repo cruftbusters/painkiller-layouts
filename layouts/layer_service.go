@@ -8,16 +8,16 @@ import (
 	"github.com/cruftbusters/painkiller-layouts/types"
 )
 
-type HeightmapService interface {
-	Put(id string, heightmap []byte) error
+type LayerService interface {
+	Put(id string, layer []byte) error
 	Get(id string) ([]byte, string, error)
 }
 
-func NewHeightmapService(
+func NewLayerService(
 	baseURL string,
 	db *sql.DB,
 	layoutService LayoutService,
-) HeightmapService {
+) LayerService {
 	if _, err := db.Exec(`
 create table if not exists heightmaps(
 	id text primary key on conflict replace,
@@ -25,22 +25,22 @@ create table if not exists heightmaps(
 )`); err != nil {
 		panic(err)
 	}
-	return &DefaultHeightmapService{
+	return &DefaultLayerService{
 		baseURL,
 		db,
 		layoutService,
 	}
 }
 
-type DefaultHeightmapService struct {
+type DefaultLayerService struct {
 	baseURL       string
 	db            *sql.DB
 	layoutService LayoutService
 }
 
-var ErrHeightmapNotFound = errors.New("heightmap not found")
+var ErrLayerNotFound = errors.New("layer not found")
 
-func (s *DefaultHeightmapService) Put(id string, heightmap []byte) error {
+func (s *DefaultLayerService) Put(id string, layer []byte) error {
 	_, err := s.layoutService.Get(id)
 	if err != nil {
 		return err
@@ -49,15 +49,15 @@ func (s *DefaultHeightmapService) Put(id string, heightmap []byte) error {
 	if err != nil {
 		panic(err)
 	}
-	if _, err = statement.Exec(id, heightmap); err != nil {
+	if _, err = statement.Exec(id, layer); err != nil {
 		panic(err)
 	}
-	heightmapURL := fmt.Sprintf("%s/v1/layouts/%s/heightmap.jpg", s.baseURL, id)
-	_, err = s.layoutService.Patch(id, types.Layout{HeightmapURL: heightmapURL})
+	layerURL := fmt.Sprintf("%s/v1/layouts/%s/heightmap.jpg", s.baseURL, id)
+	_, err = s.layoutService.Patch(id, types.Layout{HeightmapURL: layerURL})
 	return err
 }
 
-func (s *DefaultHeightmapService) Get(id string) ([]byte, string, error) {
+func (s *DefaultLayerService) Get(id string) ([]byte, string, error) {
 	if _, err := s.layoutService.Get(id); err != nil {
 		return nil, "", err
 	}
@@ -65,13 +65,13 @@ func (s *DefaultHeightmapService) Get(id string) ([]byte, string, error) {
 	if err != nil {
 		panic(err)
 	}
-	var heightmap []byte
-	err = statement.QueryRow(id).Scan(&heightmap)
+	var layer []byte
+	err = statement.QueryRow(id).Scan(&layer)
 	switch err {
 	case sql.ErrNoRows:
-		return nil, "", ErrHeightmapNotFound
+		return nil, "", ErrLayerNotFound
 	case nil:
-		return heightmap, "image/jpeg", nil
+		return layer, "image/jpeg", nil
 	default:
 		panic(err)
 	}
