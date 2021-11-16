@@ -2,6 +2,7 @@ package layouts
 
 import (
 	"database/sql"
+	"fmt"
 	"testing"
 
 	. "github.com/cruftbusters/painkiller-layouts/testing"
@@ -26,25 +27,37 @@ func TestLayoutService(t *testing.T) {
 	Migrate(db)
 	stubUuidService := &StubUUIDService{}
 	service := NewLayoutService(db, stubUuidService)
-	t.Run("get when missing", func(t *testing.T) {
+
+	t.Run("get missing layout", func(t *testing.T) {
 		_, got := service.Get("")
 		AssertError(t, got, ErrLayoutNotFound)
 	})
 
-	t.Run("create and get heightmap", func(t *testing.T) {
-		stubUuidService.idQueue = []string{"the id"}
+	t.Run("patch missing layout", func(t *testing.T) {
+		_, err := service.Patch("pragmatism", Layout{})
+		AssertError(t, err, ErrLayoutNotFound)
+	})
+
+	t.Run("create get delete", func(t *testing.T) {
+		id := "windows update"
+		stubUuidService.idQueue = []string{id}
 
 		got := service.Create(Layout{})
-		defer func() { service.Delete("the id") }()
-		want := Layout{Id: "the id"}
+		defer func() { service.Delete(id) }()
+		want := Layout{Id: id}
 		AssertLayout(t, got, want)
 
 		layout, err := service.Get(got.Id)
 		AssertNoError(t, err)
 		AssertLayout(t, layout, got)
+
+		service.Delete(id)
+
+		_, err = service.Get(id)
+		AssertError(t, err, ErrLayoutNotFound)
 	})
 
-	t.Run("create and get all heightmaps", func(t *testing.T) {
+	t.Run("get all layouts", func(t *testing.T) {
 		stubUuidService.idQueue = []string{"first", "second"}
 		heightmapURL := "better not drop me"
 
@@ -64,84 +77,40 @@ func TestLayoutService(t *testing.T) {
 		AssertLayoutsUnordered(t, got, []Layout{withoutHeightmap})
 	})
 
-	t.Run("patch missing map", func(t *testing.T) {
-		_, err := service.Patch("pragmatism", Layout{})
-		AssertError(t, err, ErrLayoutNotFound)
-	})
+	for _, scenario := range []struct {
+		patch Layout
+		want  func(*Layout)
+	}{
+		{
+			patch: Layout{HeightmapURL: "new heightmap url"},
+			want:  func(initial *Layout) { initial.HeightmapURL = "new heightmap url" },
+		},
+		{
+			patch: Layout{HillshadeURL: "new hillshade url"},
+			want:  func(initial *Layout) { initial.HillshadeURL = "new hillshade url" },
+		},
+	} {
+		t.Run(fmt.Sprintf("patch layout with %+v", scenario.patch), func(t *testing.T) {
+			id := "the id"
+			stubUuidService.idQueue = []string{id}
+			layout := service.Create(
+				Layout{
+					Size:         Size{Width: 1, Height: 2},
+					Bounds:       Bounds{Left: 3, Top: 4, Right: 5, Bottom: 6},
+					HeightmapURL: "old heightmap url",
+					HillshadeURL: "old hillshade url",
+				},
+			)
+			defer func() { service.Delete(id) }()
 
-	t.Run("patch heightmap url onto layout", func(t *testing.T) {
-		id := "the id"
-		stubUuidService.idQueue = []string{id}
-		service.Create(
-			Layout{
-				Size:         Size{Width: 1, Height: 2},
-				Bounds:       Bounds{Left: 3, Top: 4, Right: 5, Bottom: 6},
-				HeightmapURL: "old heightmap URL",
-				HillshadeURL: "old hillshade URL",
-			},
-		)
-		defer func() { service.Delete(id) }()
+			got, err := service.Patch(id, scenario.patch)
+			AssertNoError(t, err)
+			scenario.want(&layout)
+			AssertLayout(t, got, layout)
 
-		got, err := service.Patch(id, Layout{HeightmapURL: "new heightmap URL"})
-		AssertNoError(t, err)
-		AssertLayout(t, got, Layout{
-			Id:           id,
-			Size:         Size{Width: 1, Height: 2},
-			Bounds:       Bounds{Left: 3, Top: 4, Right: 5, Bottom: 6},
-			HeightmapURL: "new heightmap URL",
-			HillshadeURL: "old hillshade URL",
+			got, err = service.Get(id)
+			AssertNoError(t, err)
+			AssertLayout(t, got, layout)
 		})
-
-		got, err = service.Get(id)
-		AssertNoError(t, err)
-		AssertLayout(t, got, Layout{
-			Id:           id,
-			Size:         Size{Width: 1, Height: 2},
-			Bounds:       Bounds{Left: 3, Top: 4, Right: 5, Bottom: 6},
-			HeightmapURL: "new heightmap URL",
-			HillshadeURL: "old hillshade URL",
-		})
-	})
-
-	t.Run("patch hillshade url onto layout", func(t *testing.T) {
-		id := "mega copy paste lol"
-		stubUuidService.idQueue = []string{id}
-		service.Create(
-			Layout{
-				Size:         Size{Width: 1, Height: 2},
-				Bounds:       Bounds{Left: 3, Top: 4, Right: 5, Bottom: 6},
-				HeightmapURL: "old heightmap URL",
-				HillshadeURL: "old hillshade URL",
-			},
-		)
-		defer func() { service.Delete(id) }()
-
-		got, err := service.Patch(id, Layout{HillshadeURL: "new hillshade URL"})
-		AssertNoError(t, err)
-		AssertLayout(t, got, Layout{
-			Id:           id,
-			Size:         Size{Width: 1, Height: 2},
-			Bounds:       Bounds{Left: 3, Top: 4, Right: 5, Bottom: 6},
-			HeightmapURL: "old heightmap URL",
-			HillshadeURL: "new hillshade URL",
-		})
-
-		got, err = service.Get(id)
-		AssertNoError(t, err)
-		AssertLayout(t, got, Layout{
-			Id:           id,
-			Size:         Size{Width: 1, Height: 2},
-			Bounds:       Bounds{Left: 3, Top: 4, Right: 5, Bottom: 6},
-			HeightmapURL: "old heightmap URL",
-			HillshadeURL: "new hillshade URL",
-		})
-	})
-
-	t.Run("delete heightmap", func(t *testing.T) {
-		stubUuidService.idQueue = []string{"the id"}
-		service.Create(Layout{})
-		service.Delete("the id")
-		_, got := service.Get("the id")
-		AssertError(t, got, ErrLayoutNotFound)
-	})
+	}
 }
