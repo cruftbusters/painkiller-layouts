@@ -46,7 +46,13 @@ func (s *DefaultLayerService) Put(id, name string, layer []byte) error {
 		panic(err)
 	}
 	layerURL := fmt.Sprintf("%s/v1/layouts/%s/%s", s.baseURL, id, name)
-	_, err = s.layoutService.Patch(id, types.Layout{HeightmapURL: layerURL})
+	var patch types.Layout
+	if name == "heightmap.jpg" {
+		patch = types.Layout{HeightmapURL: layerURL}
+	} else {
+		patch = types.Layout{HillshadeURL: layerURL}
+	}
+	_, err = s.layoutService.Patch(id, patch)
 	return err
 }
 

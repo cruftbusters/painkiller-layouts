@@ -104,4 +104,18 @@ func TestLayers(t *testing.T) {
 			t.Errorf("got %s want %s", got, want)
 		}
 	})
+
+	t.Run("put hillshade updates hillshade URL", func(t *testing.T) {
+		id := client.CreateLayout(Layout{}).Id
+		defer func() { client.DeleteLayout(id) }()
+		client.PutLayer(id, "hillshade.jpg", nil)
+
+		layout := client.GetLayout(id)
+
+		got := layout.HillshadeURL
+		want := fmt.Sprintf("%s/v1/layouts/%s/hillshade.jpg", baseURL, id)
+		if got != want {
+			t.Errorf("got %s want %s", got, want)
+		}
+	})
 }

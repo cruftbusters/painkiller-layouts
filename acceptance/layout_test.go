@@ -38,7 +38,7 @@ func TestLayout(t *testing.T) {
 	})
 
 	t.Run("patch heightmap url onto map", func(t *testing.T) {
-		newHeightmapURL := "new heightmap url"
+		newLayerURL := "new heightmap url"
 
 		layout := client.CreateLayout(
 			Layout{
@@ -50,9 +50,9 @@ func TestLayout(t *testing.T) {
 		)
 		defer func() { client.DeleteLayout(layout.Id) }()
 
-		got := client.PatchLayout(layout.Id, Layout{HeightmapURL: newHeightmapURL})
+		got := client.PatchLayout(layout.Id, Layout{HeightmapURL: newLayerURL})
 		want := &layout
-		want.HeightmapURL = newHeightmapURL
+		want.HeightmapURL = newLayerURL
 		AssertLayout(t, got, *want)
 
 		got = client.GetLayout(layout.Id)
@@ -60,7 +60,7 @@ func TestLayout(t *testing.T) {
 	})
 
 	t.Run("patch hillshade url onto map", func(t *testing.T) {
-		newHillshadeURL := "new hillshade url"
+		newLayerURL := "new hillshade url"
 
 		layout := client.CreateLayout(
 			Layout{
@@ -72,9 +72,9 @@ func TestLayout(t *testing.T) {
 		)
 		defer func() { client.DeleteLayout(layout.Id) }()
 
-		got := client.PatchLayout(layout.Id, Layout{HillshadeURL: newHillshadeURL})
+		got := client.PatchLayout(layout.Id, Layout{HillshadeURL: newLayerURL})
 		want := &layout
-		want.HillshadeURL = newHillshadeURL
+		want.HillshadeURL = newLayerURL
 		AssertLayout(t, got, *want)
 
 		got = client.GetLayout(layout.Id)
