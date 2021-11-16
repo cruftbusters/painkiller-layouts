@@ -31,33 +31,46 @@ func TestLayers(t *testing.T) {
 		client.GetLayerExpectNotFound(id, "hillshade.jpg")
 	})
 
-	for _, scenario := range []struct {
-		name        string
-		layer       []byte
-		contentType string
-	}{
-		{
-			name:        "heightmap.jpg",
-			layer:       []byte{65, 66, 67},
-			contentType: "image/jpeg",
-		},
-	} {
-		t.Run("put and get "+scenario.name, func(t *testing.T) {
-			id := client.CreateLayout(Layout{}).Id
-			defer func() { client.DeleteLayout(id) }()
+	t.Run("put and get layers", func(t *testing.T) {
+		id := client.CreateLayout(Layout{}).Id
+		defer func() { client.DeleteLayout(id) }()
+		scenarios := []struct {
+			name        string
+			layer       []byte
+			contentType string
+		}{
+			{
+				name:        "heightmap.jpg",
+				layer:       []byte{65, 66, 67},
+				contentType: "image/jpeg",
+			},
+			{
+				name:        "hillshade.jpg",
+				layer:       []byte{67, 66, 65},
+				contentType: "image/jpeg",
+			},
+		}
 
-			client.PutLayer(id, scenario.name, bytes.NewBuffer(scenario.layer))
-			gotReadCloser, gotContentType := client.GetLayer(id, scenario.name)
-			got, err := io.ReadAll(gotReadCloser)
-			AssertNoError(t, err)
-			if !bytes.Equal(got, scenario.layer) {
-				t.Errorf("got %v want %v", got, scenario.layer)
-			}
-			if gotContentType != scenario.contentType {
-				t.Errorf("got %s want %s", gotContentType, scenario.contentType)
-			}
-		})
-	}
+		for _, scenario := range scenarios {
+			t.Run("put "+scenario.name, func(t *testing.T) {
+				client.PutLayer(id, scenario.name, bytes.NewBuffer(scenario.layer))
+			})
+		}
+
+		for _, scenario := range scenarios {
+			t.Run("get "+scenario.name, func(t *testing.T) {
+				gotReadCloser, gotContentType := client.GetLayer(id, scenario.name)
+				got, err := io.ReadAll(gotReadCloser)
+				AssertNoError(t, err)
+				if !bytes.Equal(got, scenario.layer) {
+					t.Errorf("got %v want %v", got, scenario.layer)
+				}
+				if gotContentType != scenario.contentType {
+					t.Errorf("got %s want %s", gotContentType, scenario.contentType)
+				}
+			})
+		}
+	})
 
 	t.Run("put heightmap updates heightmap URL", func(t *testing.T) {
 		id := client.CreateLayout(Layout{}).Id

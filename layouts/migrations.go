@@ -35,6 +35,16 @@ create table if not exists migrations (
 			id text primary key on conflict replace,
 			heightmap blob
 		)`,
+		`create table layers(
+			id text,
+			name text,
+			layer blob,
+			primary key (id, name) on conflict replace
+		)`,
+		`insert into layers
+			select id, 'heightmap.jpg', heightmap
+			from heightmaps`,
+		`drop table heightmaps`,
 	}
 	for index, migration := range migrations {
 		if index > version {

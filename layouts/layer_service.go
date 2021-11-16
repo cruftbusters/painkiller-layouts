@@ -38,11 +38,11 @@ func (s *DefaultLayerService) Put(id, name string, layer []byte) error {
 	if err != nil {
 		return err
 	}
-	statement, err := s.db.Prepare("insert into heightmaps (id, heightmap) values(?, ?)")
+	statement, err := s.db.Prepare("insert into layers (id, name, layer) values(?, ?, ?)")
 	if err != nil {
 		panic(err)
 	}
-	if _, err = statement.Exec(id, layer); err != nil {
+	if _, err = statement.Exec(id, name, layer); err != nil {
 		panic(err)
 	}
 	layerURL := fmt.Sprintf("%s/v1/layouts/%s/%s", s.baseURL, id, name)
@@ -54,12 +54,12 @@ func (s *DefaultLayerService) Get(id, name string) ([]byte, string, error) {
 	if _, err := s.layoutService.Get(id); err != nil {
 		return nil, "", err
 	}
-	statement, err := s.db.Prepare("select heightmap from heightmaps where id = ?")
+	statement, err := s.db.Prepare("select layer from layers where id = ? and name = ?")
 	if err != nil {
 		panic(err)
 	}
 	var layer []byte
-	err = statement.QueryRow(id).Scan(&layer)
+	err = statement.QueryRow(id, name).Scan(&layer)
 	switch err {
 	case sql.ErrNoRows:
 		return nil, "", ErrLayerNotFound

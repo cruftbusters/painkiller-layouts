@@ -49,30 +49,55 @@ func TestLayerService(t *testing.T) {
 		AssertError(t, got, ErrLayerNotFound)
 	})
 
-	t.Run("put and get", func(t *testing.T) {
+	t.Run("put and get layers", func(t *testing.T) {
 		id := "bhan mi"
-		name, layer, contentType := "heightmap.jpg", []byte("vegan impossible burger"), "image/jpeg"
-		heightmapURL := "http://baseURL/v1/layouts/bhan mi/heightmap.jpg"
 
 		stubLayoutService.whenGetCalledWith = id
 		stubLayoutService.getWillReturnError = nil
 
-		stubLayoutService.whenPatchCalledWithId = id
-		stubLayoutService.whenPatchCalledWithLayout = Layout{HeightmapURL: heightmapURL}
-		stubLayoutService.patchWillReturnLayout = Layout{}
-		stubLayoutService.patchWillReturnError = nil
-
-		err := layerService.Put(id, name, layer)
-		AssertNoError(t, err)
-
-		got, gotContentType, err := layerService.Get(id, name)
-		AssertNoError(t, err)
-		want := layer
-		if !reflect.DeepEqual(got, want) {
-			t.Errorf("got %v want %v", got, want)
+		steps := []struct {
+			name, contentType string
+			layer             []byte
+			patch             Layout
+		}{
+			{
+				name:        "heightmap.jpg",
+				contentType: "image/jpeg",
+				layer:       []byte("vegan impossible burger"),
+				patch: Layout{
+					HeightmapURL: "http://baseURL/v1/layouts/bhan mi/heightmap.jpg",
+				},
+			},
+			{
+				name:        "hillshade.jpg",
+				contentType: "image/jpeg",
+				layer:       []byte("mega wompus"),
+				patch: Layout{
+					HeightmapURL: "http://baseURL/v1/layouts/bhan mi/hillshade.jpg",
+				},
+			},
 		}
-		if gotContentType != contentType {
-			t.Errorf("got %s want %s", gotContentType, contentType)
+
+		for _, step := range steps {
+			stubLayoutService.whenPatchCalledWithId = id
+			stubLayoutService.whenPatchCalledWithLayout = step.patch
+			stubLayoutService.patchWillReturnLayout = Layout{}
+			stubLayoutService.patchWillReturnError = nil
+
+			err := layerService.Put(id, step.name, step.layer)
+			AssertNoError(t, err)
+		}
+
+		for _, step := range steps {
+			gotLayer, gotContentType, err := layerService.Get(id, step.name)
+			AssertNoError(t, err)
+			wantLayer := step.layer
+			if !reflect.DeepEqual(gotLayer, wantLayer) {
+				t.Errorf("got %v want %v", gotLayer, wantLayer)
+			}
+			if gotContentType != step.contentType {
+				t.Errorf("got %s want %s", gotContentType, step.contentType)
+			}
 		}
 	})
 
