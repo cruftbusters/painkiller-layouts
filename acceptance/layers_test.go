@@ -13,6 +13,8 @@ import (
 
 func TestLayers(t *testing.T) {
 	client, baseURL := NewTestClient(t, layouts.Handler)
+	id := client.CreateLayout(Layout{}).Id
+	defer func() { client.DeleteLayout(id) }()
 
 	t.Run("put layers on missing layout", func(t *testing.T) {
 		client.PutLayerExpectNotFound("deadbeef", "heightmap.jpg")
@@ -25,34 +27,25 @@ func TestLayers(t *testing.T) {
 	})
 
 	t.Run("get missing layers on layout", func(t *testing.T) {
-		id := client.CreateLayout(Layout{}).Id
-		defer func() { client.DeleteLayout(id) }()
 		client.GetLayerExpectNotFound(id, "heightmap.jpg")
 		client.GetLayerExpectNotFound(id, "hillshade.jpg")
 	})
 
-	t.Run("constrain put and get", func(t *testing.T) {
-		id := client.CreateLayout(Layout{}).Id
-		defer func() { client.DeleteLayout(id) }()
+	for _, name := range []string{
+		"heightmap.tif",
+		"hillshade.png",
+		"anything.jpg",
+	} {
+		t.Run(fmt.Sprintf("put '%s' bad request", name), func(t *testing.T) {
+			client.PutLayerExpectBadRequest(id, name)
+		})
 
-		for _, name := range []string{
-			"heightmap.tif",
-			"hillshade.png",
-			"anything.jpg",
-		} {
-			t.Run(fmt.Sprintf("disallow put '%s'", name), func(t *testing.T) {
-				client.PutLayerExpectBadRequest(id, name)
-			})
-
-			t.Run(fmt.Sprintf("'%s' not found", name), func(t *testing.T) {
-				client.GetLayerExpectNotFound(id, name)
-			})
-		}
-	})
+		t.Run(fmt.Sprintf("get '%s' not found", name), func(t *testing.T) {
+			client.GetLayerExpectNotFound(id, name)
+		})
+	}
 
 	t.Run("put and get layers", func(t *testing.T) {
-		id := client.CreateLayout(Layout{}).Id
-		defer func() { client.DeleteLayout(id) }()
 		scenarios := []struct {
 			name        string
 			layer       []byte
@@ -60,12 +53,12 @@ func TestLayers(t *testing.T) {
 		}{
 			{
 				name:        "heightmap.jpg",
-				layer:       []byte{65, 66, 67},
+				layer:       []byte("heightmap bytes"),
 				contentType: "image/jpeg",
 			},
 			{
 				name:        "hillshade.jpg",
-				layer:       []byte{67, 66, 65},
+				layer:       []byte("hillshade bytes"),
 				contentType: "image/jpeg",
 			},
 		}
@@ -92,13 +85,9 @@ func TestLayers(t *testing.T) {
 	})
 
 	t.Run("put heightmap updates heightmap URL", func(t *testing.T) {
-		id := client.CreateLayout(Layout{}).Id
-		defer func() { client.DeleteLayout(id) }()
 		client.PutLayer(id, "heightmap.jpg", nil)
 
-		layout := client.GetLayout(id)
-
-		got := layout.HeightmapURL
+		got := client.GetLayout(id).HeightmapURL
 		want := fmt.Sprintf("%s/v1/layouts/%s/heightmap.jpg", baseURL, id)
 		if got != want {
 			t.Errorf("got %s want %s", got, want)
@@ -106,13 +95,9 @@ func TestLayers(t *testing.T) {
 	})
 
 	t.Run("put hillshade updates hillshade URL", func(t *testing.T) {
-		id := client.CreateLayout(Layout{}).Id
-		defer func() { client.DeleteLayout(id) }()
 		client.PutLayer(id, "hillshade.jpg", nil)
 
-		layout := client.GetLayout(id)
-
-		got := layout.HillshadeURL
+		got := client.GetLayout(id).HillshadeURL
 		want := fmt.Sprintf("%s/v1/layouts/%s/hillshade.jpg", baseURL, id)
 		if got != want {
 			t.Errorf("got %s want %s", got, want)
