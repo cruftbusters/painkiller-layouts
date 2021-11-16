@@ -36,8 +36,8 @@ insert into layouts (
 	id,
 	size_width, size_height,
 	bounds_left, bounds_top, bounds_right, bounds_bottom,
-	heightmap_url
-) values(?, ?, ?, ?, ?, ?, ?, ?)`)
+	heightmap_url, hillshade_url
+) values(?, ?, ?, ?, ?, ?, ?, ?, ?)`)
 	if err != nil {
 		panic(err)
 	}
@@ -53,6 +53,7 @@ insert into layouts (
 		requestLayout.Bounds.Right,
 		requestLayout.Bounds.Bottom,
 		requestLayout.HeightmapURL,
+		requestLayout.HillshadeURL,
 	)
 	return *layout
 }
@@ -62,7 +63,7 @@ func (service *DefaultLayoutService) Get(id string) (Layout, error) {
 select id,
 size_width, size_height,
 bounds_left, bounds_top, bounds_right, bounds_bottom,
-heightmap_url
+heightmap_url, hillshade_url
 from layouts where id = ?
 `)
 	if err != nil {
@@ -79,6 +80,7 @@ from layouts where id = ?
 		&layout.Bounds.Right,
 		&layout.Bounds.Bottom,
 		&layout.HeightmapURL,
+		&layout.HillshadeURL,
 	)
 	switch err {
 	case sql.ErrNoRows:
@@ -96,7 +98,7 @@ func (service *DefaultLayoutService) GetAll(excludeMapsWithHeightmap bool) []Lay
 select id,
 size_width, size_height,
 bounds_left, bounds_top, bounds_right, bounds_bottom,
-heightmap_url
+heightmap_url, hillshade_url
 from layouts`)
 	if err != nil {
 		panic(err)
@@ -118,6 +120,7 @@ from layouts`)
 			&layout.Bounds.Right,
 			&layout.Bounds.Bottom,
 			&layout.HeightmapURL,
+			&layout.HillshadeURL,
 		); err != nil {
 			panic(err)
 		}

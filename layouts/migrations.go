@@ -45,6 +45,7 @@ create table if not exists migrations (
 			select id, 'heightmap.jpg', heightmap
 			from heightmaps`,
 		`drop table heightmaps`,
+		`alter table layouts add column hillshade_url text`,
 	}
 	for index, migration := range migrations {
 		if index > version {

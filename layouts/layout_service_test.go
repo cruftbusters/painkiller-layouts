@@ -49,8 +49,9 @@ func TestLayoutService(t *testing.T) {
 		heightmapURL := "better not drop me"
 
 		withoutHeightmap := service.Create(Layout{
-			Size:   Size{Width: 1, Height: 2},
-			Bounds: Bounds{Left: 3, Top: 4, Right: 5, Bottom: 6},
+			Size:         Size{Width: 1, Height: 2},
+			Bounds:       Bounds{Left: 3, Top: 4, Right: 5, Bottom: 6},
+			HillshadeURL: "hillshade url",
 		})
 		defer func() { service.Delete("first") }()
 		withHeightmap := service.Create(Layout{HeightmapURL: heightmapURL})
@@ -76,6 +77,7 @@ func TestLayoutService(t *testing.T) {
 				Size:         Size{Width: 1, Height: 2},
 				Bounds:       Bounds{Left: 3, Top: 4, Right: 5, Bottom: 6},
 				HeightmapURL: "old heightmap URL",
+				HillshadeURL: "old hillshade URL",
 			},
 		)
 		defer func() { service.Delete(id) }()
@@ -87,6 +89,7 @@ func TestLayoutService(t *testing.T) {
 			Size:         Size{Width: 1, Height: 2},
 			Bounds:       Bounds{Left: 3, Top: 4, Right: 5, Bottom: 6},
 			HeightmapURL: "new heightmap URL",
+			HillshadeURL: "old hillshade URL",
 		})
 
 		got, err = service.Get(id)
@@ -96,6 +99,7 @@ func TestLayoutService(t *testing.T) {
 			Size:         Size{Width: 1, Height: 2},
 			Bounds:       Bounds{Left: 3, Top: 4, Right: 5, Bottom: 6},
 			HeightmapURL: "new heightmap URL",
+			HillshadeURL: "old hillshade URL",
 		})
 	})
 

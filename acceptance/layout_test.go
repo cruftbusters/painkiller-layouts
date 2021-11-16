@@ -38,16 +38,24 @@ func TestLayout(t *testing.T) {
 	})
 
 	t.Run("patch heightmap url onto map", func(t *testing.T) {
-		oldSize, newHeightmapURL := Size{Width: 1, Height: 2}, "new heightmap url"
-		layout := client.CreateLayout(Layout{Size: oldSize})
+		newHeightmapURL := "new heightmap url"
+
+		layout := client.CreateLayout(
+			Layout{
+				Size:         Size{Width: 1, Height: 2},
+				Bounds:       Bounds{Left: 3, Top: 4, Right: 5, Bottom: 6},
+				HillshadeURL: "old hillshade url",
+			},
+		)
 		defer func() { client.DeleteLayout(layout.Id) }()
 
 		got := client.PatchLayout(layout.Id, Layout{HeightmapURL: newHeightmapURL})
-		want := Layout{Id: layout.Id, Size: oldSize, HeightmapURL: newHeightmapURL}
-		AssertLayout(t, got, want)
+		want := &layout
+		want.HeightmapURL = newHeightmapURL
+		AssertLayout(t, got, *want)
 
 		got = client.GetLayout(layout.Id)
-		AssertLayout(t, got, want)
+		AssertLayout(t, got, *want)
 	})
 
 	t.Run("filter for maps with no heightmap", func(t *testing.T) {

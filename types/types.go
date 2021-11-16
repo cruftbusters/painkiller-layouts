@@ -11,6 +11,7 @@ type Layout struct {
 	Size         Size   `json:"size"`
 	Bounds       Bounds `json:"bounds"`
 	HeightmapURL string `json:"heightmapURL"`
+	HillshadeURL string `json:"hillshadeURL"`
 }
 
 type Size struct {
