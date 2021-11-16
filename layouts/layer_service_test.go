@@ -1,8 +1,8 @@
 package layouts
 
 import (
+	"bytes"
 	"database/sql"
-	"reflect"
 	"testing"
 
 	. "github.com/cruftbusters/painkiller-layouts/testing"
@@ -92,69 +92,62 @@ func TestLayerService(t *testing.T) {
 			gotLayer, gotContentType, err := layerService.Get(id, step.name)
 			AssertNoError(t, err)
 			wantLayer := step.layer
-			if !reflect.DeepEqual(gotLayer, wantLayer) {
+			if !bytes.Equal(gotLayer, wantLayer) {
 				t.Errorf("got %v want %v", gotLayer, wantLayer)
 			}
 			if gotContentType != step.contentType {
 				t.Errorf("got %s want %s", gotContentType, step.contentType)
 			}
 		}
+
+		t.Run("put again", func(t *testing.T) {
+			for _, step := range steps {
+				stubLayoutService.whenPatchCalledWithId = id
+				stubLayoutService.whenPatchCalledWithLayout = step.patch
+				stubLayoutService.patchWillReturnLayout = Layout{}
+				stubLayoutService.patchWillReturnError = nil
+
+				err := layerService.Put(id, step.name, step.layer)
+				AssertNoError(t, err)
+			}
+		})
 	})
 
-	t.Run("update layer", func(t *testing.T) {
-		id, name, heightmapURL := "why am i specifying this again", "heightmap.jpg", "http://baseURL/v1/layouts/why am i specifying this again/heightmap.jpg"
+	t.Run("put layer updates corresponding layout URL", func(t *testing.T) {
+		id := "not so unique"
 
 		stubLayoutService.whenGetCalledWith = id
 		stubLayoutService.getWillReturnError = nil
 
-		stubLayoutService.whenPatchCalledWithId = id
-		stubLayoutService.whenPatchCalledWithLayout = Layout{HeightmapURL: heightmapURL}
-		stubLayoutService.patchWillReturnLayout = Layout{}
-		stubLayoutService.patchWillReturnError = nil
-
-		layerService.Put(id, name, []byte("deja vu"))
-		layerService.Put(id, name, []byte("deja vu"))
-	})
-
-	t.Run("put layer updates corresponding layout URL", func(t *testing.T) {
 		for _, scenario := range []struct {
-			id, name string
-			patch    Layout
+			name  string
+			patch Layout
 		}{
 			{
-				id:    "not so unique",
 				name:  "heightmap.jpg",
 				patch: Layout{HeightmapURL: "http://baseURL/v1/layouts/not so unique/heightmap.jpg"},
 			},
 			{
-				id:    "not so distinct",
 				name:  "hillshade.jpg",
-				patch: Layout{HillshadeURL: "http://baseURL/v1/layouts/not so distinct/hillshade.jpg"},
+				patch: Layout{HillshadeURL: "http://baseURL/v1/layouts/not so unique/hillshade.jpg"},
 			},
 		} {
-			t.Run("put heightmap updates heightmap URL", func(t *testing.T) {
-				stubLayoutService.whenGetCalledWith = scenario.id
-				stubLayoutService.getWillReturnError = nil
+			stubLayoutService.whenPatchCalledWithId = id
+			stubLayoutService.whenPatchCalledWithLayout = scenario.patch
+			stubLayoutService.patchWillReturnLayout = Layout{}
+			stubLayoutService.patchWillReturnError = nil
 
-				stubLayoutService.whenPatchCalledWithId = scenario.id
-				stubLayoutService.whenPatchCalledWithLayout = scenario.patch
-				stubLayoutService.patchWillReturnLayout = Layout{}
-				stubLayoutService.patchWillReturnError = nil
+			err := layerService.Put(id, scenario.name, nil)
+			AssertNoError(t, err)
 
-				layerService.Put(scenario.id, scenario.name, nil)
-			})
-
-			t.Run("put heightmap has error upon updating heightmap URL", func(t *testing.T) {
-				stubLayoutService.whenGetCalledWith = scenario.id
-				stubLayoutService.getWillReturnError = nil
-
-				stubLayoutService.whenPatchCalledWithId = scenario.id
+			t.Run("patch layout has error", func(t *testing.T) {
+				stubLayoutService.whenPatchCalledWithId = id
 				stubLayoutService.whenPatchCalledWithLayout = scenario.patch
 				stubLayoutService.patchWillReturnLayout = Layout{}
 				stubLayoutService.patchWillReturnError = ErrLayoutNotFound
 
-				got := layerService.Put(scenario.id, scenario.name, nil)
-				AssertError(t, got, ErrLayoutNotFound)
+				err := layerService.Put(id, scenario.name, nil)
+				AssertError(t, err, ErrLayoutNotFound)
 			})
 		}
 	})
