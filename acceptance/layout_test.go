@@ -56,10 +56,10 @@ func TestLayout(t *testing.T) {
 			)
 		})
 
-		t.Run("with no hillshades", func(t *testing.T) {
+		t.Run("with heightmap with no hillshade", func(t *testing.T) {
 			AssertLayoutsUnordered(t,
-				client.GetLayoutsWithoutHillshade(),
-				[]Layout{withEverythingElse, withHeightmap},
+				client.GetLayoutsWithHeightmapWithoutHillshade(),
+				[]Layout{withHeightmap},
 			)
 		})
 	})

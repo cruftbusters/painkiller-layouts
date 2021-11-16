@@ -7,21 +7,21 @@ import (
 )
 
 type StubLayoutService struct {
-	t                               testing.TB
-	whenGetCalledWith               string
-	getWillReturnLayout             Layout
-	getWillReturnError              error
-	getAllWillReturn                []Layout
-	getAllWithNoHeightmapWillReturn []Layout
-	getAllWithNoHillshadeWillReturn []Layout
-	whenPostCalledWith              Layout
-	postWillReturn                  Layout
-	whenPatchCalledWithId           string
-	whenPatchCalledWithLayout       Layout
-	patchWillReturnLayout           Layout
-	patchWillReturnError            error
-	whenDeleteCalledWith            string
-	deleteWillReturn                error
+	t                                             testing.TB
+	whenGetCalledWith                             string
+	getWillReturnLayout                           Layout
+	getWillReturnError                            error
+	getAllWillReturn                              []Layout
+	getAllWithNoHeightmapWillReturn               []Layout
+	getAllWithHeightmapWithoutHillshadeWillReturn []Layout
+	whenPostCalledWith                            Layout
+	postWillReturn                                Layout
+	whenPatchCalledWithId                         string
+	whenPatchCalledWithLayout                     Layout
+	patchWillReturnLayout                         Layout
+	patchWillReturnError                          error
+	whenDeleteCalledWith                          string
+	deleteWillReturn                              error
 }
 
 func (stub *StubLayoutService) Create(got Layout) Layout {
@@ -50,8 +50,8 @@ func (stub *StubLayoutService) GetAllWithNoHeightmap() []Layout {
 	return stub.getAllWithNoHeightmapWillReturn
 }
 
-func (stub *StubLayoutService) GetAllWithNoHillshade() []Layout {
-	return stub.getAllWithNoHillshadeWillReturn
+func (stub *StubLayoutService) GetAllWithHeightmapWithoutHillshade() []Layout {
+	return stub.getAllWithHeightmapWithoutHillshadeWillReturn
 }
 
 func (stub *StubLayoutService) Patch(gotId string, gotLayout Layout) (Layout, error) {

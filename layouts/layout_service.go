@@ -12,7 +12,7 @@ type LayoutService interface {
 	Get(id string) (Layout, error)
 	GetAll() []Layout
 	GetAllWithNoHeightmap() []Layout
-	GetAllWithNoHillshade() []Layout
+	GetAllWithHeightmapWithoutHillshade() []Layout
 	Patch(id string, layout Layout) (Layout, error)
 	Delete(id string) error
 }
@@ -110,14 +110,15 @@ where heightmap_url == ''`)
 	return layouts
 }
 
-func (service *DefaultLayoutService) GetAllWithNoHillshade() []Layout {
+func (service *DefaultLayoutService) GetAllWithHeightmapWithoutHillshade() []Layout {
 	layouts, err := service.getAllSQL(`
 select id,
 size_width, size_height,
 bounds_left, bounds_top, bounds_right, bounds_bottom,
 heightmap_url, hillshade_url
 from layouts
-where hillshade_url == ''`)
+where heightmap_url != ''
+and hillshade_url == ''`)
 	if err != nil {
 		panic(err)
 	}

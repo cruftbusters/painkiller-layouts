@@ -79,8 +79,8 @@ func TestLayoutService(t *testing.T) {
 		})
 
 		t.Run("with no hillshade", func(t *testing.T) {
-			got = service.GetAllWithNoHillshade()
-			AssertLayoutsUnordered(t, got, []Layout{withEverythingElse, withHeightmap})
+			got = service.GetAllWithHeightmapWithoutHillshade()
+			AssertLayoutsUnordered(t, got, []Layout{withHeightmap})
 		})
 	})
 

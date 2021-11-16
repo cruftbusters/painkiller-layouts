@@ -72,9 +72,9 @@ func TestLayoutController(t *testing.T) {
 	})
 
 	t.Run("get all with no hillshade", func(t *testing.T) {
-		stubLayoutService.getAllWithNoHillshadeWillReturn = []Layout{{Id: "look ma no hillshade"}}
+		stubLayoutService.getAllWithHeightmapWithoutHillshadeWillReturn = []Layout{{Id: "look ma no hillshade"}}
 
-		got := client.GetLayoutsWithoutHillshade()
+		got := client.GetLayoutsWithHeightmapWithoutHillshade()
 		want := []Layout{{Id: "look ma no hillshade"}}
 		AssertLayouts(t, got, want)
 	})

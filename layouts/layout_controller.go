@@ -42,8 +42,8 @@ func (c LayoutController) GetAll(response http.ResponseWriter, request *http.Req
 	var layouts []types.Layout
 	if request.URL.Query().Get("excludeLayoutsWithHeightmap") == "true" {
 		layouts = c.layoutService.GetAllWithNoHeightmap()
-	} else if request.URL.Query().Get("excludeLayoutsWithHillshade") == "true" {
-		layouts = c.layoutService.GetAllWithNoHillshade()
+	} else if request.URL.Query().Get("withHeightmapWithoutHillshade") == "true" {
+		layouts = c.layoutService.GetAllWithHeightmapWithoutHillshade()
 	} else {
 		layouts = c.layoutService.GetAll()
 	}

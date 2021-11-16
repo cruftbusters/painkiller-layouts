@@ -70,9 +70,9 @@ func (client ClientV2) GetLayoutsWithoutHeightmap() []Layout {
 	return decodeLayouts(client.t, response)
 }
 
-func (client ClientV2) GetLayoutsWithoutHillshade() []Layout {
+func (client ClientV2) GetLayoutsWithHeightmapWithoutHillshade() []Layout {
 	client.t.Helper()
-	response, err := http.Get(client.baseURLF("/v1/layouts?excludeLayoutsWithHillshade=true"))
+	response, err := http.Get(client.baseURLF("/v1/layouts?withHeightmapWithoutHillshade=true"))
 	AssertNoError(client.t, err)
 	AssertStatusCode(client.t, response, 200)
 
