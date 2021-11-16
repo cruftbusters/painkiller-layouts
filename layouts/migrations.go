@@ -46,6 +46,7 @@ create table if not exists migrations (
 			from heightmaps`,
 		`drop table heightmaps`,
 		`alter table layouts add column hillshade_url text`,
+		`update layouts set hillshade_url = '' where hillshade_url IS NULL`,
 	}
 	for index, migration := range migrations {
 		if index > version {
