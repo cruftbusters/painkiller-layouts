@@ -143,17 +143,32 @@ func (service *DefaultLayoutService) Patch(id string, patch Layout) (Layout, err
 		panic(err)
 	}
 
-	statement, err := service.db.Prepare("update layouts set heightmap_url = ? where id = ?")
-	if err != nil {
-		panic(err)
-	}
-	defer statement.Close()
-	if _, err = statement.Exec(patch.HeightmapURL, id); err != nil {
-		panic(err)
+	newLayout := &oldLayout
+
+	if patch.HeightmapURL != "" {
+		statement, err := service.db.Prepare("update layouts set heightmap_url = ? where id = ?")
+		if err != nil {
+			panic(err)
+		}
+		defer statement.Close()
+		if _, err = statement.Exec(patch.HeightmapURL, id); err != nil {
+			panic(err)
+		}
+		newLayout.HeightmapURL = patch.HeightmapURL
 	}
 
-	newLayout := &oldLayout
-	newLayout.HeightmapURL = patch.HeightmapURL
+	if patch.HillshadeURL != "" {
+		statement, err := service.db.Prepare("update layouts set hillshade_url = ? where id = ?")
+		if err != nil {
+			panic(err)
+		}
+		defer statement.Close()
+		if _, err = statement.Exec(patch.HillshadeURL, id); err != nil {
+			panic(err)
+		}
+		newLayout.HillshadeURL = patch.HillshadeURL
+	}
+
 	return *newLayout, nil
 }
 
