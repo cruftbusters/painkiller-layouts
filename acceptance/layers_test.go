@@ -31,6 +31,25 @@ func TestLayers(t *testing.T) {
 		client.GetLayerExpectNotFound(id, "hillshade.jpg")
 	})
 
+	t.Run("constrain put and get", func(t *testing.T) {
+		id := client.CreateLayout(Layout{}).Id
+		defer func() { client.DeleteLayout(id) }()
+
+		for _, name := range []string{
+			"heightmap.tif",
+			"hillshade.png",
+			"anything.jpg",
+		} {
+			t.Run(fmt.Sprintf("disallow put '%s'", name), func(t *testing.T) {
+				client.PutLayerExpectBadRequest(id, name)
+			})
+
+			t.Run(fmt.Sprintf("'%s' not found", name), func(t *testing.T) {
+				client.GetLayerExpectNotFound(id, name)
+			})
+		}
+	})
+
 	t.Run("put and get layers", func(t *testing.T) {
 		id := client.CreateLayout(Layout{}).Id
 		defer func() { client.DeleteLayout(id) }()

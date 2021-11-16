@@ -144,6 +144,16 @@ func (client ClientV2) PutLayerExpectNotFound(id, name string) {
 	AssertStatusCode(client.t, response, 404)
 }
 
+func (client ClientV2) PutLayerExpectBadRequest(id, name string) {
+	client.t.Helper()
+	requestURL := client.baseURLF("/v1/layouts/%s/%s", id, name)
+	request, err := http.NewRequest(http.MethodPut, requestURL, nil)
+	AssertNoError(client.t, err)
+	response, err := (&http.Client{}).Do(request)
+	AssertNoError(client.t, err)
+	AssertStatusCode(client.t, response, 400)
+}
+
 func (client ClientV2) PutLayer(id, name string, reader io.Reader) {
 	client.t.Helper()
 	requestURL := client.baseURLF("/v1/layouts/%s/%s", id, name)

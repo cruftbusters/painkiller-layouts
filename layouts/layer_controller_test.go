@@ -2,6 +2,7 @@ package layouts
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"testing"
 
@@ -45,6 +46,22 @@ func TestLayerController(t *testing.T) {
 		stubLayerService.getWillReturnError = ErrLayerNotFound
 
 		client.GetLayerExpectNotFound(id, name)
+	})
+
+	t.Run("constrain put and get", func(t *testing.T) {
+		for _, name := range []string{
+			"heightmap.tif",
+			"hillshade.png",
+			"anything.jpg",
+		} {
+			t.Run(fmt.Sprintf("disallow put '%s'", name), func(t *testing.T) {
+				client.PutLayerExpectBadRequest("anything", name)
+			})
+
+			t.Run(fmt.Sprintf("'%s' not found", name), func(t *testing.T) {
+				client.GetLayerExpectNotFound("anything", name)
+			})
+		}
 	})
 
 	t.Run("put layer", func(t *testing.T) {
