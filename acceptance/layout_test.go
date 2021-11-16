@@ -36,22 +36,32 @@ func TestLayout(t *testing.T) {
 	t.Run("get all layouts", func(t *testing.T) {
 		withHeightmap := client.CreateLayout(Layout{HeightmapURL: "heightmap url"})
 		defer func() { client.DeleteLayout(withHeightmap.Id) }()
+		withHillshade := client.CreateLayout(Layout{HillshadeURL: "hillshade url"})
+		defer func() { client.DeleteLayout(withHillshade.Id) }()
 		withEverythingElse := client.CreateLayout(Layout{
-			Size:         Size{Width: 1, Height: 2},
-			Bounds:       Bounds{Left: 3, Top: 4, Right: 5, Bottom: 6},
-			HillshadeURL: "hillshade url",
+			Size:   Size{Width: 1, Height: 2},
+			Bounds: Bounds{Left: 3, Top: 4, Right: 5, Bottom: 6},
 		})
 		defer func() { client.DeleteLayout(withEverythingElse.Id) }()
 
 		AssertLayoutsUnordered(t,
 			client.GetLayouts(),
-			[]Layout{withHeightmap, withEverythingElse},
+			[]Layout{withEverythingElse, withHillshade, withHeightmap},
 		)
 
-		AssertLayouts(t,
-			client.GetLayoutsWithoutHeightmap(),
-			[]Layout{withEverythingElse},
-		)
+		t.Run("with no heightmaps", func(t *testing.T) {
+			AssertLayoutsUnordered(t,
+				client.GetLayoutsWithoutHeightmap(),
+				[]Layout{withEverythingElse, withHillshade},
+			)
+		})
+
+		t.Run("with no hillshades", func(t *testing.T) {
+			AssertLayoutsUnordered(t,
+				client.GetLayoutsWithoutHillshade(),
+				[]Layout{withEverythingElse, withHeightmap},
+			)
+		})
 	})
 
 	for _, scenario := range []struct {

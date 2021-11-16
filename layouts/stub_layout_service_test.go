@@ -13,6 +13,7 @@ type StubLayoutService struct {
 	getWillReturnError              error
 	getAllWillReturn                []Layout
 	getAllWithNoHeightmapWillReturn []Layout
+	getAllWithNoHillshadeWillReturn []Layout
 	whenPostCalledWith              Layout
 	postWillReturn                  Layout
 	whenPatchCalledWithId           string
@@ -47,6 +48,10 @@ func (stub *StubLayoutService) GetAll() []Layout {
 
 func (stub *StubLayoutService) GetAllWithNoHeightmap() []Layout {
 	return stub.getAllWithNoHeightmapWillReturn
+}
+
+func (stub *StubLayoutService) GetAllWithNoHillshade() []Layout {
+	return stub.getAllWithNoHillshadeWillReturn
 }
 
 func (stub *StubLayoutService) Patch(gotId string, gotLayout Layout) (Layout, error) {

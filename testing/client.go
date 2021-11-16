@@ -70,6 +70,15 @@ func (client ClientV2) GetLayoutsWithoutHeightmap() []Layout {
 	return decodeLayouts(client.t, response)
 }
 
+func (client ClientV2) GetLayoutsWithoutHillshade() []Layout {
+	client.t.Helper()
+	response, err := http.Get(client.baseURLF("/v1/layouts?excludeLayoutsWithHillshade=true"))
+	AssertNoError(client.t, err)
+	AssertStatusCode(client.t, response, 200)
+
+	return decodeLayouts(client.t, response)
+}
+
 func (client ClientV2) GetLayoutExpectNotFound(id string) {
 	client.t.Helper()
 	response, err := http.Get(client.baseURLF("/v1/layouts/%s", id))

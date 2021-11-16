@@ -58,23 +58,29 @@ func TestLayoutService(t *testing.T) {
 	})
 
 	t.Run("get all", func(t *testing.T) {
-		stubUuidService.idQueue = []string{"first", "second"}
+		stubUuidService.idQueue = []string{"first", "second", "third"}
 
 		withHeightmap := service.Create(Layout{HeightmapURL: "heightmap url"})
 		defer func() { service.Delete("first") }()
-		withEverythingElse := service.Create(Layout{
-			Size:         Size{Width: 1, Height: 2},
-			Bounds:       Bounds{Left: 3, Top: 4, Right: 5, Bottom: 6},
-			HillshadeURL: "hillshade url",
-		})
+		withHillshade := service.Create(Layout{HillshadeURL: "hillshade url"})
 		defer func() { service.Delete("second") }()
+		withEverythingElse := service.Create(Layout{
+			Size:   Size{Width: 1, Height: 2},
+			Bounds: Bounds{Left: 3, Top: 4, Right: 5, Bottom: 6},
+		})
+		defer func() { service.Delete("third") }()
 
 		got := service.GetAll()
-		AssertLayoutsUnordered(t, got, []Layout{withEverythingElse, withHeightmap})
+		AssertLayoutsUnordered(t, got, []Layout{withEverythingElse, withHillshade, withHeightmap})
 
 		t.Run("with no heightmap", func(t *testing.T) {
 			got = service.GetAllWithNoHeightmap()
-			AssertLayoutsUnordered(t, got, []Layout{withEverythingElse})
+			AssertLayoutsUnordered(t, got, []Layout{withEverythingElse, withHillshade})
+		})
+
+		t.Run("with no hillshade", func(t *testing.T) {
+			got = service.GetAllWithNoHillshade()
+			AssertLayoutsUnordered(t, got, []Layout{withEverythingElse, withHeightmap})
 		})
 	})
 
