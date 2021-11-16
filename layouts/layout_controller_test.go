@@ -27,6 +27,15 @@ func TestLayoutController(t *testing.T) {
 		client.GetLayoutExpectNotFound("deadbeef")
 	})
 
+	t.Run("patch missing map", func(t *testing.T) {
+		id := "william"
+		stubLayoutService.whenPatchCalledWithId = id
+		stubLayoutService.whenPatchCalledWithLayout = Layout{}
+		stubLayoutService.patchWillReturnError = ErrLayoutNotFound
+
+		client.PatchLayoutExpectNotFound(id)
+	})
+
 	t.Run("create map", func(t *testing.T) {
 		up, down := Layout{Id: "up"}, Layout{Id: "down"}
 		stubLayoutService.whenPostCalledWith = up
@@ -46,7 +55,7 @@ func TestLayoutController(t *testing.T) {
 		AssertLayout(t, got, want)
 	})
 
-	t.Run("get all maps", func(t *testing.T) {
+	t.Run("get all", func(t *testing.T) {
 		stubLayoutService.whenGetAllCalledWith = false
 		stubLayoutService.getAllWillReturn = []Layout{{Id: "beefdead"}}
 
@@ -55,22 +64,13 @@ func TestLayoutController(t *testing.T) {
 		AssertLayouts(t, got, want)
 	})
 
-	t.Run("get all maps with heightmap URL filter", func(t *testing.T) {
+	t.Run("get all with no heightmap", func(t *testing.T) {
 		stubLayoutService.whenGetAllCalledWith = true
 		stubLayoutService.getAllWillReturn = []Layout{{Id: "look ma no heightmap"}}
 
 		got := client.GetLayoutsWithoutHeightmap()
 		want := []Layout{{Id: "look ma no heightmap"}}
 		AssertLayouts(t, got, want)
-	})
-
-	t.Run("patch missing map", func(t *testing.T) {
-		id := "william"
-		stubLayoutService.whenPatchCalledWithId = id
-		stubLayoutService.whenPatchCalledWithLayout = Layout{}
-		stubLayoutService.patchWillReturnError = ErrLayoutNotFound
-
-		client.PatchLayoutExpectNotFound(id)
 	})
 
 	t.Run("patch map by id", func(t *testing.T) {
