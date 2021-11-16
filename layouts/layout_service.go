@@ -21,15 +21,6 @@ type DefaultLayoutService struct {
 }
 
 func NewLayoutService(db *sql.DB, uuidService UUIDService) LayoutService {
-	if _, err := db.Exec(`
-create table if not exists layouts(
-	id string primary key,
-	size_width numeric, size_height numeric,
-	bounds_left numeric, bounds_top numeric, bounds_right numeric, bounds_bottom numeric,
-	heightmap_url text
-);`); err != nil {
-		panic(err)
-	}
 	return &DefaultLayoutService{
 		db:          db,
 		uuidService: uuidService,

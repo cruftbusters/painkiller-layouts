@@ -23,6 +23,7 @@ func TestLayoutService(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	Migrate(db)
 	stubUuidService := &StubUUIDService{}
 	service := NewLayoutService(db, stubUuidService)
 	t.Run("get when missing", func(t *testing.T) {

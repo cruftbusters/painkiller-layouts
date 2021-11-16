@@ -14,6 +14,7 @@ func TestLayerService(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	Migrate(db)
 	stubLayoutService := &StubLayoutService{t: t}
 	layerService := NewLayerService(
 		"http://baseURL",

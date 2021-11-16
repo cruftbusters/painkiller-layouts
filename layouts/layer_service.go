@@ -18,13 +18,6 @@ func NewLayerService(
 	db *sql.DB,
 	layoutService LayoutService,
 ) LayerService {
-	if _, err := db.Exec(`
-create table if not exists heightmaps(
-	id text primary key on conflict replace,
-	heightmap blob
-)`); err != nil {
-		panic(err)
-	}
 	return &DefaultLayerService{
 		baseURL,
 		db,

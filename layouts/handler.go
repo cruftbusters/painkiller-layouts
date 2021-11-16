@@ -14,6 +14,8 @@ func Handler(sqlite3Connection, baseURL string) *httprouter.Router {
 		log.Fatal(err)
 	}
 
+	Migrate(db)
+
 	router := httprouter.New()
 	layoutService := NewLayoutService(db, &DefaultUUIDService{})
 	LayoutController{layoutService}.AddRoutes(router)
