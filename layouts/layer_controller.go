@@ -12,19 +12,22 @@ type LayerController struct {
 }
 
 func (c LayerController) AddRoutes(router *httprouter.Router) {
-	router.PUT("/v1/layouts/:id/heightmap.jpg", c.Put)
-	router.GET("/v1/layouts/:id/heightmap.jpg", c.Get)
+	router.PUT("/v1/layouts/:id/:name", c.Put)
+	router.GET("/v1/layouts/:id/:name", c.Get)
 }
 
 func (c LayerController) Put(response http.ResponseWriter, request *http.Request, ps httprouter.Params) {
-	layer, _ := io.ReadAll(request.Body)
-	if c.layerService.Put(ps.ByName("id"), layer) != nil {
+	layer, err := io.ReadAll(request.Body)
+	if err != nil {
+		panic(err)
+	}
+	if c.layerService.Put(ps.ByName("id"), ps.ByName("name"), layer) != nil {
 		response.WriteHeader(404)
 	}
 }
 
 func (c LayerController) Get(response http.ResponseWriter, request *http.Request, ps httprouter.Params) {
-	layer, contentType, err := c.layerService.Get(ps.ByName("id"))
+	layer, contentType, err := c.layerService.Get(ps.ByName("id"), ps.ByName("name"))
 	if err != nil {
 		response.WriteHeader(404)
 	}

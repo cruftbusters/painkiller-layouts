@@ -9,8 +9,8 @@ import (
 )
 
 type LayerService interface {
-	Put(id string, layer []byte) error
-	Get(id string) ([]byte, string, error)
+	Put(id, name string, layer []byte) error
+	Get(id, name string) ([]byte, string, error)
 }
 
 func NewLayerService(
@@ -40,7 +40,7 @@ type DefaultLayerService struct {
 
 var ErrLayerNotFound = errors.New("layer not found")
 
-func (s *DefaultLayerService) Put(id string, layer []byte) error {
+func (s *DefaultLayerService) Put(id, name string, layer []byte) error {
 	_, err := s.layoutService.Get(id)
 	if err != nil {
 		return err
@@ -52,12 +52,12 @@ func (s *DefaultLayerService) Put(id string, layer []byte) error {
 	if _, err = statement.Exec(id, layer); err != nil {
 		panic(err)
 	}
-	layerURL := fmt.Sprintf("%s/v1/layouts/%s/heightmap.jpg", s.baseURL, id)
+	layerURL := fmt.Sprintf("%s/v1/layouts/%s/%s", s.baseURL, id, name)
 	_, err = s.layoutService.Patch(id, types.Layout{HeightmapURL: layerURL})
 	return err
 }
 
-func (s *DefaultLayerService) Get(id string) ([]byte, string, error) {
+func (s *DefaultLayerService) Get(id, name string) ([]byte, string, error) {
 	if _, err := s.layoutService.Get(id); err != nil {
 		return nil, "", err
 	}

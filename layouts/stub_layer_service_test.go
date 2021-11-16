@@ -8,19 +8,25 @@ import (
 type StubLayerService struct {
 	t                        testing.TB
 	whenPutCalledWithId      string
+	whenPutCalledWithName    string
 	whenPutCalledWithLayer   []byte
 	putWillReturn            error
 	whenGetCalledWithId      string
+	whenGetCalledWithName    string
 	getWillReturnLayer       []byte
 	getWillReturnContentType string
 	getWillReturnError       error
 }
 
-func (stub *StubLayerService) Put(gotId string, gotLayer []byte) error {
+func (stub *StubLayerService) Put(gotId, gotName string, gotLayer []byte) error {
 	stub.t.Helper()
 	wantId := stub.whenPutCalledWithId
 	if gotId != wantId {
 		stub.t.Errorf("got %s want %s", gotId, wantId)
+	}
+	wantName := stub.whenPutCalledWithName
+	if gotName != wantName {
+		stub.t.Errorf("got %s want %s", gotName, wantName)
 	}
 	wantLayer := stub.whenPutCalledWithLayer
 	if !bytes.Equal(gotLayer, wantLayer) {
@@ -29,11 +35,15 @@ func (stub *StubLayerService) Put(gotId string, gotLayer []byte) error {
 	return stub.putWillReturn
 }
 
-func (stub *StubLayerService) Get(got string) ([]byte, string, error) {
+func (stub *StubLayerService) Get(gotId, gotName string) ([]byte, string, error) {
 	stub.t.Helper()
-	want := stub.whenGetCalledWithId
-	if got != want {
-		stub.t.Errorf("got %s want %s", got, want)
+	wantId := stub.whenGetCalledWithId
+	if gotId != wantId {
+		stub.t.Errorf("got %s want %s", gotId, wantId)
+	}
+	wantName := stub.whenGetCalledWithName
+	if gotName != wantName {
+		stub.t.Errorf("got %s want %s", gotName, wantName)
 	}
 	return stub.getWillReturnLayer, stub.getWillReturnContentType, stub.getWillReturnError
 }

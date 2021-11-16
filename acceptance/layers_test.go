@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"reflect"
 	"testing"
 
 	"github.com/cruftbusters/painkiller-layouts/layouts"
@@ -15,35 +14,50 @@ import (
 func TestLayers(t *testing.T) {
 	client, baseURL := NewTestClient(t, layouts.Handler)
 
-	t.Run("put heightmap on missing map is not found", func(t *testing.T) {
+	t.Run("put layers on missing layout", func(t *testing.T) {
 		client.PutLayerExpectNotFound("deadbeef", "heightmap.jpg")
+		client.PutLayerExpectNotFound("deadbeef", "hillshade.jpg")
 	})
 
-	t.Run("get heightmap on missing map is not found", func(t *testing.T) {
+	t.Run("get layers on missing layout", func(t *testing.T) {
 		client.GetLayerExpectNotFound("deadbeef", "heightmap.jpg")
+		client.GetLayerExpectNotFound("deadbeef", "hillshade.jpg")
 	})
 
-	t.Run("get heightmap is not found", func(t *testing.T) {
+	t.Run("get missing layers on layout", func(t *testing.T) {
 		id := client.CreateLayout(Layout{}).Id
 		defer func() { client.DeleteLayout(id) }()
 		client.GetLayerExpectNotFound(id, "heightmap.jpg")
+		client.GetLayerExpectNotFound(id, "hillshade.jpg")
 	})
 
-	t.Run("put and get heightmap", func(t *testing.T) {
-		id, heightmap, contentType := client.CreateLayout(Layout{}).Id, []byte{65, 66, 67}, "image/jpeg"
-		defer func() { client.DeleteLayout(id) }()
-		client.PutLayer(id, "heightmap.jpg", bytes.NewBuffer(heightmap))
-		gotReadCloser, gotContentType := client.GetLayer(id, "heightmap.jpg")
-		got, err := io.ReadAll(gotReadCloser)
-		AssertNoError(t, err)
-		want := heightmap
-		if !reflect.DeepEqual(got, want) {
-			t.Errorf("got %v want %v", got, want)
-		}
-		if gotContentType != contentType {
-			t.Errorf("got %s want %s", gotContentType, contentType)
-		}
-	})
+	for _, scenario := range []struct {
+		name        string
+		layer       []byte
+		contentType string
+	}{
+		{
+			name:        "heightmap.jpg",
+			layer:       []byte{65, 66, 67},
+			contentType: "image/jpeg",
+		},
+	} {
+		t.Run("put and get "+scenario.name, func(t *testing.T) {
+			id := client.CreateLayout(Layout{}).Id
+			defer func() { client.DeleteLayout(id) }()
+
+			client.PutLayer(id, scenario.name, bytes.NewBuffer(scenario.layer))
+			gotReadCloser, gotContentType := client.GetLayer(id, scenario.name)
+			got, err := io.ReadAll(gotReadCloser)
+			AssertNoError(t, err)
+			if !bytes.Equal(got, scenario.layer) {
+				t.Errorf("got %v want %v", got, scenario.layer)
+			}
+			if gotContentType != scenario.contentType {
+				t.Errorf("got %s want %s", gotContentType, scenario.contentType)
+			}
+		})
+	}
 
 	t.Run("put heightmap updates heightmap URL", func(t *testing.T) {
 		id := client.CreateLayout(Layout{}).Id

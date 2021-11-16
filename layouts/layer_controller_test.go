@@ -23,6 +23,7 @@ func TestLayerController(t *testing.T) {
 	t.Run("put layer on missing map is not found", func(t *testing.T) {
 		id, name := "there is no creativity", "heightmap.jpg"
 		stubLayerService.whenPutCalledWithId = id
+		stubLayerService.whenPutCalledWithName = name
 		stubLayerService.putWillReturn = ErrLayoutNotFound
 
 		client.PutLayerExpectNotFound(id, name)
@@ -31,6 +32,7 @@ func TestLayerController(t *testing.T) {
 	t.Run("get layer on missing map is not found", func(t *testing.T) {
 		id, name := "walrus", "heightmap.jpg"
 		stubLayerService.whenGetCalledWithId = id
+		stubLayerService.whenGetCalledWithName = name
 		stubLayerService.getWillReturnError = ErrLayoutNotFound
 
 		client.GetLayerExpectNotFound(id, name)
@@ -39,6 +41,7 @@ func TestLayerController(t *testing.T) {
 	t.Run("get layer is not found", func(t *testing.T) {
 		id, name := "serendipity", "heightmap.jpg"
 		stubLayerService.whenGetCalledWithId = id
+		stubLayerService.whenGetCalledWithName = name
 		stubLayerService.getWillReturnError = ErrLayerNotFound
 
 		client.GetLayerExpectNotFound(id, name)
@@ -47,6 +50,7 @@ func TestLayerController(t *testing.T) {
 	t.Run("put layer", func(t *testing.T) {
 		id, name, up := "john denver", "heightmap.jpg", []byte("was a bear")
 		stubLayerService.whenPutCalledWithId = id
+		stubLayerService.whenPutCalledWithName = name
 		stubLayerService.whenPutCalledWithLayer = up
 		stubLayerService.putWillReturn = nil
 
@@ -56,6 +60,7 @@ func TestLayerController(t *testing.T) {
 	t.Run("get layer", func(t *testing.T) {
 		id, name, layer, contentType := "inwards", "heightmap.jpg", []byte("buncha bytes"), "image/png"
 		stubLayerService.whenGetCalledWithId = id
+		stubLayerService.whenGetCalledWithName = name
 		stubLayerService.getWillReturnLayer = layer
 		stubLayerService.getWillReturnContentType = contentType
 		stubLayerService.getWillReturnError = nil
