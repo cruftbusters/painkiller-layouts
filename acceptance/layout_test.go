@@ -1,6 +1,7 @@
 package acceptance
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/cruftbusters/painkiller-layouts/layouts"
@@ -11,91 +12,78 @@ import (
 func TestLayout(t *testing.T) {
 	client, _ := NewTestClient(t, layouts.Handler)
 
-	t.Run("get missing map", func(t *testing.T) {
+	t.Run("get missing layout", func(t *testing.T) {
 		client.GetLayoutExpectNotFound("deadbeef")
 	})
 
-	t.Run("create and get map", func(t *testing.T) {
+	t.Run("patch missing layout", func(t *testing.T) {
+		client.PatchLayoutExpectNotFound("garbotron")
+	})
+
+	t.Run("create and get layout", func(t *testing.T) {
 		got := client.CreateLayout(Layout{})
 		defer func() { client.DeleteLayout(got.Id) }()
 		AssertLayout(t, got, Layout{Id: got.Id})
 		AssertLayout(t, client.GetLayout(got.Id), got)
 	})
 
-	t.Run("create and get all maps", func(t *testing.T) {
-		first := client.CreateLayout(Layout{})
-		defer func() { client.DeleteLayout(first.Id) }()
-		second := client.CreateLayout(Layout{})
-		defer func() { client.DeleteLayout(second.Id) }()
-
-		got := client.GetLayouts()
-		want := []Layout{first, second}
-		AssertLayoutsUnordered(t, got, want)
-	})
-
-	t.Run("patch missing map", func(t *testing.T) {
-		client.PatchLayoutExpectNotFound("garbotron")
-	})
-
-	t.Run("patch heightmap url onto map", func(t *testing.T) {
-		newLayerURL := "new heightmap url"
-
-		layout := client.CreateLayout(
-			Layout{
-				Size:         Size{Width: 1, Height: 2},
-				Bounds:       Bounds{Left: 3, Top: 4, Right: 5, Bottom: 6},
-				HeightmapURL: "old heightmap url",
-				HillshadeURL: "old hillshade url",
-			},
-		)
-		defer func() { client.DeleteLayout(layout.Id) }()
-
-		got := client.PatchLayout(layout.Id, Layout{HeightmapURL: newLayerURL})
-		want := &layout
-		want.HeightmapURL = newLayerURL
-		AssertLayout(t, got, *want)
-
-		got = client.GetLayout(layout.Id)
-		AssertLayout(t, got, *want)
-	})
-
-	t.Run("patch hillshade url onto map", func(t *testing.T) {
-		newLayerURL := "new hillshade url"
-
-		layout := client.CreateLayout(
-			Layout{
-				Size:         Size{Width: 1, Height: 2},
-				Bounds:       Bounds{Left: 3, Top: 4, Right: 5, Bottom: 6},
-				HeightmapURL: "old heightmap url",
-				HillshadeURL: "old hillshade url",
-			},
-		)
-		defer func() { client.DeleteLayout(layout.Id) }()
-
-		got := client.PatchLayout(layout.Id, Layout{HillshadeURL: newLayerURL})
-		want := &layout
-		want.HillshadeURL = newLayerURL
-		AssertLayout(t, got, *want)
-
-		got = client.GetLayout(layout.Id)
-		AssertLayout(t, got, *want)
-	})
-
-	t.Run("filter for maps with no heightmap", func(t *testing.T) {
-		withoutHeightmap := client.CreateLayout(Layout{})
-		defer func() { client.DeleteLayout(withoutHeightmap.Id) }()
-		withHeightmap := client.CreateLayout(Layout{HeightmapURL: "heightmap url"})
-		defer func() { client.DeleteLayout(withHeightmap.Id) }()
-
-		AssertLayouts(t,
-			client.GetLayoutsWithoutHeightmap(),
-			[]Layout{withoutHeightmap},
-		)
-	})
-
-	t.Run("delete map", func(t *testing.T) {
+	t.Run("delete layout", func(t *testing.T) {
 		layout := client.CreateLayout(Layout{})
 		client.DeleteLayout(layout.Id)
 		client.GetLayoutExpectNotFound(layout.Id)
 	})
+
+	t.Run("get all layouts", func(t *testing.T) {
+		withHeightmap := client.CreateLayout(Layout{HeightmapURL: "heightmap url"})
+		defer func() { client.DeleteLayout(withHeightmap.Id) }()
+		withEverythingElse := client.CreateLayout(Layout{
+			Size:         Size{Width: 1, Height: 2},
+			Bounds:       Bounds{Left: 3, Top: 4, Right: 5, Bottom: 6},
+			HillshadeURL: "hillshade url",
+		})
+		defer func() { client.DeleteLayout(withEverythingElse.Id) }()
+
+		AssertLayoutsUnordered(t,
+			client.GetLayouts(),
+			[]Layout{withHeightmap, withEverythingElse},
+		)
+
+		AssertLayouts(t,
+			client.GetLayoutsWithoutHeightmap(),
+			[]Layout{withEverythingElse},
+		)
+	})
+
+	for _, scenario := range []struct {
+		patch Layout
+		want  func(*Layout)
+	}{
+		{
+			patch: Layout{HeightmapURL: "new heightmap url"},
+			want:  func(initial *Layout) { initial.HeightmapURL = "new heightmap url" },
+		},
+		{
+			patch: Layout{HillshadeURL: "new hillshade url"},
+			want:  func(initial *Layout) { initial.HillshadeURL = "new hillshade url" },
+		},
+	} {
+		t.Run(fmt.Sprintf("patch layout with %+v", scenario.patch), func(t *testing.T) {
+			layout := client.CreateLayout(
+				Layout{
+					Size:         Size{Width: 1, Height: 2},
+					Bounds:       Bounds{Left: 3, Top: 4, Right: 5, Bottom: 6},
+					HeightmapURL: "old heightmap url",
+					HillshadeURL: "old hillshade url",
+				},
+			)
+			defer func() { client.DeleteLayout(layout.Id) }()
+
+			got := client.PatchLayout(layout.Id, scenario.patch)
+			scenario.want(&layout)
+			AssertLayout(t, got, layout)
+
+			got = client.GetLayout(layout.Id)
+			AssertLayout(t, got, layout)
+		})
+	}
 }
