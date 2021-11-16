@@ -7,20 +7,20 @@ import (
 )
 
 type StubLayoutService struct {
-	t                         testing.TB
-	whenGetCalledWith         string
-	getWillReturnLayout       Layout
-	getWillReturnError        error
-	whenGetAllCalledWith      bool
-	getAllWillReturn          []Layout
-	whenPostCalledWith        Layout
-	postWillReturn            Layout
-	whenPatchCalledWithId     string
-	whenPatchCalledWithLayout Layout
-	patchWillReturnLayout     Layout
-	patchWillReturnError      error
-	whenDeleteCalledWith      string
-	deleteWillReturn          error
+	t                               testing.TB
+	whenGetCalledWith               string
+	getWillReturnLayout             Layout
+	getWillReturnError              error
+	getAllWillReturn                []Layout
+	getAllWithNoHeightmapWillReturn []Layout
+	whenPostCalledWith              Layout
+	postWillReturn                  Layout
+	whenPatchCalledWithId           string
+	whenPatchCalledWithLayout       Layout
+	patchWillReturnLayout           Layout
+	patchWillReturnError            error
+	whenDeleteCalledWith            string
+	deleteWillReturn                error
 }
 
 func (stub *StubLayoutService) Create(got Layout) Layout {
@@ -41,13 +41,12 @@ func (stub *StubLayoutService) Get(got string) (Layout, error) {
 	return stub.getWillReturnLayout, stub.getWillReturnError
 }
 
-func (stub *StubLayoutService) GetAll(got bool) []Layout {
-	stub.t.Helper()
-	want := stub.whenGetAllCalledWith
-	if got != want {
-		stub.t.Fatalf("got %t want %t", got, want)
-	}
+func (stub *StubLayoutService) GetAll() []Layout {
 	return stub.getAllWillReturn
+}
+
+func (stub *StubLayoutService) GetAllWithNoHeightmap() []Layout {
+	return stub.getAllWithNoHeightmapWillReturn
 }
 
 func (stub *StubLayoutService) Patch(gotId string, gotLayout Layout) (Layout, error) {

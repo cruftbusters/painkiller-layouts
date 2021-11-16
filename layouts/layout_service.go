@@ -10,7 +10,8 @@ import (
 type LayoutService interface {
 	Create(layout Layout) Layout
 	Get(id string) (Layout, error)
-	GetAll(excludeMapsWithHeightmap bool) []Layout
+	GetAll() []Layout
+	GetAllWithNoHeightmap() []Layout
 	Patch(id string, layout Layout) (Layout, error)
 	Delete(id string) error
 }
@@ -70,18 +71,7 @@ from layouts where id = ?
 		panic(err)
 	}
 	defer statement.Close()
-	layout := Layout{}
-	err = statement.QueryRow(id).Scan(
-		&layout.Id,
-		&layout.Size.Width,
-		&layout.Size.Height,
-		&layout.Bounds.Left,
-		&layout.Bounds.Top,
-		&layout.Bounds.Right,
-		&layout.Bounds.Bottom,
-		&layout.HeightmapURL,
-		&layout.HillshadeURL,
-	)
+	layout, err := scan(statement.QueryRow(id).Scan)
 	switch err {
 	case sql.ErrNoRows:
 		return layout, ErrLayoutNotFound
@@ -92,9 +82,8 @@ from layouts where id = ?
 	}
 }
 
-func (service *DefaultLayoutService) GetAll(excludeMapsWithHeightmap bool) []Layout {
-	layouts := []Layout{}
-	statement, err := service.db.Prepare(`
+func (service *DefaultLayoutService) GetAll() []Layout {
+	layouts, err := service.getAllSQL(`
 select id,
 size_width, size_height,
 bounds_left, bounds_top, bounds_right, bounds_bottom,
@@ -103,36 +92,41 @@ from layouts`)
 	if err != nil {
 		panic(err)
 	}
-	defer statement.Close()
-	rows, err := statement.Query()
-	if err != nil {
-		panic(err)
-	}
-	defer rows.Close()
-	layout := Layout{}
-	for rows.Next() {
-		if err = rows.Scan(
-			&layout.Id,
-			&layout.Size.Width,
-			&layout.Size.Height,
-			&layout.Bounds.Left,
-			&layout.Bounds.Top,
-			&layout.Bounds.Right,
-			&layout.Bounds.Bottom,
-			&layout.HeightmapURL,
-			&layout.HillshadeURL,
-		); err != nil {
-			panic(err)
-		}
-		if !excludeMapsWithHeightmap || layout.HeightmapURL == "" {
-			layouts = append(layouts, layout)
-		}
-	}
-	err = rows.Err()
+	return layouts
+}
+
+func (service *DefaultLayoutService) GetAllWithNoHeightmap() []Layout {
+	layouts, err := service.getAllSQL(`
+select id,
+size_width, size_height,
+bounds_left, bounds_top, bounds_right, bounds_bottom,
+heightmap_url, hillshade_url
+from layouts
+where heightmap_url == ''`)
 	if err != nil {
 		panic(err)
 	}
 	return layouts
+}
+
+func (service *DefaultLayoutService) getAllSQL(sql string) ([]Layout, error) {
+	rows, err := service.db.Query(sql)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	layouts := []Layout{}
+	for rows.Next() {
+		layout, err := scan(rows.Scan)
+		if err != nil {
+			return nil, err
+		}
+		layouts = append(layouts, layout)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	return layouts, nil
 }
 
 func (service *DefaultLayoutService) Patch(id string, patch Layout) (Layout, error) {
@@ -182,4 +176,20 @@ func (service *DefaultLayoutService) Delete(id string) error {
 		panic(err)
 	}
 	return nil
+}
+
+func scan(scan func(dest ...interface{}) error) (Layout, error) {
+	layout := Layout{}
+	err := scan(
+		&layout.Id,
+		&layout.Size.Width,
+		&layout.Size.Height,
+		&layout.Bounds.Left,
+		&layout.Bounds.Top,
+		&layout.Bounds.Right,
+		&layout.Bounds.Bottom,
+		&layout.HeightmapURL,
+		&layout.HillshadeURL,
+	)
+	return layout, err
 }

@@ -57,24 +57,25 @@ func TestLayoutService(t *testing.T) {
 		AssertError(t, err, ErrLayoutNotFound)
 	})
 
-	t.Run("get all layouts", func(t *testing.T) {
+	t.Run("get all", func(t *testing.T) {
 		stubUuidService.idQueue = []string{"first", "second"}
-		heightmapURL := "better not drop me"
 
-		withoutHeightmap := service.Create(Layout{
+		withHeightmap := service.Create(Layout{HeightmapURL: "heightmap url"})
+		defer func() { service.Delete("first") }()
+		withEverythingElse := service.Create(Layout{
 			Size:         Size{Width: 1, Height: 2},
 			Bounds:       Bounds{Left: 3, Top: 4, Right: 5, Bottom: 6},
 			HillshadeURL: "hillshade url",
 		})
-		defer func() { service.Delete("first") }()
-		withHeightmap := service.Create(Layout{HeightmapURL: heightmapURL})
 		defer func() { service.Delete("second") }()
 
-		got := service.GetAll(false)
-		AssertLayoutsUnordered(t, got, []Layout{withoutHeightmap, withHeightmap})
+		got := service.GetAll()
+		AssertLayoutsUnordered(t, got, []Layout{withEverythingElse, withHeightmap})
 
-		got = service.GetAll(true)
-		AssertLayoutsUnordered(t, got, []Layout{withoutHeightmap})
+		t.Run("with no heightmap", func(t *testing.T) {
+			got = service.GetAllWithNoHeightmap()
+			AssertLayoutsUnordered(t, got, []Layout{withEverythingElse})
+		})
 	})
 
 	for _, scenario := range []struct {

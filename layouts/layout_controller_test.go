@@ -56,7 +56,6 @@ func TestLayoutController(t *testing.T) {
 	})
 
 	t.Run("get all", func(t *testing.T) {
-		stubLayoutService.whenGetAllCalledWith = false
 		stubLayoutService.getAllWillReturn = []Layout{{Id: "beefdead"}}
 
 		got := client.GetLayouts()
@@ -65,8 +64,7 @@ func TestLayoutController(t *testing.T) {
 	})
 
 	t.Run("get all with no heightmap", func(t *testing.T) {
-		stubLayoutService.whenGetAllCalledWith = true
-		stubLayoutService.getAllWillReturn = []Layout{{Id: "look ma no heightmap"}}
+		stubLayoutService.getAllWithNoHeightmapWillReturn = []Layout{{Id: "look ma no heightmap"}}
 
 		got := client.GetLayoutsWithoutHeightmap()
 		want := []Layout{{Id: "look ma no heightmap"}}

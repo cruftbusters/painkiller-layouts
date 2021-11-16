@@ -39,9 +39,12 @@ func (c LayoutController) Get(response http.ResponseWriter, request *http.Reques
 }
 
 func (c LayoutController) GetAll(response http.ResponseWriter, request *http.Request, ps httprouter.Params) {
-	excludeMapsWithHeightmap := request.URL.Query().Get("excludeLayoutsWithHeightmap") == "true" ||
-		request.URL.Query().Get("excludeMapsWithHeightmap") == "true"
-	layouts := c.layoutService.GetAll(excludeMapsWithHeightmap)
+	var layouts []types.Layout
+	if request.URL.Query().Get("excludeLayoutsWithHeightmap") == "true" {
+		layouts = c.layoutService.GetAllWithNoHeightmap()
+	} else {
+		layouts = c.layoutService.GetAll()
+	}
 	json.NewEncoder(response).Encode(layouts)
 }
 
