@@ -33,12 +33,7 @@ func (c LayerController) Put(response http.ResponseWriter, request *http.Request
 }
 
 func (c LayerController) Get(response http.ResponseWriter, request *http.Request, ps httprouter.Params) {
-	name := ps.ByName("name")
-	if isUnacceptableName(name) {
-		response.WriteHeader(404)
-		return
-	}
-	layer, contentType, err := c.layerService.Get(ps.ByName("id"), name)
+	layer, contentType, err := c.layerService.Get(ps.ByName("id"), ps.ByName("name"))
 	if err != nil {
 		response.WriteHeader(404)
 	}

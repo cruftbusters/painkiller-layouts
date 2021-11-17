@@ -3,7 +3,6 @@ package layouts
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"io"
 	"testing"
 
@@ -49,19 +48,13 @@ func TestLayerController(t *testing.T) {
 		client.GetLayerExpectNotFound(id, name)
 	})
 
-	t.Run("constrain put and get", func(t *testing.T) {
+	t.Run("disallow put for invalid layer names", func(t *testing.T) {
 		for _, name := range []string{
 			"heightmap.tif",
 			"hillshade.png",
 			"anything.jpg",
 		} {
-			t.Run(fmt.Sprintf("disallow put '%s'", name), func(t *testing.T) {
-				client.PutLayerExpectBadRequest("anything", name)
-			})
-
-			t.Run(fmt.Sprintf("'%s' not found", name), func(t *testing.T) {
-				client.GetLayerExpectNotFound("anything", name)
-			})
+			client.PutLayerExpectBadRequest("anything", name)
 		}
 	})
 
