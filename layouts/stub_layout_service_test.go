@@ -57,11 +57,11 @@ func (stub *StubLayoutService) GetAllWithHeightmapWithoutHillshade() []Layout {
 func (stub *StubLayoutService) Patch(gotId string, gotLayout Layout) (Layout, error) {
 	stub.t.Helper()
 	wantId := stub.whenPatchCalledWithId
-	wantLayout := stub.whenPatchCalledWithLayout
 	if gotId != wantId {
 		stub.t.Fatalf("got %s want %s", gotId, wantId)
 	}
-	if gotLayout != wantLayout {
+	wantLayout := stub.whenPatchCalledWithLayout
+	if wantLayout.Id != "*" && gotLayout != wantLayout {
 		stub.t.Fatalf("got %#v want %#v", gotLayout, wantLayout)
 	}
 	return stub.patchWillReturnLayout, stub.patchWillReturnError

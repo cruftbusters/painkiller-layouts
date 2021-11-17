@@ -57,9 +57,6 @@ func (s *DefaultLayerService) Put(id, name string, layer []byte) error {
 }
 
 func (s *DefaultLayerService) Get(id, name string) ([]byte, string, error) {
-	if _, err := s.layoutService.Get(id); err != nil {
-		return nil, "", err
-	}
 	statement, err := s.db.Prepare("select layer from layers where id = ? and name = ?")
 	if err != nil {
 		panic(err)

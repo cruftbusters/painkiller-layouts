@@ -31,15 +31,6 @@ func TestLayerService(t *testing.T) {
 		AssertError(t, got, err)
 	})
 
-	t.Run("get when layout not found", func(t *testing.T) {
-		id, err := "wimbly wombly", ErrLayoutNotFound
-		stubLayoutService.whenGetCalledWith = id
-		stubLayoutService.getWillReturnError = err
-
-		_, _, got := layerService.Get(id, "heightmap.jpg")
-		AssertError(t, got, err)
-	})
-
 	t.Run("get when layer not found", func(t *testing.T) {
 		id := "weeknights"
 		stubLayoutService.whenGetCalledWith = id
@@ -150,5 +141,25 @@ func TestLayerService(t *testing.T) {
 				AssertError(t, err, ErrLayoutNotFound)
 			})
 		}
+	})
+
+	t.Run("layers are present after deleting layout", func(t *testing.T) {
+		id := "wimbly wombly"
+
+		stubLayoutService.whenGetCalledWith = id
+		stubLayoutService.getWillReturnError = nil
+
+		stubLayoutService.whenPatchCalledWithId = id
+		stubLayoutService.whenPatchCalledWithLayout = Layout{Id: "*"}
+		stubLayoutService.patchWillReturnLayout = Layout{}
+		stubLayoutService.patchWillReturnError = nil
+
+		layerService.Put(id, "heightmap.jpg", nil)
+
+		stubLayoutService.whenGetCalledWith = id
+		stubLayoutService.getWillReturnError = ErrLayerNotFound
+
+		_, _, err := layerService.Get(id, "heightmap.jpg")
+		AssertNoError(t, err)
 	})
 }

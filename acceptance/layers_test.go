@@ -21,11 +21,6 @@ func TestLayers(t *testing.T) {
 		client.PutLayerExpectNotFound("deadbeef", "hillshade.jpg")
 	})
 
-	t.Run("get layers on missing layout", func(t *testing.T) {
-		client.GetLayerExpectNotFound("deadbeef", "heightmap.jpg")
-		client.GetLayerExpectNotFound("deadbeef", "hillshade.jpg")
-	})
-
 	t.Run("get missing layers on layout", func(t *testing.T) {
 		client.GetLayerExpectNotFound(id, "heightmap.jpg")
 		client.GetLayerExpectNotFound(id, "hillshade.jpg")
@@ -102,5 +97,12 @@ func TestLayers(t *testing.T) {
 		if got != want {
 			t.Errorf("got %s want %s", got, want)
 		}
+	})
+
+	t.Run("layers are present after deleting layout", func(t *testing.T) {
+		id := client.CreateLayout(Layout{}).Id
+		client.PutLayer(id, "heightmap.jpg", nil)
+		client.DeleteLayout(id)
+		client.GetLayer(id, "heightmap.jpg")
 	})
 }
