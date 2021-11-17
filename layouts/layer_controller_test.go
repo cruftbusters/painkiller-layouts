@@ -2,6 +2,7 @@ package layouts
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"testing"
@@ -92,5 +93,25 @@ func TestLayerController(t *testing.T) {
 		if gotContentType != contentType {
 			t.Errorf("got %s want %s", gotContentType, contentType)
 		}
+	})
+
+	t.Run("delete", func(t *testing.T) {
+		id, name := "floral", "heightmap.jpg"
+
+		stubLayerService.whenDeleteCalledWithId = id
+		stubLayerService.whenDeleteCalledWithName = name
+		stubLayerService.deleteWillReturn = nil
+
+		client.DeleteLayer(id, name)
+	})
+
+	t.Run("delete with error", func(t *testing.T) {
+		id, name := "iron gear wheel", "hillshade.jpg"
+
+		stubLayerService.whenDeleteCalledWithId = id
+		stubLayerService.whenDeleteCalledWithName = name
+		stubLayerService.deleteWillReturn = errors.New("anything")
+
+		client.DeleteLayerExpectInternalServerError(id, name)
 	})
 }

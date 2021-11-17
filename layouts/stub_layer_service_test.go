@@ -16,6 +16,9 @@ type StubLayerService struct {
 	getWillReturnLayer       []byte
 	getWillReturnContentType string
 	getWillReturnError       error
+	whenDeleteCalledWithId   string
+	whenDeleteCalledWithName string
+	deleteWillReturn         error
 }
 
 func (stub *StubLayerService) Put(gotId, gotName string, gotLayer []byte) error {
@@ -46,4 +49,17 @@ func (stub *StubLayerService) Get(gotId, gotName string) ([]byte, string, error)
 		stub.t.Errorf("got %s want %s", gotName, wantName)
 	}
 	return stub.getWillReturnLayer, stub.getWillReturnContentType, stub.getWillReturnError
+}
+
+func (stub *StubLayerService) Delete(gotId, gotName string) error {
+	stub.t.Helper()
+	wantId := stub.whenDeleteCalledWithId
+	if gotId != wantId {
+		stub.t.Errorf("got %s want %s", gotId, wantId)
+	}
+	wantName := stub.whenDeleteCalledWithName
+	if gotName != wantName {
+		stub.t.Errorf("got %s want %s", gotName, wantName)
+	}
+	return stub.deleteWillReturn
 }

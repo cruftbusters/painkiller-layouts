@@ -188,6 +188,26 @@ func (client ClientV2) GetLayer(id, name string) (io.ReadCloser, string) {
 	return response.Body, response.Header.Get("Content-Type")
 }
 
+func (client ClientV2) DeleteLayer(id, name string) {
+	client.t.Helper()
+	requestURL := client.baseURLF("/v1/layouts/%s/%s", id, name)
+	request, err := http.NewRequest(http.MethodDelete, requestURL, nil)
+	AssertNoError(client.t, err)
+	response, err := (&http.Client{}).Do(request)
+	AssertNoError(client.t, err)
+	AssertStatusCode(client.t, response, 204)
+}
+
+func (client ClientV2) DeleteLayerExpectInternalServerError(id, name string) {
+	client.t.Helper()
+	requestURL := client.baseURLF("/v1/layouts/%s/%s", id, name)
+	request, err := http.NewRequest(http.MethodDelete, requestURL, nil)
+	AssertNoError(client.t, err)
+	response, err := (&http.Client{}).Do(request)
+	AssertNoError(client.t, err)
+	AssertStatusCode(client.t, response, 500)
+}
+
 func (client ClientV2) baseURLF(path string, a ...interface{}) string {
 	return client.baseURL + fmt.Sprintf(path, a...)
 }

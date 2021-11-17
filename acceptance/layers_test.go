@@ -40,7 +40,7 @@ func TestLayers(t *testing.T) {
 		})
 	}
 
-	t.Run("put and get layers", func(t *testing.T) {
+	t.Run("put get delete", func(t *testing.T) {
 		scenarios := []struct {
 			name        string
 			layer       []byte
@@ -75,6 +75,13 @@ func TestLayers(t *testing.T) {
 				if gotContentType != scenario.contentType {
 					t.Errorf("got %s want %s", gotContentType, scenario.contentType)
 				}
+			})
+		}
+
+		for _, scenario := range scenarios {
+			t.Run("delete "+scenario.name, func(t *testing.T) {
+				client.DeleteLayer(id, scenario.name)
+				client.GetLayerExpectNotFound(id, scenario.name)
 			})
 		}
 	})

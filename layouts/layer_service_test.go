@@ -32,15 +32,11 @@ func TestLayerService(t *testing.T) {
 	})
 
 	t.Run("get when layer not found", func(t *testing.T) {
-		id := "weeknights"
-		stubLayoutService.whenGetCalledWith = id
-		stubLayoutService.getWillReturnError = nil
-
-		_, _, got := layerService.Get(id, "heightmap.jpg")
+		_, _, got := layerService.Get("weeknights", "heightmap.jpg")
 		AssertError(t, got, ErrLayerNotFound)
 	})
 
-	t.Run("put and get layers", func(t *testing.T) {
+	t.Run("put get delete", func(t *testing.T) {
 		id := "bhan mi"
 
 		stubLayoutService.whenGetCalledWith = id
@@ -100,6 +96,15 @@ func TestLayerService(t *testing.T) {
 
 				err := layerService.Put(id, step.name, step.layer)
 				AssertNoError(t, err)
+			}
+		})
+
+		t.Run("delete", func(t *testing.T) {
+			for _, step := range steps {
+				layerService.Delete(id, step.name)
+
+				_, _, err := layerService.Get(id, "heightmap.jpg")
+				AssertError(t, err, ErrLayerNotFound)
 			}
 		})
 	})

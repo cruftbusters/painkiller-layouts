@@ -14,6 +14,7 @@ type LayerController struct {
 func (c LayerController) AddRoutes(router *httprouter.Router) {
 	router.PUT("/v1/layouts/:id/:name", c.Put)
 	router.GET("/v1/layouts/:id/:name", c.Get)
+	router.DELETE("/v1/layouts/:id/:name", c.Delete)
 }
 
 func (c LayerController) Put(response http.ResponseWriter, request *http.Request, ps httprouter.Params) {
@@ -43,6 +44,14 @@ func (c LayerController) Get(response http.ResponseWriter, request *http.Request
 	}
 	response.Header().Add("Content-Type", contentType)
 	response.Write(layer)
+}
+
+func (c LayerController) Delete(response http.ResponseWriter, request *http.Request, ps httprouter.Params) {
+	if err := c.layerService.Delete(ps.ByName("id"), ps.ByName("name")); err != nil {
+		response.WriteHeader(500)
+	} else {
+		response.WriteHeader(204)
+	}
 }
 
 func isUnacceptableName(name string) bool {

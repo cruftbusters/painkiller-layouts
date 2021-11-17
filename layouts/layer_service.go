@@ -11,6 +11,7 @@ import (
 type LayerService interface {
 	Put(id, name string, layer []byte) error
 	Get(id, name string) ([]byte, string, error)
+	Delete(id, name string) error
 }
 
 func NewLayerService(
@@ -71,4 +72,15 @@ func (s *DefaultLayerService) Get(id, name string) ([]byte, string, error) {
 	default:
 		panic(err)
 	}
+}
+
+func (s *DefaultLayerService) Delete(id, name string) error {
+	statement, err := s.db.Prepare("delete from layers where id = ? and name = ?")
+	if err != nil {
+		panic(err)
+	}
+	if _, err = statement.Exec(id, name); err != nil {
+		panic(err)
+	}
+	return nil
 }
