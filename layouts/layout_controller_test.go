@@ -7,12 +7,13 @@ import (
 	. "github.com/cruftbusters/painkiller-layouts/testing"
 	. "github.com/cruftbusters/painkiller-layouts/types"
 	"github.com/julienschmidt/httprouter"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestLayoutController(t *testing.T) {
-	stubLayoutService := &StubLayoutService{t: t}
+	mockLayoutService := new(MockLayoutService)
 	controller := LayoutController{
-		stubLayoutService,
+		mockLayoutService,
 	}
 	client, _ := NewTestClient(t, func(string, string) *httprouter.Router {
 		router := httprouter.New()
@@ -20,90 +21,69 @@ func TestLayoutController(t *testing.T) {
 		return router
 	})
 
-	t.Run("get missing map", func(t *testing.T) {
-		stubLayoutService.whenGetCalledWith = "deadbeef"
-		stubLayoutService.getWillReturnError = ErrLayoutNotFound
-
-		client.GetLayoutExpectNotFound("deadbeef")
+	t.Run("get missing", func(t *testing.T) {
+		id := "deadbeef"
+		mockLayoutService.On("Get", id).Return(Layout{}, ErrLayoutNotFound)
+		client.GetLayoutExpectNotFound(id)
 	})
 
-	t.Run("patch missing map", func(t *testing.T) {
+	t.Run("patch missing", func(t *testing.T) {
 		id := "william"
-		stubLayoutService.whenPatchCalledWithId = id
-		stubLayoutService.whenPatchCalledWithLayout = Layout{}
-		stubLayoutService.patchWillReturnError = ErrLayoutNotFound
-
+		mockLayoutService.On("Patch", id, mock.Anything).Return(Layout{}, ErrLayoutNotFound)
 		client.PatchLayoutExpectNotFound(id)
 	})
 
-	t.Run("create map", func(t *testing.T) {
+	t.Run("create", func(t *testing.T) {
 		up, down := Layout{Id: "up"}, Layout{Id: "down"}
-		stubLayoutService.whenPostCalledWith = up
-		stubLayoutService.postWillReturn = down
-
+		mockLayoutService.On("Create", up).Return(down)
 		got := client.CreateLayout(up)
 		AssertLayout(t, got, down)
 	})
 
-	t.Run("get map", func(t *testing.T) {
-		stubLayoutService.whenGetCalledWith = "path-id"
-		stubLayoutService.getWillReturnLayout = Layout{Id: "beefdead"}
-		stubLayoutService.getWillReturnError = nil
-
-		got := client.GetLayout("path-id")
-		want := Layout{Id: "beefdead"}
-		AssertLayout(t, got, want)
+	t.Run("get", func(t *testing.T) {
+		id, down := "up", Layout{Id: "down"}
+		mockLayoutService.On("Get", id).Return(down, nil)
+		got := client.GetLayout(id)
+		AssertLayout(t, got, down)
 	})
 
 	t.Run("get all", func(t *testing.T) {
-		stubLayoutService.getAllWillReturn = []Layout{{Id: "beefdead"}}
-
+		down := []Layout{{Id: "beefdead"}}
+		mockLayoutService.On("GetAll").Return(down)
 		got := client.GetLayouts()
-		want := []Layout{{Id: "beefdead"}}
-		AssertLayouts(t, got, want)
+		AssertLayouts(t, got, down)
 	})
 
 	t.Run("get all with no heightmap", func(t *testing.T) {
-		stubLayoutService.getAllWithNoHeightmapWillReturn = []Layout{{Id: "look ma no heightmap"}}
-
+		down := []Layout{{Id: "look ma no heightmap"}}
+		mockLayoutService.On("GetAllWithNoHeightmap").Return(down)
 		got := client.GetLayoutsWithoutHeightmap()
-		want := []Layout{{Id: "look ma no heightmap"}}
-		AssertLayouts(t, got, want)
+		AssertLayouts(t, got, down)
 	})
 
 	t.Run("get all with no hillshade", func(t *testing.T) {
-		stubLayoutService.getAllWithHeightmapWithoutHillshadeWillReturn = []Layout{{Id: "look ma no hillshade"}}
-
+		down := []Layout{{Id: "look ma no hillshade"}}
+		mockLayoutService.On("GetAllWithHeightmapWithoutHillshade").Return(down)
 		got := client.GetLayoutsWithHeightmapWithoutHillshade()
-		want := []Layout{{Id: "look ma no hillshade"}}
-		AssertLayouts(t, got, want)
+		AssertLayouts(t, got, down)
 	})
 
-	t.Run("patch map by id", func(t *testing.T) {
+	t.Run("patch by id", func(t *testing.T) {
 		id, up, down := "rafael", Layout{HeightmapURL: "coming through"}, Layout{Id: "rafael", HeightmapURL: "coming through for real"}
-		stubLayoutService.whenPatchCalledWithId = id
-		stubLayoutService.whenPatchCalledWithLayout = up
-		stubLayoutService.patchWillReturnLayout = down
-		stubLayoutService.patchWillReturnError = nil
-
+		mockLayoutService.On("Patch", id, up).Return(down, nil)
 		got := client.PatchLayout(id, up)
-		want := down
-		AssertLayout(t, got, want)
+		AssertLayout(t, got, down)
 	})
 
-	t.Run("delete map has error", func(t *testing.T) {
-		id, want := "some id", errors.New("uh oh")
-		stubLayoutService.whenDeleteCalledWith = id
-		stubLayoutService.deleteWillReturn = want
-
+	t.Run("delete has error", func(t *testing.T) {
+		id := "some id"
+		mockLayoutService.On("Delete", id).Return(errors.New("uh oh"))
 		client.DeleteLayoutExpectInternalServerError(id)
 	})
 
-	t.Run("delete map", func(t *testing.T) {
-		id := "some id"
-		stubLayoutService.whenDeleteCalledWith = id
-		stubLayoutService.deleteWillReturn = nil
-
+	t.Run("delete", func(t *testing.T) {
+		id := "another id"
+		mockLayoutService.On("Delete", id).Return(nil)
 		client.DeleteLayout(id)
 	})
 }
