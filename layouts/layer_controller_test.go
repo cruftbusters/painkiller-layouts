@@ -11,9 +11,9 @@ import (
 )
 
 func TestLayerController(t *testing.T) {
-	stubLayerService := &StubLayerService{t: t}
+	mockLayerService := new(MockLayerService)
 	controller := LayerController{
-		stubLayerService,
+		mockLayerService,
 	}
 	client, _ := NewTestClient(t, func(string, string) *httprouter.Router {
 		router := httprouter.New()
@@ -23,28 +23,19 @@ func TestLayerController(t *testing.T) {
 
 	t.Run("put layer on missing map is not found", func(t *testing.T) {
 		id, name := "there is no creativity", "heightmap.jpg"
-		stubLayerService.whenPutCalledWithId = id
-		stubLayerService.whenPutCalledWithName = name
-		stubLayerService.putWillReturn = ErrLayoutNotFound
-
+		mockLayerService.On("Put", id, name, []byte{}).Return(ErrLayoutNotFound)
 		client.PutLayerExpectNotFound(id, name)
 	})
 
 	t.Run("get layer on missing map is not found", func(t *testing.T) {
 		id, name := "walrus", "heightmap.jpg"
-		stubLayerService.whenGetCalledWithId = id
-		stubLayerService.whenGetCalledWithName = name
-		stubLayerService.getWillReturnError = ErrLayoutNotFound
-
+		mockLayerService.On("Get", id, name).Return([]byte{}, "", ErrLayoutNotFound)
 		client.GetLayerExpectNotFound(id, name)
 	})
 
 	t.Run("get layer is not found", func(t *testing.T) {
 		id, name := "serendipity", "heightmap.jpg"
-		stubLayerService.whenGetCalledWithId = id
-		stubLayerService.whenGetCalledWithName = name
-		stubLayerService.getWillReturnError = ErrLayerNotFound
-
+		mockLayerService.On("Get", id, name).Return([]byte{}, "", ErrLayerNotFound)
 		client.GetLayerExpectNotFound(id, name)
 	})
 
@@ -60,21 +51,13 @@ func TestLayerController(t *testing.T) {
 
 	t.Run("put layer", func(t *testing.T) {
 		id, name, up := "john denver", "heightmap.jpg", []byte("was a bear")
-		stubLayerService.whenPutCalledWithId = id
-		stubLayerService.whenPutCalledWithName = name
-		stubLayerService.whenPutCalledWithLayer = up
-		stubLayerService.putWillReturn = nil
-
+		mockLayerService.On("Put", id, name, up).Return(nil)
 		client.PutLayer(id, name, bytes.NewBuffer(up))
 	})
 
 	t.Run("get layer", func(t *testing.T) {
 		id, name, layer, contentType := "inwards", "heightmap.jpg", []byte("buncha bytes"), "image/png"
-		stubLayerService.whenGetCalledWithId = id
-		stubLayerService.whenGetCalledWithName = name
-		stubLayerService.getWillReturnLayer = layer
-		stubLayerService.getWillReturnContentType = contentType
-		stubLayerService.getWillReturnError = nil
+		mockLayerService.On("Get", id, name).Return(layer, contentType, nil)
 
 		gotReadCloser, gotContentType := client.GetLayer(id, name)
 		got, err := io.ReadAll(gotReadCloser)
@@ -90,21 +73,13 @@ func TestLayerController(t *testing.T) {
 
 	t.Run("delete", func(t *testing.T) {
 		id, name := "floral", "heightmap.jpg"
-
-		stubLayerService.whenDeleteCalledWithId = id
-		stubLayerService.whenDeleteCalledWithName = name
-		stubLayerService.deleteWillReturn = nil
-
+		mockLayerService.On("Delete", id, name).Return(nil)
 		client.DeleteLayer(id, name)
 	})
 
 	t.Run("delete with error", func(t *testing.T) {
 		id, name := "iron gear wheel", "hillshade.jpg"
-
-		stubLayerService.whenDeleteCalledWithId = id
-		stubLayerService.whenDeleteCalledWithName = name
-		stubLayerService.deleteWillReturn = errors.New("anything")
-
+		mockLayerService.On("Delete", id, name).Return(errors.New("anything"))
 		client.DeleteLayerExpectInternalServerError(id, name)
 	})
 }
