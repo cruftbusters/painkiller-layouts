@@ -11,5 +11,5 @@ func RandomPortListener() (net.Listener, string) {
 		panic(err)
 	}
 	port := listener.Addr().(*net.TCPAddr).Port
-	return listener, fmt.Sprintf("http://localhost:%d", port)
+	return listener, fmt.Sprintf("localhost:%d", port)
 }

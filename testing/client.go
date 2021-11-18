@@ -12,7 +12,7 @@ import (
 )
 
 type ClientV2 struct {
-	baseURL string
+	BaseURL string
 }
 
 var overrideBaseURL string
@@ -22,13 +22,21 @@ func init() { flag.StringVar(&overrideBaseURL, "overrideBaseURL", "", "override 
 func NewTestClient(
 	routerSupplier func(sqlite3Connection, baseURL string) *httprouter.Router,
 ) (ClientV2, string) {
+	return NewTestClientFromURL(routerSupplier, overrideBaseURL)
+}
+
+func NewTestClientFromURL(
+	routerSupplier func(sqlite3Connection, baseURL string) *httprouter.Router,
+	overrideBaseURL string,
+) (ClientV2, string) {
 	if overrideBaseURL == "" {
-		listener, baseURL := RandomPortListener()
+		listener, protolessBaseURL := RandomPortListener()
+		baseURL := "http://" + protolessBaseURL
 		router := routerSupplier("file::memory:?cache=shared", baseURL)
 		go func() { http.Serve(listener, router) }()
-		return ClientV2{baseURL: baseURL}, baseURL
+		return ClientV2{BaseURL: baseURL}, baseURL
 	} else {
-		return ClientV2{baseURL: overrideBaseURL}, overrideBaseURL
+		return ClientV2{BaseURL: overrideBaseURL}, overrideBaseURL
 	}
 }
 
@@ -208,5 +216,5 @@ func (client ClientV2) DeleteLayerExpectInternalServerError(t testing.TB, id, na
 }
 
 func (client ClientV2) baseURLF(path string, a ...interface{}) string {
-	return client.baseURL + fmt.Sprintf(path, a...)
+	return client.BaseURL + fmt.Sprintf(path, a...)
 }

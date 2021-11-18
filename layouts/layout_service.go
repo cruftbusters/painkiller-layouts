@@ -18,14 +18,16 @@ type LayoutService interface {
 }
 
 type DefaultLayoutService struct {
-	db          *sql.DB
-	uuidService UUIDService
+	db               *sql.DB
+	layoutSubscriber chan Layout
+	uuidService      UUIDService
 }
 
-func NewLayoutService(db *sql.DB, uuidService UUIDService) LayoutService {
+func NewLayoutService(db *sql.DB, layoutSubscriber chan Layout, uuidService UUIDService) LayoutService {
 	return &DefaultLayoutService{
-		db:          db,
-		uuidService: uuidService,
+		db:               db,
+		layoutSubscriber: layoutSubscriber,
+		uuidService:      uuidService,
 	}
 }
 
@@ -57,6 +59,7 @@ insert into layouts (
 		requestLayout.HeightmapURL,
 		requestLayout.HillshadeURL,
 	)
+	service.layoutSubscriber <- *layout
 	return *layout
 }
 

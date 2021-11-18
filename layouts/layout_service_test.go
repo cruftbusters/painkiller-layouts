@@ -3,6 +3,7 @@ package layouts
 import (
 	"database/sql"
 	"fmt"
+	"sync"
 	"testing"
 
 	. "github.com/cruftbusters/painkiller-layouts/testing"
@@ -25,8 +26,9 @@ func TestLayoutService(t *testing.T) {
 		t.Fatal(err)
 	}
 	Migrate(db)
+	layoutSubscriber := make(chan Layout)
 	stubUuidService := &StubUUIDService{}
-	service := NewLayoutService(db, stubUuidService)
+	service := NewLayoutService(db, layoutSubscriber, stubUuidService)
 
 	t.Run("get missing layout", func(t *testing.T) {
 		_, got := service.Get("")
@@ -42,10 +44,23 @@ func TestLayoutService(t *testing.T) {
 		id := "windows update"
 		stubUuidService.idQueue = []string{id}
 
-		got := service.Create(Layout{})
-		defer func() { service.Delete(id) }()
-		want := Layout{Id: id}
-		AssertLayout(t, got, want)
+		var wg sync.WaitGroup
+		wg.Add(2)
+
+		var got Layout
+		go func() {
+			got = service.Create(Layout{})
+			wg.Done()
+			AssertLayout(t, got, Layout{Id: id})
+		}()
+
+		go func() {
+			got := <-layoutSubscriber
+			wg.Done()
+			AssertLayout(t, got, Layout{Id: id})
+		}()
+
+		wg.Wait()
 
 		layout, err := service.Get(got.Id)
 		AssertNoError(t, err)
@@ -60,15 +75,18 @@ func TestLayoutService(t *testing.T) {
 	t.Run("get all", func(t *testing.T) {
 		stubUuidService.idQueue = []string{"first", "second", "third"}
 
+		go func() { <-layoutSubscriber }()
 		withHeightmap := service.Create(Layout{HeightmapURL: "heightmap url"})
-		defer func() { service.Delete("first") }()
+		defer service.Delete("first")
+		go func() { <-layoutSubscriber }()
 		withHillshade := service.Create(Layout{HillshadeURL: "hillshade url"})
-		defer func() { service.Delete("second") }()
+		defer service.Delete("second")
+		go func() { <-layoutSubscriber }()
 		withEverythingElse := service.Create(Layout{
 			Size:   Size{Width: 1, Height: 2},
 			Bounds: Bounds{Left: 3, Top: 4, Right: 5, Bottom: 6},
 		})
-		defer func() { service.Delete("third") }()
+		defer service.Delete("third")
 
 		got := service.GetAll()
 		AssertLayoutsUnordered(t, got, []Layout{withEverythingElse, withHillshade, withHeightmap})
@@ -100,6 +118,7 @@ func TestLayoutService(t *testing.T) {
 		t.Run(fmt.Sprintf("patch layout with %+v", scenario.patch), func(t *testing.T) {
 			id := "the id"
 			stubUuidService.idQueue = []string{id}
+			go func() { <-layoutSubscriber }()
 			layout := service.Create(
 				Layout{
 					Size:         Size{Width: 1, Height: 2},
@@ -108,7 +127,7 @@ func TestLayoutService(t *testing.T) {
 					HillshadeURL: "old hillshade url",
 				},
 			)
-			defer func() { service.Delete(id) }()
+			defer service.Delete(id)
 
 			got, err := service.Patch(id, scenario.patch)
 			AssertNoError(t, err)
