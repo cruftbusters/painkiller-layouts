@@ -12,18 +12,18 @@ import (
 )
 
 func TestLayers(t *testing.T) {
-	client, baseURL := NewTestClient(t, layouts.Handler)
-	id := client.CreateLayout(Layout{}).Id
-	defer func() { client.DeleteLayout(id) }()
+	client, baseURL := NewTestClient(layouts.Handler)
+	id := client.CreateLayout(t, Layout{}).Id
+	defer func() { client.DeleteLayout(t, id) }()
 
 	t.Run("put layers on missing layout", func(t *testing.T) {
-		client.PutLayerExpectNotFound("deadbeef", "heightmap.jpg")
-		client.PutLayerExpectNotFound("deadbeef", "hillshade.jpg")
+		client.PutLayerExpectNotFound(t, "deadbeef", "heightmap.jpg")
+		client.PutLayerExpectNotFound(t, "deadbeef", "hillshade.jpg")
 	})
 
 	t.Run("get missing layers on layout", func(t *testing.T) {
-		client.GetLayerExpectNotFound(id, "heightmap.jpg")
-		client.GetLayerExpectNotFound(id, "hillshade.jpg")
+		client.GetLayerExpectNotFound(t, id, "heightmap.jpg")
+		client.GetLayerExpectNotFound(t, id, "hillshade.jpg")
 	})
 
 	for _, name := range []string{
@@ -32,11 +32,11 @@ func TestLayers(t *testing.T) {
 		"anything.jpg",
 	} {
 		t.Run(fmt.Sprintf("put '%s' bad request", name), func(t *testing.T) {
-			client.PutLayerExpectBadRequest(id, name)
+			client.PutLayerExpectBadRequest(t, id, name)
 		})
 
 		t.Run(fmt.Sprintf("get '%s' not found", name), func(t *testing.T) {
-			client.GetLayerExpectNotFound(id, name)
+			client.GetLayerExpectNotFound(t, id, name)
 		})
 	}
 
@@ -60,13 +60,13 @@ func TestLayers(t *testing.T) {
 
 		for _, scenario := range scenarios {
 			t.Run("put "+scenario.name, func(t *testing.T) {
-				client.PutLayer(id, scenario.name, bytes.NewBuffer(scenario.layer))
+				client.PutLayer(t, id, scenario.name, bytes.NewBuffer(scenario.layer))
 			})
 		}
 
 		for _, scenario := range scenarios {
 			t.Run("get "+scenario.name, func(t *testing.T) {
-				gotReadCloser, gotContentType := client.GetLayer(id, scenario.name)
+				gotReadCloser, gotContentType := client.GetLayer(t, id, scenario.name)
 				got, err := io.ReadAll(gotReadCloser)
 				AssertNoError(t, err)
 				if !bytes.Equal(got, scenario.layer) {
@@ -80,16 +80,16 @@ func TestLayers(t *testing.T) {
 
 		for _, scenario := range scenarios {
 			t.Run("delete "+scenario.name, func(t *testing.T) {
-				client.DeleteLayer(id, scenario.name)
-				client.GetLayerExpectNotFound(id, scenario.name)
+				client.DeleteLayer(t, id, scenario.name)
+				client.GetLayerExpectNotFound(t, id, scenario.name)
 			})
 		}
 	})
 
 	t.Run("put heightmap updates heightmap URL", func(t *testing.T) {
-		client.PutLayer(id, "heightmap.jpg", nil)
+		client.PutLayer(t, id, "heightmap.jpg", nil)
 
-		got := client.GetLayout(id).HeightmapURL
+		got := client.GetLayout(t, id).HeightmapURL
 		want := fmt.Sprintf("%s/v1/layouts/%s/heightmap.jpg", baseURL, id)
 		if got != want {
 			t.Errorf("got %s want %s", got, want)
@@ -97,9 +97,9 @@ func TestLayers(t *testing.T) {
 	})
 
 	t.Run("put hillshade updates hillshade URL", func(t *testing.T) {
-		client.PutLayer(id, "hillshade.jpg", nil)
+		client.PutLayer(t, id, "hillshade.jpg", nil)
 
-		got := client.GetLayout(id).HillshadeURL
+		got := client.GetLayout(t, id).HillshadeURL
 		want := fmt.Sprintf("%s/v1/layouts/%s/hillshade.jpg", baseURL, id)
 		if got != want {
 			t.Errorf("got %s want %s", got, want)
@@ -107,9 +107,9 @@ func TestLayers(t *testing.T) {
 	})
 
 	t.Run("layers are present after deleting layout", func(t *testing.T) {
-		id := client.CreateLayout(Layout{}).Id
-		client.PutLayer(id, "heightmap.jpg", nil)
-		client.DeleteLayout(id)
-		client.GetLayer(id, "heightmap.jpg")
+		id := client.CreateLayout(t, Layout{}).Id
+		client.PutLayer(t, id, "heightmap.jpg", nil)
+		client.DeleteLayout(t, id)
+		client.GetLayer(t, id, "heightmap.jpg")
 	})
 }

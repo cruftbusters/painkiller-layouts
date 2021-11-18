@@ -9,13 +9,13 @@ import (
 
 func TestVersionController(t *testing.T) {
 	controller := VersionController{}
-	client, _ := NewTestClient(t, func(string, string) *httprouter.Router {
+	client, _ := NewTestClient(func(string, string) *httprouter.Router {
 		router := httprouter.New()
 		controller.AddRoutes(router)
 		return router
 	})
 
-	got := client.GetVersion().Version
+	got := client.GetVersion(t).Version
 	want := "1"
 	if got != want {
 		t.Errorf("got %s want %s", got, want)
