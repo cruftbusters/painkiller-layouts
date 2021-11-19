@@ -14,7 +14,7 @@ import (
 )
 
 func TestDispatch(t *testing.T) {
-	listener, protolessBaseURL := RandomPortListener()
+	listener, protolessBaseURL := TestServer()
 	router := layouts.Handler("file::memory:?cache=shared", "http://"+protolessBaseURL)
 	go func() { http.Serve(listener, router) }()
 

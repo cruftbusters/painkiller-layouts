@@ -5,7 +5,7 @@ import (
 	"net"
 )
 
-func RandomPortListener() (net.Listener, string) {
+func TestServer() (net.Listener, string) {
 	listener, err := net.Listen("tcp", ":0")
 	if err != nil {
 		panic(err)

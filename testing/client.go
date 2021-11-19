@@ -23,7 +23,7 @@ func NewTestClient(
 	routerSupplier func(sqlite3Connection, baseURL string) *httprouter.Router,
 ) (ClientV2, string) {
 	if overrideBaseURL == "" {
-		listener, protolessBaseURL := RandomPortListener()
+		listener, protolessBaseURL := TestServer()
 		baseURL := "http://" + protolessBaseURL
 		router := routerSupplier("file::memory:?cache=shared", baseURL)
 		go func() { http.Serve(listener, router) }()

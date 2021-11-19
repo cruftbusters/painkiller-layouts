@@ -13,7 +13,7 @@ import (
 )
 
 func TestDispatch(t *testing.T) {
-	listener, protolessBaseURL := RandomPortListener()
+	listener, protolessBaseURL := TestServer()
 	layoutPublisher := make(chan types.Layout)
 	pingInterval := time.Second
 	router := httprouter.New()
