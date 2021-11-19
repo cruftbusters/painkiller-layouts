@@ -22,13 +22,6 @@ func init() { flag.StringVar(&overrideBaseURL, "overrideBaseURL", "", "override 
 func NewTestClient(
 	routerSupplier func(sqlite3Connection, baseURL string) *httprouter.Router,
 ) (ClientV2, string) {
-	return NewTestClientFromURL(routerSupplier, overrideBaseURL)
-}
-
-func NewTestClientFromURL(
-	routerSupplier func(sqlite3Connection, baseURL string) *httprouter.Router,
-	overrideBaseURL string,
-) (ClientV2, string) {
 	if overrideBaseURL == "" {
 		listener, protolessBaseURL := RandomPortListener()
 		baseURL := "http://" + protolessBaseURL
