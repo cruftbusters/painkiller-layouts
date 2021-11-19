@@ -1,7 +1,6 @@
 package acceptance
 
 import (
-	"fmt"
 	"net/http"
 	"sync"
 	"testing"
@@ -14,16 +13,16 @@ import (
 )
 
 func TestDispatch(t *testing.T) {
-	listener, protolessBaseURL := TestServer()
-	router := layouts.Handler("file::memory:?cache=shared", "http://"+protolessBaseURL)
+	listener, httpBaseURL, wsBaseURL := TestServer()
+	router := layouts.Handler("file::memory:?cache=shared", httpBaseURL)
 	go func() { http.Serve(listener, router) }()
 
-	client := ClientV2{BaseURL: "http://" + protolessBaseURL}
+	client := ClientV2{BaseURL: httpBaseURL}
 
 	t.Run("server ping", func(t *testing.T) {
 		t.SkipNow()
 
-		connection, _, err := websocket.DefaultDialer.Dial(fmt.Sprintf("%s/v1/layout_dispatch", "ws://"+protolessBaseURL), nil)
+		connection, _, err := websocket.DefaultDialer.Dial(wsBaseURL+"/v1/layout_dispatch", nil)
 		AssertNoError(t, err)
 
 		signal := make(chan *struct{})
@@ -53,7 +52,7 @@ func TestDispatch(t *testing.T) {
 	})
 
 	t.Run("dispatch new layouts", func(t *testing.T) {
-		connection, _, err := websocket.DefaultDialer.Dial(fmt.Sprintf("%s/v1/layout_dispatch", "ws://"+protolessBaseURL), nil)
+		connection, _, err := websocket.DefaultDialer.Dial(wsBaseURL+"/v1/layout_dispatch", nil)
 		AssertNoError(t, err)
 
 		var wg sync.WaitGroup

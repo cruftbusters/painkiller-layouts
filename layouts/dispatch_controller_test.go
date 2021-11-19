@@ -13,7 +13,7 @@ import (
 )
 
 func TestDispatch(t *testing.T) {
-	listener, protolessBaseURL := TestServer()
+	listener, _, wsBaseURL := TestServer()
 	layoutPublisher := make(chan types.Layout)
 	pingInterval := time.Second
 	router := httprouter.New()
@@ -27,7 +27,7 @@ func TestDispatch(t *testing.T) {
 	})
 
 	t.Run("server ping", func(t *testing.T) {
-		connection, _, err := websocket.DefaultDialer.Dial(fmt.Sprintf("%s/v1/layout_dispatch", "ws://"+protolessBaseURL), nil)
+		connection, _, err := websocket.DefaultDialer.Dial(fmt.Sprintf("%s/v1/layout_dispatch", wsBaseURL), nil)
 		AssertNoError(t, err)
 		defer connection.Close()
 		go func() {
@@ -56,7 +56,7 @@ func TestDispatch(t *testing.T) {
 	})
 
 	t.Run("dispatch new layouts", func(t *testing.T) {
-		connection, _, err := websocket.DefaultDialer.Dial(fmt.Sprintf("%s/v1/layout_dispatch", "ws://"+protolessBaseURL), nil)
+		connection, _, err := websocket.DefaultDialer.Dial(fmt.Sprintf("%s/v1/layout_dispatch", wsBaseURL), nil)
 		AssertNoError(t, err)
 		defer connection.Close()
 
