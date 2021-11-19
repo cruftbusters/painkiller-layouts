@@ -2,8 +2,9 @@
 
 cat <<EOF | ssh yagni -T
   mkdir -p $HOME/painkiller
-  git clone https://github.com/cruftbusters/painkiller-layouts painkiller/layouts
-  cd painkiller/layouts
-  ln -s $HOME/painkiller/layouts/scripts/painkiller.layouts.service $HOME/.config/systemd/user/
-  systemctl enable painkiller.layouts --user
+  git clone https://github.com/cruftbusters/painkiller-layouts painkiller/layouts-test
+  cd painkiller/layouts-test
+  git checkout test
+  ln -s $HOME/painkiller/layouts-test/scripts/painkiller.layouts-test.service $HOME/.config/systemd/user/
+  systemctl enable painkiller.layouts-test --user
 EOF

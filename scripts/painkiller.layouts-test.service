@@ -1,0 +1,12 @@
+[Unit]
+Description=painkiller/layouts-test
+
+[Service]
+ExecStart=/home/arctair/painkiller/layouts-test/build/server 8083 "file:/home/arctair/warehouse/painkiller/layouts-test.sqlite?cache=shared" https://layouts-test.painkillergis.com
+StandardOutput=file:/home/arctair/painkiller/layouts-test/application.log
+StandardError=file:/home/arctair/painkiller/layouts-test/error.log
+Type=simple
+WorkingDirectory=/home/arctair/painkiller/layouts-test
+
+[Install]
+WantedBy=default.target

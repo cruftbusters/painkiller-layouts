@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/cruftbusters/painkiller-layouts/layouts"
 	. "github.com/cruftbusters/painkiller-layouts/testing"
@@ -42,5 +43,13 @@ func TestDispatch(t *testing.T) {
 		wg.Wait()
 
 		AssertLayout(t, gotDispatched, gotCreated)
+
+		connection.Close()
+		connection.UnderlyingConn().Close()
+
+		time.Sleep(2 * time.Second)
+
+		id := client.CreateLayout(t, types.Layout{}).Id
+		client.DeleteLayout(t, id)
 	})
 }

@@ -1,9 +1,9 @@
 cat <<EOF | ssh yagni -T
-  cd /home/arctair/painkiller/layouts
+  cd /home/arctair/painkiller/layouts-test
   git fetch
-  git reset origin/main --hard
+  git reset origin/test --hard
   go build -o build/server
   mkdir -p /home/arctair/warehouse/painkiller
   systemctl daemon-reload --user
-  systemctl restart painkiller.layouts --user
+  systemctl restart painkiller.layouts-test --user
 EOF
