@@ -6,7 +6,6 @@ import (
 
 	. "github.com/cruftbusters/painkiller-layouts/testing"
 	. "github.com/cruftbusters/painkiller-layouts/types"
-	"github.com/julienschmidt/httprouter"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -15,11 +14,9 @@ func TestLayoutController(t *testing.T) {
 	controller := LayoutController{
 		mockLayoutService,
 	}
-	client, _ := NewTestClient(func(string, string) *httprouter.Router {
-		router := httprouter.New()
-		controller.AddRoutes(router)
-		return router
-	})
+
+	httpBaseURL, _ := TestController(controller)
+	client := ClientV2{BaseURL: httpBaseURL}
 
 	t.Run("get missing", func(t *testing.T) {
 		id := "deadbeef"

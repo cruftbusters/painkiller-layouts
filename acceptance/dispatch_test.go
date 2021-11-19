@@ -1,7 +1,6 @@
 package acceptance
 
 import (
-	"net/http"
 	"sync"
 	"testing"
 	"time"
@@ -13,10 +12,7 @@ import (
 )
 
 func TestDispatch(t *testing.T) {
-	listener, httpBaseURL, wsBaseURL := TestServer()
-	router := layouts.Handler("file::memory:?cache=shared", httpBaseURL)
-	go func() { http.Serve(listener, router) }()
-
+	httpBaseURL, wsBaseURL := TestServer(layouts.Handler)
 	client := ClientV2{BaseURL: httpBaseURL}
 
 	t.Run("server ping", func(t *testing.T) {

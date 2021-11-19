@@ -12,7 +12,9 @@ import (
 )
 
 func TestLayers(t *testing.T) {
-	client, baseURL := NewTestClient(layouts.Handler)
+	httpBaseURL, _ := TestServer(layouts.Handler)
+	client := ClientV2{BaseURL: httpBaseURL}
+
 	id := client.CreateLayout(t, Layout{}).Id
 	defer func() { client.DeleteLayout(t, id) }()
 
@@ -90,7 +92,7 @@ func TestLayers(t *testing.T) {
 		client.PutLayer(t, id, "heightmap.jpg", nil)
 
 		got := client.GetLayout(t, id).HeightmapURL
-		want := fmt.Sprintf("%s/v1/layouts/%s/heightmap.jpg", baseURL, id)
+		want := fmt.Sprintf("%s/v1/layouts/%s/heightmap.jpg", httpBaseURL, id)
 		if got != want {
 			t.Errorf("got %s want %s", got, want)
 		}
@@ -100,7 +102,7 @@ func TestLayers(t *testing.T) {
 		client.PutLayer(t, id, "hillshade.jpg", nil)
 
 		got := client.GetLayout(t, id).HillshadeURL
-		want := fmt.Sprintf("%s/v1/layouts/%s/hillshade.jpg", baseURL, id)
+		want := fmt.Sprintf("%s/v1/layouts/%s/hillshade.jpg", httpBaseURL, id)
 		if got != want {
 			t.Errorf("got %s want %s", got, want)
 		}

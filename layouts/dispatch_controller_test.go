@@ -2,23 +2,20 @@ package layouts
 
 import (
 	"fmt"
-	"net/http"
 	"testing"
 	"time"
 
 	. "github.com/cruftbusters/painkiller-layouts/testing"
 	"github.com/cruftbusters/painkiller-layouts/types"
 	"github.com/gorilla/websocket"
-	"github.com/julienschmidt/httprouter"
 )
 
 func TestDispatch(t *testing.T) {
-	listener, _, wsBaseURL := TestServer()
 	layoutPublisher := make(chan types.Layout)
 	pingInterval := time.Second
-	router := httprouter.New()
-	(&DispatchController{layoutPublisher, pingInterval}).AddRoutes(router)
-	go func() { http.Serve(listener, router) }()
+	controller := &DispatchController{layoutPublisher, pingInterval}
+
+	_, wsBaseURL := TestController(controller)
 
 	t.Run("sink layouts when no subscribers", func(t *testing.T) {
 		down := types.Layout{Id: "hello im new here"}

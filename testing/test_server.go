@@ -1,15 +1,31 @@
 package testing
 
 import (
-	"fmt"
-	"net"
+	"flag"
+	"log"
+	"net/http"
+	"strings"
+
+	"github.com/julienschmidt/httprouter"
 )
 
-func TestServer() (net.Listener, string, string) {
-	listener, err := net.Listen("tcp", ":0")
-	if err != nil {
-		panic(err)
+var overrideBaseURL string
+
+func init() { flag.StringVar(&overrideBaseURL, "overrideBaseURL", "", "override base URL") }
+
+func TestServer(handler func(router *httprouter.Router, sqlite3Connection, httpBaseURL string)) (string, string) {
+	if overrideBaseURL != "" {
+		if !strings.HasPrefix(overrideBaseURL, "http://") && !strings.HasPrefix(overrideBaseURL, "https://") {
+			log.Fatalf("Malformed protocol in override base URL: %s", overrideBaseURL)
+		}
+		httpBaseURL := overrideBaseURL
+		wsBaseURL := "ws" + strings.TrimPrefix(overrideBaseURL, "http")
+		return httpBaseURL, wsBaseURL
+	} else {
+		listener, httpBaseURL, wsBaseURL := TestListener()
+		router := httprouter.New()
+		handler(router, "file::memory:?cache=shared", httpBaseURL)
+		go func() { http.Serve(listener, router) }()
+		return httpBaseURL, wsBaseURL
 	}
-	port := listener.Addr().(*net.TCPAddr).Port
-	return listener, fmt.Sprintf("http://localhost:%d", port), fmt.Sprintf("ws://localhost:%d", port)
 }

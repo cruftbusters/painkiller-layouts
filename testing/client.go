@@ -1,35 +1,16 @@
 package testing
 
 import (
-	"flag"
 	"fmt"
 	"io"
 	"net/http"
 	"testing"
 
 	. "github.com/cruftbusters/painkiller-layouts/types"
-	"github.com/julienschmidt/httprouter"
 )
 
 type ClientV2 struct {
 	BaseURL string
-}
-
-var overrideBaseURL string
-
-func init() { flag.StringVar(&overrideBaseURL, "overrideBaseURL", "", "override base URL") }
-
-func NewTestClient(
-	routerSupplier func(sqlite3Connection, baseURL string) *httprouter.Router,
-) (ClientV2, string) {
-	if overrideBaseURL == "" {
-		listener, httpBaseURL, _ := TestServer()
-		router := routerSupplier("file::memory:?cache=shared", httpBaseURL)
-		go func() { http.Serve(listener, router) }()
-		return ClientV2{BaseURL: httpBaseURL}, httpBaseURL
-	} else {
-		return ClientV2{BaseURL: overrideBaseURL}, overrideBaseURL
-	}
 }
 
 func (client ClientV2) GetVersion(t testing.TB) Version {

@@ -4,16 +4,13 @@ import (
 	"testing"
 
 	. "github.com/cruftbusters/painkiller-layouts/testing"
-	"github.com/julienschmidt/httprouter"
 )
 
 func TestVersionController(t *testing.T) {
 	controller := VersionController{}
-	client, _ := NewTestClient(func(string, string) *httprouter.Router {
-		router := httprouter.New()
-		controller.AddRoutes(router)
-		return router
-	})
+
+	httpBaseURL, _ := TestController(controller)
+	client := ClientV2{BaseURL: httpBaseURL}
 
 	got := client.GetVersion(t).Version
 	want := "1"

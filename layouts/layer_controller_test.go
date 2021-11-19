@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	. "github.com/cruftbusters/painkiller-layouts/testing"
-	"github.com/julienschmidt/httprouter"
 )
 
 func TestLayerController(t *testing.T) {
@@ -15,11 +14,9 @@ func TestLayerController(t *testing.T) {
 	controller := LayerController{
 		mockLayerService,
 	}
-	client, _ := NewTestClient(func(string, string) *httprouter.Router {
-		router := httprouter.New()
-		controller.AddRoutes(router)
-		return router
-	})
+
+	httpBaseURL, _ := TestController(controller)
+	client := ClientV2{BaseURL: httpBaseURL}
 
 	t.Run("put layer on missing map is not found", func(t *testing.T) {
 		id, name := "there is no creativity", "heightmap.jpg"

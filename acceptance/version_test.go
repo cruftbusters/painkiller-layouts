@@ -8,7 +8,8 @@ import (
 )
 
 func TestVersion(t *testing.T) {
-	client, _ := NewTestClient(layouts.Handler)
+	httpBaseURL, _ := TestServer(layouts.Handler)
+	client := ClientV2{BaseURL: httpBaseURL}
 
 	got := client.GetVersion(t).Version
 	want := "1"

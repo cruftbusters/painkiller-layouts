@@ -10,7 +10,8 @@ import (
 )
 
 func TestLayout(t *testing.T) {
-	client, _ := NewTestClient(layouts.Handler)
+	httpBaseURL, _ := TestServer(layouts.Handler)
+	client := ClientV2{BaseURL: httpBaseURL}
 
 	t.Run("get missing layout", func(t *testing.T) {
 		client.GetLayoutExpectNotFound(t, "deadbeef")
