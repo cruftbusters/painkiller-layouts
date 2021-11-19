@@ -1,7 +1,6 @@
 package acceptance
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"sync"
@@ -14,12 +13,13 @@ import (
 )
 
 func TestDispatch(t *testing.T) {
-	t.Run("dispatch new layouts", func(t *testing.T) {
-		listener, protolessBaseURL := RandomPortListener()
-		router := layouts.Handler("file::memory:?cache=shared", "http://"+protolessBaseURL)
-		go func() { http.Serve(listener, router) }()
+	listener, protolessBaseURL := RandomPortListener()
+	router := layouts.Handler("file::memory:?cache=shared", "http://"+protolessBaseURL)
+	go func() { http.Serve(listener, router) }()
 
-		client := ClientV2{BaseURL: "http://" + protolessBaseURL}
+	client := ClientV2{BaseURL: "http://" + protolessBaseURL}
+
+	t.Run("dispatch new layouts", func(t *testing.T) {
 		connection, _, err := websocket.DefaultDialer.Dial(fmt.Sprintf("%s/v1/layout_dispatch", "ws://"+protolessBaseURL), nil)
 		AssertNoError(t, err)
 
@@ -28,14 +28,8 @@ func TestDispatch(t *testing.T) {
 		var gotDispatched, gotCreated types.Layout
 
 		go func() {
-			messageType, reader, err := connection.NextReader()
+			err := connection.ReadJSON(&gotDispatched)
 			AssertNoError(t, err)
-			wantMessageType := websocket.TextMessage
-			if messageType != wantMessageType {
-				t.Errorf("got %d want %d", messageType, wantMessageType)
-			}
-
-			json.NewDecoder(reader).Decode(&gotDispatched)
 			wg.Done()
 		}()
 

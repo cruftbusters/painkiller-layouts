@@ -1,7 +1,6 @@
 package layouts
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"testing"
@@ -31,15 +30,9 @@ func TestDispatch(t *testing.T) {
 		down := types.Layout{Id: "hello im new here"}
 		layoutPublisher <- down
 
-		messageType, reader, err := connection.NextReader()
-		AssertNoError(t, err)
-		wantMessageType := websocket.TextMessage
-		if messageType != wantMessageType {
-			t.Errorf("got %d want %d", messageType, wantMessageType)
-		}
-
 		var layout types.Layout
-		json.NewDecoder(reader).Decode(&layout)
+		err := connection.ReadJSON(&layout)
+		AssertNoError(t, err)
 		AssertLayout(t, layout, down)
 	})
 }
