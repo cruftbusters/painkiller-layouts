@@ -64,6 +64,7 @@ func (c LayoutController) Patch(response http.ResponseWriter, request *http.Requ
 func (c LayoutController) Delete(response http.ResponseWriter, request *http.Request, ps httprouter.Params) {
 	if err := c.layoutService.Delete(ps.ByName("id")); err != nil {
 		response.WriteHeader(500)
+	} else {
+		response.WriteHeader(204)
 	}
-	response.WriteHeader(204)
 }

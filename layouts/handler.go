@@ -3,6 +3,7 @@ package layouts
 import (
 	"database/sql"
 	"log"
+	"time"
 
 	"github.com/cruftbusters/painkiller-layouts/types"
 	"github.com/julienschmidt/httprouter"
@@ -20,7 +21,7 @@ func Handler(sqlite3Connection, baseURL string) *httprouter.Router {
 	router := httprouter.New()
 	layoutChannel := make(chan types.Layout)
 	layoutService := NewLayoutService(db, layoutChannel, &DefaultUUIDService{})
-	(&DispatchController{layoutChannel}).AddRoutes(router)
+	(&DispatchController{layoutChannel, time.Second * 3}).AddRoutes(router)
 	LayoutController{layoutService}.AddRoutes(router)
 	LayerController{NewLayerService(baseURL, db, layoutService)}.AddRoutes(router)
 	VersionController{}.AddRoutes(router)

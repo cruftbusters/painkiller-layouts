@@ -3,6 +3,7 @@ package layouts
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/cruftbusters/painkiller-layouts/types"
 	"github.com/gorilla/websocket"
@@ -11,11 +12,23 @@ import (
 
 type DispatchController struct {
 	layoutPublisher chan types.Layout
+	pingInterval    time.Duration
 }
 
 func (c *DispatchController) AddRoutes(router *httprouter.Router) {
 	upgrader := websocket.Upgrader{}
 	var connection *websocket.Conn
+	go func() {
+		for {
+			if connection != nil {
+				err := connection.WriteControl(websocket.PingMessage, nil, time.Time{})
+				if err != nil {
+					connection = nil
+				}
+			}
+			time.Sleep(c.pingInterval)
+		}
+	}()
 	go func() {
 		for {
 			layout := <-c.layoutPublisher
@@ -38,5 +51,6 @@ func (c *DispatchController) AddRoutes(router *httprouter.Router) {
 		if connection, err = upgrader.Upgrade(rw, r, nil); err != nil {
 			panic(err)
 		}
+		connection.SetCloseHandler(func(int, string) error { connection = nil; return nil })
 	})
 }
