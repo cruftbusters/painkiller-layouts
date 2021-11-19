@@ -20,28 +20,26 @@ func (c *DispatchController) AddRoutes(router *httprouter.Router) {
 	var connection *websocket.Conn
 	go func() {
 		for {
-			if connection != nil {
-				err := connection.WriteControl(websocket.PingMessage, nil, time.Time{})
-				if err != nil {
-					connection = nil
+			select {
+			case layout := <-c.layoutPublisher:
+				if connection != nil {
+					writer, err := connection.NextWriter(websocket.TextMessage)
+					if err != nil {
+						panic(err)
+					}
+					if err := json.NewEncoder(writer).Encode(layout); err != nil {
+						panic(err)
+					}
+					if err := writer.Close(); err != nil {
+						panic(err)
+					}
 				}
-			}
-			time.Sleep(c.pingInterval)
-		}
-	}()
-	go func() {
-		for {
-			layout := <-c.layoutPublisher
-			if connection != nil {
-				writer, err := connection.NextWriter(websocket.TextMessage)
-				if err != nil {
-					panic(err)
-				}
-				if err := json.NewEncoder(writer).Encode(layout); err != nil {
-					panic(err)
-				}
-				if err := writer.Close(); err != nil {
-					panic(err)
+			case <-time.After(c.pingInterval):
+				if connection != nil {
+					err := connection.WriteControl(websocket.PingMessage, nil, time.Time{})
+					if err != nil {
+						connection = nil
+					}
 				}
 			}
 		}
