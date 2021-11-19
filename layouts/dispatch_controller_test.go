@@ -20,7 +20,6 @@ func TestDispatch(t *testing.T) {
 	t.Run("sink layouts when no subscribers", func(t *testing.T) {
 		down := types.Layout{Id: "hello im new here"}
 		layoutPublisher <- down
-		time.Sleep(time.Second)
 	})
 
 	t.Run("server ping", func(t *testing.T) {
