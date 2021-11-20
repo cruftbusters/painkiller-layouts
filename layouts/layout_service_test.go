@@ -3,7 +3,6 @@ package layouts
 import (
 	"database/sql"
 	"fmt"
-	"sync"
 	"testing"
 
 	. "github.com/cruftbusters/painkiller-layouts/testing"
@@ -26,9 +25,8 @@ func TestLayoutService(t *testing.T) {
 		t.Fatal(err)
 	}
 	Migrate(db)
-	layoutSubscriber := make(chan Layout)
 	stubUuidService := &StubUUIDService{}
-	service := NewLayoutService(db, layoutSubscriber, stubUuidService)
+	service := NewLayoutService(db, stubUuidService)
 
 	t.Run("get missing layout", func(t *testing.T) {
 		_, got := service.Get("")
@@ -44,23 +42,8 @@ func TestLayoutService(t *testing.T) {
 		id := "windows update"
 		stubUuidService.idQueue = []string{id}
 
-		var wg sync.WaitGroup
-		wg.Add(2)
-
-		var got Layout
-		go func() {
-			got = service.Create(Layout{})
-			wg.Done()
-			AssertLayout(t, got, Layout{Id: id})
-		}()
-
-		go func() {
-			got := <-layoutSubscriber
-			wg.Done()
-			AssertLayout(t, got, Layout{Id: id})
-		}()
-
-		wg.Wait()
+		got := service.Create(Layout{})
+		AssertLayout(t, got, Layout{Id: id})
 
 		layout, err := service.Get(got.Id)
 		AssertNoError(t, err)
@@ -75,13 +58,10 @@ func TestLayoutService(t *testing.T) {
 	t.Run("get all", func(t *testing.T) {
 		stubUuidService.idQueue = []string{"first", "second", "third"}
 
-		go func() { <-layoutSubscriber }()
 		withHeightmap := service.Create(Layout{HeightmapURL: "heightmap url"})
 		defer service.Delete("first")
-		go func() { <-layoutSubscriber }()
 		withHillshade := service.Create(Layout{HillshadeURL: "hillshade url"})
 		defer service.Delete("second")
-		go func() { <-layoutSubscriber }()
 		withEverythingElse := service.Create(Layout{
 			Size:   Size{Width: 1, Height: 2},
 			Bounds: Bounds{Left: 3, Top: 4, Right: 5, Bottom: 6},
@@ -118,7 +98,6 @@ func TestLayoutService(t *testing.T) {
 		t.Run(fmt.Sprintf("patch layout with %+v", scenario.patch), func(t *testing.T) {
 			id := "the id"
 			stubUuidService.idQueue = []string{id}
-			go func() { <-layoutSubscriber }()
 			layout := service.Create(
 				Layout{
 					Size:         Size{Width: 1, Height: 2},
