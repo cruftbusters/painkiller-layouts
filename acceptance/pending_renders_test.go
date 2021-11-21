@@ -91,18 +91,19 @@ func TestPendingRenders(t *testing.T) {
 		t2.AssertNoError(t, err)
 		defer conn.Close()
 
-		channel := make(chan types.Layout)
+		channel := make(chan struct{ types.Layout })
 		go func() {
 			var layout types.Layout
 			err := conn.ReadJSON(&layout)
 			if err != nil {
 				panic(err)
 			}
-			channel <- layout
+			channel <- struct{ types.Layout }{layout}
 		}()
 
 		select {
-		case <-channel:
+		case result := <-channel:
+			t2.AssertLayout(t, result.Layout, layout)
 		case <-time.After(time.Second):
 			t.Fatal("expected notification in less than one second")
 		}
