@@ -11,8 +11,9 @@ import (
 )
 
 func TestAwaitingLayoutController(t *testing.T) {
+	interval := time.Second
+	controller := &AwaitingLayoutController{interval}
 	t.Run("gracefully close connection", func(t *testing.T) {
-		controller := &AwaitingLayoutController{time.Second}
 		httpBaseURL, wsBaseURL := t2.TestController(controller)
 		client := t2.ClientV2{BaseURL: httpBaseURL}
 
@@ -26,8 +27,6 @@ func TestAwaitingLayoutController(t *testing.T) {
 	})
 
 	t.Run("ping every interval", func(t *testing.T) {
-		interval := time.Second
-		controller := &AwaitingLayoutController{interval}
 		_, wsBaseURL := t2.TestController(controller)
 		wsClient, err := t2.NewLayoutsAwaitingClient(wsBaseURL)
 		t2.AssertNoError(t, err)
@@ -58,7 +57,6 @@ func TestAwaitingLayoutController(t *testing.T) {
 	})
 
 	t.Run("dispatch one awaiting layout", func(t *testing.T) {
-		controller := &AwaitingLayoutController{time.Second}
 		httpBaseURL, wsBaseURL := t2.TestController(controller)
 		client := t2.ClientV2{BaseURL: httpBaseURL}
 
@@ -89,7 +87,6 @@ func TestAwaitingLayoutController(t *testing.T) {
 	})
 
 	t.Run("buffer awaiting layouts", func(t *testing.T) {
-		controller := &AwaitingLayoutController{time.Second}
 		httpBaseURL, wsBaseURL := t2.TestController(controller)
 		client := t2.ClientV2{BaseURL: httpBaseURL}
 
@@ -106,7 +103,6 @@ func TestAwaitingLayoutController(t *testing.T) {
 	})
 
 	t.Run("pull multiple awaiting layouts with one worker", func(t *testing.T) {
-		controller := &AwaitingLayoutController{time.Second}
 		httpBaseURL, wsBaseURL := t2.TestController(controller)
 		client := t2.ClientV2{BaseURL: httpBaseURL}
 
@@ -129,7 +125,6 @@ func TestAwaitingLayoutController(t *testing.T) {
 	})
 
 	t.Run("re-dispatch abandoned awaiting layout", func(t *testing.T) {
-		controller := &AwaitingLayoutController{time.Second}
 		httpBaseURL, wsBaseURL := t2.TestController(controller)
 		client := t2.ClientV2{BaseURL: httpBaseURL}
 
@@ -166,7 +161,6 @@ func TestAwaitingLayoutController(t *testing.T) {
 	})
 
 	t.Run("overflow", func(t *testing.T) {
-		controller := &AwaitingLayoutController{time.Second}
 		httpBaseURL, _ := t2.TestController(controller)
 		client := t2.ClientV2{BaseURL: httpBaseURL}
 
