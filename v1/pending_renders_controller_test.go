@@ -136,6 +136,12 @@ func TestPendingRendersController(t *testing.T) {
 		httpBaseURL, wsBaseURL := t2.TestController(controller)
 		client := t2.ClientV2{BaseURL: httpBaseURL}
 
+		for i := 0; i < 16; i++ {
+			conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL, nil)
+			t2.AssertNoError(t, err)
+			conn.Close()
+		}
+
 		conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL, nil)
 		t2.AssertNoError(t, err)
 		defer conn.Close()

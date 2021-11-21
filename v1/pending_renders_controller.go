@@ -46,6 +46,7 @@ func (c *PendingRendersController) AddRoutes(router *httprouter.Router) {
 			pendingRender := <-pendingRenders
 			if err := conn.WriteJSON(pendingRender); err != nil {
 				log.Printf("failed websocket write: %s", err)
+				pendingRenders <- pendingRender
 				break
 			} else if _, _, err := conn.ReadMessage(); err != nil {
 				log.Printf("failed websocket read: %s", err)
