@@ -46,11 +46,11 @@ func TestPendingRenders(t *testing.T) {
 		httpBaseURL, wsBaseURL := t2.TestServer(v1.Handler)
 		client := t2.ClientV2{httpBaseURL}
 
+		channel0 := make(chan types.Layout)
 		conn0, _, err := websocket.DefaultDialer.Dial(wsBaseURL, nil)
 		t2.AssertNoError(t, err)
 		defer conn0.Close()
 
-		channel0 := make(chan types.Layout)
 		go func() {
 			var layout types.Layout
 			err := conn0.ReadJSON(&layout)
@@ -60,11 +60,11 @@ func TestPendingRenders(t *testing.T) {
 			channel0 <- layout
 		}()
 
+		channel1 := make(chan types.Layout)
 		conn1, _, err := websocket.DefaultDialer.Dial(wsBaseURL, nil)
 		t2.AssertNoError(t, err)
 		defer conn1.Close()
 
-		channel1 := make(chan types.Layout)
 		go func() {
 			var layout types.Layout
 			err := conn1.ReadJSON(&layout)
