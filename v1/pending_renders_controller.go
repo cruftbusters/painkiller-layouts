@@ -16,12 +16,15 @@ type PendingRendersController struct {
 
 func (c *PendingRendersController) AddRoutes(router *httprouter.Router) {
 	upgrader := websocket.Upgrader{}
-	var _conn *websocket.Conn
+	counter := 0
+	connections := make(map[int]*websocket.Conn)
 	router.POST("/", func(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		var layout types.Layout
 		json.NewDecoder(r.Body).Decode(&layout)
-		if err := _conn.WriteJSON(layout); err != nil {
-			panic(err)
+		for _, conn := range connections {
+			if err := conn.WriteJSON(layout); err != nil {
+				panic(err)
+			}
 		}
 		rw.WriteHeader(201)
 	})
@@ -31,7 +34,8 @@ func (c *PendingRendersController) AddRoutes(router *httprouter.Router) {
 			panic(err)
 		}
 		defer conn.Close()
-		_conn = conn
+		connections[counter] = conn
+		counter++
 		for {
 			conn.WriteControl(websocket.PingMessage, nil, time.Time{})
 			time.Sleep(c.interval)
