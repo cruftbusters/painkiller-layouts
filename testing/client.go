@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"testing"
+	"time"
 
 	. "github.com/cruftbusters/painkiller-layouts/types"
 )
@@ -79,9 +80,24 @@ func (client ClientV2) CreateLayout(t testing.TB, layout Layout) Layout {
 func (client ClientV2) CreatePendingRender(t testing.TB, layout Layout) {
 	t.Helper()
 	up := encode(t, layout)
-	response, err := http.Post(client.baseURLF("/"), "", up)
-	AssertNoError(t, err)
-	AssertStatusCode(t, response, 201)
+	done := make(chan struct {
+		*http.Response
+		error
+	})
+	go func() {
+		response, err := http.Post(client.baseURLF("/"), "", up)
+		done <- struct {
+			*http.Response
+			error
+		}{response, err}
+	}()
+	select {
+	case result := <-done:
+		AssertNoError(t, result.error)
+		AssertStatusCode(t, result.Response, 201)
+	case <-time.After(time.Second):
+		t.Fatal("expected response in less than one second")
+	}
 }
 
 func (client ClientV2) PatchLayoutExpectNotFound(t testing.TB, id string) {

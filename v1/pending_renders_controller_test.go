@@ -85,16 +85,7 @@ func TestPendingRendersController(t *testing.T) {
 		client := t2.ClientV2{BaseURL: httpBaseURL}
 
 		layout := types.Layout{Id: "unhandled"}
-		created := make(chan *struct{})
-		go func() {
-			client.CreatePendingRender(t, layout)
-			created <- nil
-		}()
-		select {
-		case <-created:
-		case <-time.After(time.Second):
-			t.Fatal("expected pending render to have been created in less than one second")
-		}
+		client.CreatePendingRender(t, layout)
 
 		conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL, nil)
 		t2.AssertNoError(t, err)
