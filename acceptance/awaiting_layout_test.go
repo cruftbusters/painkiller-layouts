@@ -9,7 +9,6 @@ import (
 	t2 "github.com/cruftbusters/painkiller-layouts/testing"
 	"github.com/cruftbusters/painkiller-layouts/types"
 	v1 "github.com/cruftbusters/painkiller-layouts/v1"
-	"github.com/gorilla/websocket"
 )
 
 func TestPendingRenders(t *testing.T) {
@@ -18,9 +17,9 @@ func TestPendingRenders(t *testing.T) {
 		client := t2.ClientV2{BaseURL: httpBaseURL}
 
 		for i := 0; i < 16; i++ {
-			conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL, nil)
+			wsClient, err := t2.NewWSClient(wsBaseURL)
 			t2.AssertNoError(t, err)
-			conn.Close()
+			wsClient.Conn.Close()
 		}
 
 		client.EnqueueLayout(t, types.Layout{})
@@ -28,14 +27,14 @@ func TestPendingRenders(t *testing.T) {
 
 	t.Run("ping every interval", func(t *testing.T) {
 		_, wsBaseURL := t2.TestServer(v1.Handler)
-		conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL, nil)
+		wsClient, err := t2.NewWSClient(wsBaseURL)
 		t2.AssertNoError(t, err)
-		defer conn.Close()
+		defer wsClient.Conn.Close()
 
-		go conn.ReadMessage()
+		go wsClient.Conn.ReadMessage()
 
 		signal := make(chan *struct{})
-		conn.SetPingHandler(func(string) error { signal <- nil; return nil })
+		wsClient.Conn.SetPingHandler(func(string) error { signal <- nil; return nil })
 
 		one, five, six := time.After(time.Second), time.After(5*time.Second), time.After(6*time.Second)
 		select {
@@ -70,12 +69,12 @@ func TestPendingRenders(t *testing.T) {
 		var wg sync.WaitGroup
 		wg.Add(len(layouts))
 		for _, want := range layouts {
-			conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL, nil)
+			wsClient, err := t2.NewWSClient(wsBaseURL)
 			t2.AssertNoError(t, err)
-			defer conn.Close()
+			defer wsClient.Conn.Close()
 
 			go func(want types.Layout) {
-				got, err := (&t2.WSClient{Conn: conn}).StartDequeueAwaitingLayout()
+				got, err := wsClient.StartDequeueAwaitingLayout()
 				if err != nil {
 					t.Errorf("got %s want nil", err)
 				} else if got != want {
@@ -94,10 +93,9 @@ func TestPendingRenders(t *testing.T) {
 		layout := types.Layout{Id: "unhandled"}
 		client.EnqueueLayout(t, layout)
 
-		conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL, nil)
+		wsClient, err := t2.NewWSClient(wsBaseURL)
 		t2.AssertNoError(t, err)
-		defer conn.Close()
-		wsClient := t2.WSClient{Conn: conn}
+		defer wsClient.Conn.Close()
 
 		got, err := wsClient.StartDequeueAwaitingLayout()
 		t2.AssertNoError(t, err)
@@ -108,10 +106,9 @@ func TestPendingRenders(t *testing.T) {
 		httpBaseURL, wsBaseURL := t2.TestServer(v1.Handler)
 		client := t2.ClientV2{BaseURL: httpBaseURL}
 
-		conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL, nil)
+		wsClient, err := t2.NewWSClient(wsBaseURL)
 		t2.AssertNoError(t, err)
-		defer conn.Close()
-		wsClient := t2.WSClient{Conn: conn}
+		defer wsClient.Conn.Close()
 
 		first, second := types.Layout{Id: "first"}, types.Layout{Id: "second"}
 
@@ -132,15 +129,14 @@ func TestPendingRenders(t *testing.T) {
 		client := t2.ClientV2{BaseURL: httpBaseURL}
 
 		for i := 0; i < 16; i++ {
-			conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL, nil)
+			wsClient, err := t2.NewWSClient(wsBaseURL)
 			t2.AssertNoError(t, err)
-			conn.Close()
+			wsClient.Conn.Close()
 		}
 
-		conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL, nil)
+		wsClient, err := t2.NewWSClient(wsBaseURL)
 		t2.AssertNoError(t, err)
-		defer conn.Close()
-		wsClient := t2.WSClient{Conn: conn}
+		defer wsClient.Conn.Close()
 
 		first, second := types.Layout{Id: "first"}, types.Layout{Id: "second"}
 
@@ -154,12 +150,11 @@ func TestPendingRenders(t *testing.T) {
 		got, err = wsClient.StartDequeueAwaitingLayout()
 		t2.AssertNoError(t, err)
 		t2.AssertLayout(t, got, second)
-		conn.Close()
+		wsClient.Conn.Close()
 
-		conn, _, err = websocket.DefaultDialer.Dial(wsBaseURL, nil)
+		wsClient, err = t2.NewWSClient(wsBaseURL)
 		t2.AssertNoError(t, err)
-		defer conn.Close()
-		wsClient = t2.WSClient{Conn: conn}
+		defer wsClient.Conn.Close()
 		got, err = wsClient.StartDequeueAwaitingLayout()
 		t2.AssertNoError(t, err)
 		t2.AssertLayout(t, got, second)

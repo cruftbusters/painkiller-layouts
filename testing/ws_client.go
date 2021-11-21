@@ -12,6 +12,11 @@ type WSClient struct {
 	Conn *websocket.Conn
 }
 
+func NewWSClient(wsBaseURL string) (WSClient, error) {
+	conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL, nil)
+	return WSClient{Conn: conn}, err
+}
+
 func (c *WSClient) StartDequeueAwaitingLayout() (types.Layout, error) {
 	channel := make(chan struct {
 		types.Layout
