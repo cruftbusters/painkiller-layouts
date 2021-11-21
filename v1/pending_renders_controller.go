@@ -16,16 +16,11 @@ type PendingRendersController struct {
 
 func (c *PendingRendersController) AddRoutes(router *httprouter.Router) {
 	upgrader := websocket.Upgrader{}
-	counter := 0
-	sendCounter := 0
-	connections := make(map[int]*websocket.Conn)
+	pendingRenders := make(chan types.Layout)
 	router.POST("/", func(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		var layout types.Layout
 		json.NewDecoder(r.Body).Decode(&layout)
-		if err := connections[sendCounter].WriteJSON(layout); err != nil {
-			panic(err)
-		}
-		sendCounter++
+		pendingRenders <- layout
 		rw.WriteHeader(201)
 	})
 	router.GET("/", func(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -34,11 +29,14 @@ func (c *PendingRendersController) AddRoutes(router *httprouter.Router) {
 			panic(err)
 		}
 		defer conn.Close()
-		connections[counter] = conn
-		counter++
-		for {
-			conn.WriteControl(websocket.PingMessage, nil, time.Time{})
-			time.Sleep(c.interval)
+		go func() {
+			for {
+				conn.WriteControl(websocket.PingMessage, nil, time.Time{})
+				time.Sleep(c.interval)
+			}
+		}()
+		if err := conn.WriteJSON(<-pendingRenders); err != nil {
+			panic(err)
 		}
 	})
 }
