@@ -47,45 +47,31 @@ func TestPendingRendersController(t *testing.T) {
 		httpBaseURL, wsBaseURL := t2.TestController(controller)
 		client := t2.ClientV2{BaseURL: httpBaseURL}
 
-		channel0 := make(chan types.Layout)
-		conn0, _, err := websocket.DefaultDialer.Dial(wsBaseURL, nil)
-		t2.AssertNoError(t, err)
-		defer conn0.Close()
-
-		channel1 := make(chan types.Layout)
-		conn1, _, err := websocket.DefaultDialer.Dial(wsBaseURL, nil)
-		t2.AssertNoError(t, err)
-		defer conn1.Close()
-
-		go func() {
-			var layout types.Layout
-			err := conn0.ReadJSON(&layout)
+		channels := [2]chan types.Layout{}
+		for i := 0; i < len(channels); i++ {
+			channels[i] = make(chan types.Layout)
+			conn0, _, err := websocket.DefaultDialer.Dial(wsBaseURL, nil)
 			t2.AssertNoError(t, err)
-			channel0 <- layout
-		}()
+			defer conn0.Close()
 
-		go func() {
-			var layout types.Layout
-			err := conn1.ReadJSON(&layout)
-			t2.AssertNoError(t, err)
-			channel1 <- layout
-		}()
+			go func(index int) {
+				var layout types.Layout
+				err := conn0.ReadJSON(&layout)
+				t2.AssertNoError(t, err)
+				channels[index] <- layout
+			}(i)
+		}
 
 		layout := types.Layout{Id: "notification"}
 		client.CreatePendingRender(t, layout)
 
-		select {
-		case got := <-channel0:
-			t2.AssertLayout(t, got, layout)
-		case <-time.After(time.Second):
-			t.Error("expected notification in less than one second")
-		}
-
-		select {
-		case got := <-channel1:
-			t2.AssertLayout(t, got, layout)
-		case <-time.After(time.Second):
-			t.Error("expected notification in less than one second")
+		for i := 0; i < len(channels); i++ {
+			select {
+			case got := <-channels[i]:
+				t2.AssertLayout(t, got, layout)
+			case <-time.After(time.Second):
+				t.Error("expected notification in less than one second")
+			}
 		}
 	})
 }
