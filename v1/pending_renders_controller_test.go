@@ -9,7 +9,8 @@ import (
 )
 
 func TestPendingRendersController(t *testing.T) {
-	controller := &PendingRendersController{}
+	interval := time.Second
+	controller := &PendingRendersController{interval}
 	_, wsBaseURL := t2.TestController(controller)
 	conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL, nil)
 	t2.AssertNoError(t, err)
@@ -19,7 +20,7 @@ func TestPendingRendersController(t *testing.T) {
 	signal := make(chan *struct{})
 	conn.SetPingHandler(func(string) error { signal <- nil; return nil })
 
-	one, five, six := time.After(time.Second), time.After(5*time.Second), time.After(6*time.Second)
+	one, five, six := time.After(time.Second), time.After(interval), time.After(interval+time.Second)
 	select {
 	case <-signal:
 	case <-one:
@@ -28,13 +29,13 @@ func TestPendingRendersController(t *testing.T) {
 
 	select {
 	case <-signal:
-		t.Fatal("expected no ping in less than five seconds")
+		t.Fatalf("expected no ping in less than %s", interval)
 	case <-five:
 	}
 
 	select {
 	case <-signal:
 	case <-six:
-		t.Fatal("expected ping in less than six seconds")
+		t.Fatalf("expected ping in less than %s", interval+time.Second)
 	}
 }

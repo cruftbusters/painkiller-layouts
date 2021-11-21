@@ -8,7 +8,9 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-type PendingRendersController struct{}
+type PendingRendersController struct {
+	interval time.Duration
+}
 
 func (c *PendingRendersController) AddRoutes(router *httprouter.Router) {
 	upgrader := websocket.Upgrader{}
@@ -20,7 +22,7 @@ func (c *PendingRendersController) AddRoutes(router *httprouter.Router) {
 		defer conn.Close()
 		for {
 			conn.WriteControl(websocket.PingMessage, nil, time.Time{})
-			time.Sleep(5 * time.Second)
+			time.Sleep(c.interval)
 		}
 	})
 }
