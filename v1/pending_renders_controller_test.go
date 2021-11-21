@@ -12,6 +12,20 @@ import (
 )
 
 func TestPendingRendersController(t *testing.T) {
+	t.Run("gracefully close connection", func(t *testing.T) {
+		controller := &PendingRendersController{time.Second}
+		httpBaseURL, wsBaseURL := t2.TestController(controller)
+		client := t2.ClientV2{BaseURL: httpBaseURL}
+
+		for i := 0; i < 16; i++ {
+			conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL, nil)
+			t2.AssertNoError(t, err)
+			conn.Close()
+		}
+
+		client.CreatePendingRender(t, types.Layout{})
+	})
+
 	t.Run("ping every interval", func(t *testing.T) {
 		interval := time.Second
 		controller := &PendingRendersController{interval}
@@ -91,19 +105,5 @@ func TestPendingRendersController(t *testing.T) {
 		got, err := wsClient.ReadLayout()
 		t2.AssertNoError(t, err)
 		t2.AssertLayout(t, got, layout)
-	})
-
-	t.Run("gracefully close connection", func(t *testing.T) {
-		controller := &PendingRendersController{time.Second}
-		httpBaseURL, wsBaseURL := t2.TestController(controller)
-		client := t2.ClientV2{BaseURL: httpBaseURL}
-
-		for i := 0; i < 16; i++ {
-			conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL, nil)
-			t2.AssertNoError(t, err)
-			conn.Close()
-		}
-
-		client.CreatePendingRender(t, types.Layout{})
 	})
 }
