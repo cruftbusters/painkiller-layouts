@@ -5,13 +5,13 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/cruftbusters/painkiller-layouts/layouts"
+	v1 "github.com/cruftbusters/painkiller-layouts/v1"
 	"github.com/julienschmidt/httprouter"
 )
 
 func main() {
 	router := httprouter.New()
-	layouts.Handler(router, os.Args[2], os.Args[3])
+	v1.Handler(router, os.Args[2], os.Args[3])
 	http.ListenAndServe(
 		fmt.Sprintf(":%s", os.Args[1]),
 		router,

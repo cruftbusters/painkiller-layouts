@@ -1,4 +1,4 @@
-package layouts
+package v1
 
 import (
 	"database/sql"

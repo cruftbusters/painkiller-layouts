@@ -3,7 +3,7 @@
 ## run the unit tests
 
 ```
-$ go test github.com/cruftbusters/painkiller-layouts/heightmap
+$ go test github.com/cruftbusters/painkiller-layouts/v1
 ```
 
 ## run the acceptance tests

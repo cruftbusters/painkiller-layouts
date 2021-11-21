@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/cruftbusters/painkiller-layouts/layouts"
 	. "github.com/cruftbusters/painkiller-layouts/testing"
 	. "github.com/cruftbusters/painkiller-layouts/types"
+	v1 "github.com/cruftbusters/painkiller-layouts/v1"
 )
 
 func TestLayout(t *testing.T) {
-	httpBaseURL, _ := TestServer(layouts.Handler)
+	httpBaseURL, _ := TestServer(v1.Handler)
 	client := ClientV2{BaseURL: httpBaseURL}
 
 	t.Run("get missing layout", func(t *testing.T) {
