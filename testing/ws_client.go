@@ -13,7 +13,7 @@ type WSClient struct {
 }
 
 func NewWSClient(wsBaseURL string) (WSClient, error) {
-	conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL, nil)
+	conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL+"/v1/layouts_awaiting", nil)
 	return WSClient{Conn: conn}, err
 }
 

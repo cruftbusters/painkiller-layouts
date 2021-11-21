@@ -29,7 +29,7 @@ func (c *AwaitingLayoutController) AddRoutes(router *httprouter.Router) {
 			rw.WriteHeader(500)
 		}
 	})
-	router.GET("/", func(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	router.GET("/v1/layouts_awaiting", func(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		conn, err := upgrader.Upgrade(rw, r, nil)
 		if err != nil {
 			panic(err)
