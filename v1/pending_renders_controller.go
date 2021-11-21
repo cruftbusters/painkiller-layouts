@@ -2,6 +2,7 @@ package v1
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"time"
 
@@ -29,12 +30,18 @@ func (c *PendingRendersController) AddRoutes(router *httprouter.Router) {
 			panic(err)
 		}
 		defer conn.Close()
+
 		go func() {
 			for {
-				conn.WriteControl(websocket.PingMessage, nil, time.Time{})
+				err := conn.WriteControl(websocket.PingMessage, nil, time.Time{})
+				if err != nil {
+					log.Printf("closing websocket: %s", err)
+					break
+				}
 				time.Sleep(c.interval)
 			}
 		}()
+
 		if err := conn.WriteJSON(<-pendingRenders); err != nil {
 			panic(err)
 		}

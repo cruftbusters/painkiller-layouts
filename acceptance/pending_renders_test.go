@@ -107,4 +107,15 @@ func TestPendingRenders(t *testing.T) {
 			t.Fatal("expected notification in less than one second")
 		}
 	})
+
+	t.Run("gracefully close connection", func(t *testing.T) {
+		httpBaseURL, wsBaseURL := t2.TestServer(v1.Handler)
+		client := t2.ClientV2{BaseURL: httpBaseURL}
+
+		conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL, nil)
+		t2.AssertNoError(t, err)
+		conn.Close()
+
+		client.CreatePendingRender(t, types.Layout{})
+	})
 }
