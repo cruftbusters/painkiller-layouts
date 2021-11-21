@@ -2,6 +2,7 @@ package v1
 
 import (
 	"fmt"
+	"sync"
 	"testing"
 	"time"
 
@@ -48,44 +49,30 @@ func TestPendingRendersController(t *testing.T) {
 		httpBaseURL, wsBaseURL := t2.TestController(controller)
 		client := t2.ClientV2{BaseURL: httpBaseURL}
 
-		channels := [2]chan struct {
-			types.Layout
-			error
-		}{}
-		for i := 0; i < len(channels); i++ {
-			channels[i] = make(chan struct {
-				types.Layout
-				error
-			})
-			conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL, nil)
-			t2.AssertNoError(t, err)
-			defer conn.Close()
-
-			go func(index int) {
-				var layout types.Layout
-				err := conn.ReadJSON(&layout)
-				channels[index] <- struct {
-					types.Layout
-					error
-				}{layout, err}
-			}(i)
-		}
-
 		layouts := [2]types.Layout{}
-		for i := 0; i < len(channels); i++ {
+		for i := 0; i < len(layouts); i++ {
 			layouts[i] = types.Layout{Id: fmt.Sprintf("layout #%d", i)}
 			client.CreatePendingRender(t, layouts[i])
 		}
 
-		for i := 0; i < len(channels); i++ {
-			select {
-			case got := <-channels[i]:
-				t2.AssertNoError(t, got.error)
-				t2.AssertLayout(t, got.Layout, layouts[i])
-			case <-time.After(time.Second):
-				t.Error("expected notification in less than one second")
-			}
+		var wg sync.WaitGroup
+		wg.Add(len(layouts))
+		for _, want := range layouts {
+			conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL, nil)
+			t2.AssertNoError(t, err)
+			defer conn.Close()
+
+			go func(want types.Layout) {
+				got, err := (&t2.WSClient{Conn: conn}).ReadLayout()
+				if err != nil {
+					t.Errorf("got %s want nil", err)
+				} else if got != want {
+					t.Errorf("got %+v want %+v", got, want)
+				}
+				wg.Done()
+			}(want)
 		}
+		wg.Wait()
 	})
 
 	t.Run("buffer notifications", func(t *testing.T) {
