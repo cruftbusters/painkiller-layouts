@@ -100,6 +100,29 @@ func (client ClientV2) CreatePendingRender(t testing.TB, layout Layout) {
 	}
 }
 
+func (client ClientV2) CreatePendingRenderExpectInternalServerError(t testing.TB, layout Layout) {
+	t.Helper()
+	up := encode(t, layout)
+	done := make(chan struct {
+		*http.Response
+		error
+	})
+	go func() {
+		response, err := http.Post(client.baseURLF("/"), "", up)
+		done <- struct {
+			*http.Response
+			error
+		}{response, err}
+	}()
+	select {
+	case result := <-done:
+		AssertNoError(t, result.error)
+		AssertStatusCode(t, result.Response, 500)
+	case <-time.After(time.Second):
+		t.Fatal("expected response in less than one second")
+	}
+}
+
 func (client ClientV2) PatchLayoutExpectNotFound(t testing.TB, id string) {
 	t.Helper()
 

@@ -164,4 +164,16 @@ func TestPendingRenders(t *testing.T) {
 		t2.AssertNoError(t, err)
 		t2.AssertLayout(t, got, second)
 	})
+
+	t.Run("overflow", func(t *testing.T) {
+		httpBaseURL, _ := t2.TestServer(v1.Handler)
+		client := t2.ClientV2{BaseURL: httpBaseURL}
+
+		limit := 2
+
+		for i := 0; i < limit; i++ {
+			client.CreatePendingRender(t, types.Layout{})
+		}
+		client.CreatePendingRenderExpectInternalServerError(t, types.Layout{})
+	})
 }

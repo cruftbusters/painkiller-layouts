@@ -21,8 +21,13 @@ func (c *PendingRendersController) AddRoutes(router *httprouter.Router) {
 	router.POST("/", func(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		var layout types.Layout
 		json.NewDecoder(r.Body).Decode(&layout)
-		pendingRenders <- layout
-		rw.WriteHeader(201)
+		select {
+		case pendingRenders <- layout:
+			rw.WriteHeader(201)
+		default:
+			log.Print("queue full")
+			rw.WriteHeader(500)
+		}
 	})
 	router.GET("/", func(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		conn, err := upgrader.Upgrade(rw, r, nil)
