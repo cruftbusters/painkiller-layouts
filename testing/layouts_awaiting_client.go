@@ -8,16 +8,16 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-type WSClient struct {
+type LayoutsAwaitingClient struct {
 	Conn *websocket.Conn
 }
 
-func NewLayoutsAwaitingClient(wsBaseURL string) (WSClient, error) {
+func NewLayoutsAwaitingClient(wsBaseURL string) (LayoutsAwaitingClient, error) {
 	conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL+"/v1/layouts_awaiting", nil)
-	return WSClient{Conn: conn}, err
+	return LayoutsAwaitingClient{Conn: conn}, err
 }
 
-func (c *WSClient) StartDequeueAwaitingLayout() (types.Layout, error) {
+func (c *LayoutsAwaitingClient) StartDequeueAwaitingLayout() (types.Layout, error) {
 	channel := make(chan struct {
 		types.Layout
 		error
@@ -39,6 +39,6 @@ func (c *WSClient) StartDequeueAwaitingLayout() (types.Layout, error) {
 	}
 }
 
-func (c *WSClient) CompleteDequeueAwaitingLayout() error {
+func (c *LayoutsAwaitingClient) CompleteDequeueAwaitingLayout() error {
 	return c.Conn.WriteMessage(websocket.BinaryMessage, nil)
 }
