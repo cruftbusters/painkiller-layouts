@@ -17,7 +17,7 @@ func TestPendingRenders(t *testing.T) {
 		client := t2.ClientV2{BaseURL: httpBaseURL}
 
 		for i := 0; i < 16; i++ {
-			wsClient, err := t2.NewWSClient(wsBaseURL)
+			wsClient, err := t2.NewLayoutsAwaitingClient(wsBaseURL)
 			t2.AssertNoError(t, err)
 			wsClient.Conn.Close()
 		}
@@ -27,7 +27,7 @@ func TestPendingRenders(t *testing.T) {
 
 	t.Run("ping every interval", func(t *testing.T) {
 		_, wsBaseURL := t2.TestServer(v1.Handler)
-		wsClient, err := t2.NewWSClient(wsBaseURL)
+		wsClient, err := t2.NewLayoutsAwaitingClient(wsBaseURL)
 		t2.AssertNoError(t, err)
 		defer wsClient.Conn.Close()
 
@@ -69,7 +69,7 @@ func TestPendingRenders(t *testing.T) {
 		var wg sync.WaitGroup
 		wg.Add(len(layouts))
 		for _, want := range layouts {
-			wsClient, err := t2.NewWSClient(wsBaseURL)
+			wsClient, err := t2.NewLayoutsAwaitingClient(wsBaseURL)
 			t2.AssertNoError(t, err)
 			defer wsClient.Conn.Close()
 
@@ -93,7 +93,7 @@ func TestPendingRenders(t *testing.T) {
 		layout := types.Layout{Id: "unhandled"}
 		client.EnqueueLayout(t, layout)
 
-		wsClient, err := t2.NewWSClient(wsBaseURL)
+		wsClient, err := t2.NewLayoutsAwaitingClient(wsBaseURL)
 		t2.AssertNoError(t, err)
 		defer wsClient.Conn.Close()
 
@@ -106,7 +106,7 @@ func TestPendingRenders(t *testing.T) {
 		httpBaseURL, wsBaseURL := t2.TestServer(v1.Handler)
 		client := t2.ClientV2{BaseURL: httpBaseURL}
 
-		wsClient, err := t2.NewWSClient(wsBaseURL)
+		wsClient, err := t2.NewLayoutsAwaitingClient(wsBaseURL)
 		t2.AssertNoError(t, err)
 		defer wsClient.Conn.Close()
 
@@ -129,12 +129,12 @@ func TestPendingRenders(t *testing.T) {
 		client := t2.ClientV2{BaseURL: httpBaseURL}
 
 		for i := 0; i < 16; i++ {
-			wsClient, err := t2.NewWSClient(wsBaseURL)
+			wsClient, err := t2.NewLayoutsAwaitingClient(wsBaseURL)
 			t2.AssertNoError(t, err)
 			wsClient.Conn.Close()
 		}
 
-		wsClient, err := t2.NewWSClient(wsBaseURL)
+		wsClient, err := t2.NewLayoutsAwaitingClient(wsBaseURL)
 		t2.AssertNoError(t, err)
 		defer wsClient.Conn.Close()
 
@@ -152,7 +152,7 @@ func TestPendingRenders(t *testing.T) {
 		t2.AssertLayout(t, got, second)
 		wsClient.Conn.Close()
 
-		wsClient, err = t2.NewWSClient(wsBaseURL)
+		wsClient, err = t2.NewLayoutsAwaitingClient(wsBaseURL)
 		t2.AssertNoError(t, err)
 		defer wsClient.Conn.Close()
 		got, err = wsClient.StartDequeueAwaitingLayout()
