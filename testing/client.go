@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"testing"
+	"time"
 
 	. "github.com/cruftbusters/painkiller-layouts/types"
 )
@@ -74,6 +75,52 @@ func (client ClientV2) CreateLayout(t testing.TB, layout Layout) Layout {
 	AssertStatusCode(t, response, 201)
 
 	return decode(t, response)
+}
+
+func (client ClientV2) EnqueueLayout(t testing.TB, layout Layout) {
+	t.Helper()
+	up := encode(t, layout)
+	done := make(chan struct {
+		*http.Response
+		error
+	})
+	go func() {
+		response, err := http.Post(client.baseURLF("/v1/layouts_awaiting"), "", up)
+		done <- struct {
+			*http.Response
+			error
+		}{response, err}
+	}()
+	select {
+	case result := <-done:
+		AssertNoError(t, result.error)
+		AssertStatusCode(t, result.Response, 201)
+	case <-time.After(time.Second):
+		t.Fatal("expected response in less than one second")
+	}
+}
+
+func (client ClientV2) EnqueueLayoutExpectInternalServerError(t testing.TB, layout Layout) {
+	t.Helper()
+	up := encode(t, layout)
+	done := make(chan struct {
+		*http.Response
+		error
+	})
+	go func() {
+		response, err := http.Post(client.baseURLF("/v1/layouts_awaiting"), "", up)
+		done <- struct {
+			*http.Response
+			error
+		}{response, err}
+	}()
+	select {
+	case result := <-done:
+		AssertNoError(t, result.error)
+		AssertStatusCode(t, result.Response, 500)
+	case <-time.After(time.Second):
+		t.Fatal("expected response in less than one second")
+	}
 }
 
 func (client ClientV2) PatchLayoutExpectNotFound(t testing.TB, id string) {
