@@ -77,6 +77,14 @@ func (client ClientV2) CreateLayout(t testing.TB, layout Layout) Layout {
 	return decode(t, response)
 }
 
+func (client ClientV2) CreateLayoutExpectInternalServerError(t testing.TB, layout Layout) {
+	t.Helper()
+	up := encode(t, layout)
+	response, err := http.Post(client.baseURLF("/v1/layouts"), "", up)
+	AssertNoError(t, err)
+	AssertStatusCode(t, response, 500)
+}
+
 func (client ClientV2) EnqueueLayout(t testing.TB, layout Layout) {
 	t.Helper()
 	up := encode(t, layout)

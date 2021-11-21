@@ -151,5 +151,25 @@ func TestPendingRenders(t *testing.T) {
 			client.EnqueueLayout(t, types.Layout{})
 		}
 		client.EnqueueLayoutExpectInternalServerError(t, types.Layout{})
+
+		wsClient, err := t2.NewLayoutsAwaitingClient(wsBaseURL)
+		t2.AssertNoError(t, err)
+		defer wsClient.Conn.Close()
+		for i := 0; i < limit; i++ {
+			_, err := wsClient.StartDequeueAwaitingLayout()
+			t2.AssertNoError(t, err)
+			wsClient.CompleteDequeueAwaitingLayout()
+		}
+	})
+
+	t.Run("enqueue new layouts", func(t *testing.T) {
+		created := client.CreateLayout(t, types.Layout{})
+		defer client.DeleteLayout(t, created.Id)
+
+		wsClient, err := t2.NewLayoutsAwaitingClient(wsBaseURL)
+		t2.AssertNoError(t, err)
+		got, err := wsClient.StartDequeueAwaitingLayout()
+		t2.AssertNoError(t, err)
+		t2.AssertLayout(t, got, created)
 	})
 }

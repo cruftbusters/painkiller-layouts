@@ -2,7 +2,9 @@ package v1
 
 import (
 	"errors"
+	"sync"
 	"testing"
+	"time"
 
 	. "github.com/cruftbusters/painkiller-layouts/testing"
 	. "github.com/cruftbusters/painkiller-layouts/types"
@@ -10,9 +12,11 @@ import (
 )
 
 func TestLayoutController(t *testing.T) {
+	newLayouts := make(chan Layout)
 	mockLayoutService := new(MockLayoutService)
 	controller := LayoutController{
 		mockLayoutService,
+		newLayouts,
 	}
 
 	httpBaseURL, _ := TestController(controller)
@@ -32,9 +36,32 @@ func TestLayoutController(t *testing.T) {
 
 	t.Run("create", func(t *testing.T) {
 		up, down := Layout{Id: "up"}, Layout{Id: "down"}
-		mockLayoutService.On("Create", up).Return(down)
+		mockLayoutService.On("Create", up).Return(down).Once()
+
+		var wg sync.WaitGroup
+		wg.Add(1)
+		go func() {
+			select {
+			case got := <-newLayouts:
+				if got != down {
+					t.Errorf("got %+v want %+v", got, down)
+				}
+			case <-time.After(time.Second):
+				t.Error("timed out after one second")
+			}
+			wg.Done()
+		}()
+
 		got := client.CreateLayout(t, up)
 		AssertLayout(t, got, down)
+		wg.Wait()
+	})
+
+	t.Run("create when queue full", func(t *testing.T) {
+		up, down := Layout{Id: "up"}, Layout{Id: "down"}
+		mockLayoutService.On("Create", up).Return(down)
+
+		client.CreateLayoutExpectInternalServerError(t, up)
 	})
 
 	t.Run("get", func(t *testing.T) {

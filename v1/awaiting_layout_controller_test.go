@@ -153,5 +153,13 @@ func TestAwaitingLayoutController(t *testing.T) {
 			client.EnqueueLayout(t, types.Layout{})
 		}
 		client.EnqueueLayoutExpectInternalServerError(t, types.Layout{})
+
+		wsClient, err := t2.NewLayoutsAwaitingClient(wsBaseURL)
+		t2.AssertNoError(t, err)
+		for i := 0; i < limit; i++ {
+			_, err := wsClient.StartDequeueAwaitingLayout()
+			t2.AssertNoError(t, err)
+			wsClient.CompleteDequeueAwaitingLayout()
+		}
 	})
 }

@@ -2,6 +2,7 @@ package v1
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/cruftbusters/painkiller-layouts/types"
@@ -10,6 +11,7 @@ import (
 
 type LayoutController struct {
 	layoutService LayoutService
+	newLayouts    chan types.Layout
 }
 
 func (c LayoutController) AddRoutes(router *httprouter.Router) {
@@ -21,11 +23,17 @@ func (c LayoutController) AddRoutes(router *httprouter.Router) {
 }
 
 func (c LayoutController) Create(response http.ResponseWriter, request *http.Request, _ httprouter.Params) {
-	response.WriteHeader(201)
 	up := &types.Layout{}
 	json.NewDecoder(request.Body).Decode(up)
 	down := c.layoutService.Create(*up)
-	json.NewEncoder(response).Encode(down)
+	select {
+	case c.newLayouts <- down:
+		response.WriteHeader(201)
+		json.NewEncoder(response).Encode(down)
+	default:
+		response.WriteHeader(500)
+		log.Print("new layouts channel is not accepting emissions")
+	}
 }
 
 func (c LayoutController) Get(response http.ResponseWriter, request *http.Request, ps httprouter.Params) {

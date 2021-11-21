@@ -10,8 +10,21 @@ import (
 )
 
 func TestLayout(t *testing.T) {
-	httpBaseURL, _ := TestServer(v1.Handler)
+	httpBaseURL, wsBaseURL := TestServer(v1.Handler)
 	client := ClientV2{BaseURL: httpBaseURL}
+
+	wsClient, err := NewLayoutsAwaitingClient(wsBaseURL)
+	AssertNoError(t, err)
+	defer wsClient.Conn.Close()
+	go func() {
+		for {
+			_, err := wsClient.StartDequeueAwaitingLayout()
+			if err != nil {
+				break
+			}
+			wsClient.CompleteDequeueAwaitingLayout()
+		}
+	}()
 
 	t.Run("get missing layout", func(t *testing.T) {
 		client.GetLayoutExpectNotFound(t, "deadbeef")
