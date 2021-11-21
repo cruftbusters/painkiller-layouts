@@ -18,7 +18,7 @@ type AwaitingLayoutController struct {
 func (c *AwaitingLayoutController) AddRoutes(router *httprouter.Router) {
 	upgrader := websocket.Upgrader{}
 	awaitingLayouts := make(chan types.Layout, 2)
-	router.POST("/", func(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	router.POST("/v1/layouts_awaiting", func(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		var layout types.Layout
 		json.NewDecoder(r.Body).Decode(&layout)
 		select {

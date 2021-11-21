@@ -85,7 +85,7 @@ func (client ClientV2) EnqueueLayout(t testing.TB, layout Layout) {
 		error
 	})
 	go func() {
-		response, err := http.Post(client.baseURLF("/"), "", up)
+		response, err := http.Post(client.baseURLF("/v1/layouts_awaiting"), "", up)
 		done <- struct {
 			*http.Response
 			error
@@ -108,7 +108,7 @@ func (client ClientV2) EnqueueLayoutExpectInternalServerError(t testing.TB, layo
 		error
 	})
 	go func() {
-		response, err := http.Post(client.baseURLF("/"), "", up)
+		response, err := http.Post(client.baseURLF("/v1/layouts_awaiting"), "", up)
 		done <- struct {
 			*http.Response
 			error
