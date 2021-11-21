@@ -126,4 +126,36 @@ func TestPendingRenders(t *testing.T) {
 		t2.AssertNoError(t, err)
 		t2.AssertLayout(t, got, second)
 	})
+
+	t.Run("redistribute abandoned work", func(t *testing.T) {
+		httpBaseURL, wsBaseURL := t2.TestServer(v1.Handler)
+		client := t2.ClientV2{BaseURL: httpBaseURL}
+
+		conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL, nil)
+		t2.AssertNoError(t, err)
+		defer conn.Close()
+		wsClient := t2.WSClient{Conn: conn}
+
+		first, second := types.Layout{Id: "first"}, types.Layout{Id: "second"}
+
+		client.CreatePendingRender(t, first)
+		got, err := wsClient.ReadLayout()
+		t2.AssertNoError(t, err)
+		t2.AssertLayout(t, got, first)
+
+		client.CreatePendingRender(t, second)
+		wsClient.Ready()
+		got, err = wsClient.ReadLayout()
+		t2.AssertNoError(t, err)
+		t2.AssertLayout(t, got, second)
+		conn.Close()
+
+		conn, _, err = websocket.DefaultDialer.Dial(wsBaseURL, nil)
+		t2.AssertNoError(t, err)
+		defer conn.Close()
+		wsClient = t2.WSClient{Conn: conn}
+		got, err = wsClient.ReadLayout()
+		t2.AssertNoError(t, err)
+		t2.AssertLayout(t, got, second)
+	})
 }
