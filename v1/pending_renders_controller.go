@@ -18,6 +18,9 @@ func (c *PendingRendersController) AddRoutes(router *httprouter.Router) {
 			panic(err)
 		}
 		defer conn.Close()
-		conn.WriteControl(websocket.PingMessage, nil, time.Time{})
+		for {
+			conn.WriteControl(websocket.PingMessage, nil, time.Time{})
+			time.Sleep(5 * time.Second)
+		}
 	})
 }

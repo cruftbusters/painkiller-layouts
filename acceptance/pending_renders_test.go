@@ -19,9 +19,22 @@ func TestPendingRenders(t *testing.T) {
 	signal := make(chan *struct{})
 	conn.SetPingHandler(func(string) error { signal <- nil; return nil })
 
+	one, five, six := time.After(time.Second), time.After(5*time.Second), time.After(6*time.Second)
 	select {
 	case <-signal:
-	case <-time.After(time.Second):
-		t.Error("expected ping in less than one second")
+	case <-one:
+		t.Fatal("expected ping in less than one second")
+	}
+
+	select {
+	case <-signal:
+		t.Fatal("expected no ping in less than five seconds")
+	case <-five:
+	}
+
+	select {
+	case <-signal:
+	case <-six:
+		t.Fatal("expected ping in less than six seconds")
 	}
 }
