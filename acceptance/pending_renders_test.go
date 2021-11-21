@@ -47,9 +47,15 @@ func TestPendingRenders(t *testing.T) {
 		httpBaseURL, wsBaseURL := t2.TestServer(v1.Handler)
 		client := t2.ClientV2{BaseURL: httpBaseURL}
 
-		channels := [2]chan types.Layout{}
+		channels := [2]chan struct {
+			types.Layout
+			error
+		}{}
 		for i := 0; i < len(channels); i++ {
-			channels[i] = make(chan types.Layout)
+			channels[i] = make(chan struct {
+				types.Layout
+				error
+			})
 			conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL, nil)
 			t2.AssertNoError(t, err)
 			defer conn.Close()
@@ -57,10 +63,10 @@ func TestPendingRenders(t *testing.T) {
 			go func(index int) {
 				var layout types.Layout
 				err := conn.ReadJSON(&layout)
-				if err != nil {
-					panic(err)
-				}
-				channels[index] <- layout
+				channels[index] <- struct {
+					types.Layout
+					error
+				}{layout, err}
 			}(i)
 		}
 
@@ -73,7 +79,8 @@ func TestPendingRenders(t *testing.T) {
 		for i := 0; i < len(channels); i++ {
 			select {
 			case got := <-channels[i]:
-				t2.AssertLayout(t, got, layouts[i])
+				t2.AssertNoError(t, got.error)
+				t2.AssertLayout(t, got.Layout, layouts[i])
 			case <-time.After(time.Second):
 				t.Error("expected notification in less than one second")
 			}
