@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/cruftbusters/painkiller-layouts/types"
 	"github.com/julienschmidt/httprouter"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -20,6 +21,9 @@ func Handler(router *httprouter.Router, sqlite3Connection, baseURL string) {
 	layoutService := NewLayoutService(db, &DefaultUUIDService{})
 	LayoutController{layoutService}.AddRoutes(router)
 	LayerController{NewLayerService(baseURL, db, layoutService)}.AddRoutes(router)
-	(&AwaitingLayoutController{time.Second * 5}).AddRoutes(router)
+
+	awaitingLayouts := make(chan types.Layout, 2)
+	(&AwaitingLayoutController{time.Second * 5, awaitingLayouts}).AddRoutes(router)
+
 	VersionController{}.AddRoutes(router)
 }

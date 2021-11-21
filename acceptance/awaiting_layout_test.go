@@ -12,21 +12,10 @@ import (
 )
 
 func TestPendingRenders(t *testing.T) {
-	t.Run("gracefully close connection", func(t *testing.T) {
-		httpBaseURL, wsBaseURL := t2.TestServer(v1.Handler)
-		client := t2.ClientV2{BaseURL: httpBaseURL}
-
-		for i := 0; i < 16; i++ {
-			wsClient, err := t2.NewLayoutsAwaitingClient(wsBaseURL)
-			t2.AssertNoError(t, err)
-			wsClient.Conn.Close()
-		}
-
-		client.EnqueueLayout(t, types.Layout{})
-	})
+	httpBaseURL, wsBaseURL := t2.TestServer(v1.Handler)
+	client := t2.ClientV2{BaseURL: httpBaseURL}
 
 	t.Run("ping every interval", func(t *testing.T) {
-		_, wsBaseURL := t2.TestServer(v1.Handler)
 		wsClient, err := t2.NewLayoutsAwaitingClient(wsBaseURL)
 		t2.AssertNoError(t, err)
 		defer wsClient.Conn.Close()
@@ -57,9 +46,6 @@ func TestPendingRenders(t *testing.T) {
 	})
 
 	t.Run("dispatch one awaiting layout", func(t *testing.T) {
-		httpBaseURL, wsBaseURL := t2.TestServer(v1.Handler)
-		client := t2.ClientV2{BaseURL: httpBaseURL}
-
 		layouts := [2]types.Layout{}
 		for i := 0; i < len(layouts); i++ {
 			layouts[i] = types.Layout{Id: fmt.Sprintf("layout #%d", i)}
@@ -74,22 +60,23 @@ func TestPendingRenders(t *testing.T) {
 			defer wsClient.Conn.Close()
 
 			go func(want types.Layout) {
-				got, err := wsClient.StartDequeueAwaitingLayout()
-				if err != nil {
-					t.Errorf("got %s want nil", err)
-				} else if got != want {
-					t.Errorf("got %+v want %+v", got, want)
-				}
-				wg.Done()
+				t.Run(want.Id, func(t *testing.T) {
+					got, err := wsClient.StartDequeueAwaitingLayout()
+					if err != nil {
+						t.Errorf("got %s want nil", err)
+					} else if got != want {
+						t.Errorf("got %+v want %+v", got, want)
+					}
+					wsClient.CompleteDequeueAwaitingLayout()
+					wsClient.Conn.Close()
+					wg.Done()
+				})
 			}(want)
 		}
 		wg.Wait()
 	})
 
 	t.Run("buffer awaiting layouts", func(t *testing.T) {
-		httpBaseURL, wsBaseURL := t2.TestServer(v1.Handler)
-		client := t2.ClientV2{BaseURL: httpBaseURL}
-
 		layout := types.Layout{Id: "unhandled"}
 		client.EnqueueLayout(t, layout)
 
@@ -100,12 +87,10 @@ func TestPendingRenders(t *testing.T) {
 		got, err := wsClient.StartDequeueAwaitingLayout()
 		t2.AssertNoError(t, err)
 		t2.AssertLayout(t, got, layout)
+		wsClient.CompleteDequeueAwaitingLayout()
 	})
 
 	t.Run("pull multiple awaiting layouts with one worker", func(t *testing.T) {
-		httpBaseURL, wsBaseURL := t2.TestServer(v1.Handler)
-		client := t2.ClientV2{BaseURL: httpBaseURL}
-
 		wsClient, err := t2.NewLayoutsAwaitingClient(wsBaseURL)
 		t2.AssertNoError(t, err)
 		defer wsClient.Conn.Close()
@@ -122,12 +107,10 @@ func TestPendingRenders(t *testing.T) {
 		got, err = wsClient.StartDequeueAwaitingLayout()
 		t2.AssertNoError(t, err)
 		t2.AssertLayout(t, got, second)
+		wsClient.CompleteDequeueAwaitingLayout()
 	})
 
 	t.Run("re-dispatch abandoned awaiting layout", func(t *testing.T) {
-		httpBaseURL, wsBaseURL := t2.TestServer(v1.Handler)
-		client := t2.ClientV2{BaseURL: httpBaseURL}
-
 		for i := 0; i < 16; i++ {
 			wsClient, err := t2.NewLayoutsAwaitingClient(wsBaseURL)
 			t2.AssertNoError(t, err)
@@ -158,12 +141,10 @@ func TestPendingRenders(t *testing.T) {
 		got, err = wsClient.StartDequeueAwaitingLayout()
 		t2.AssertNoError(t, err)
 		t2.AssertLayout(t, got, second)
+		wsClient.CompleteDequeueAwaitingLayout()
 	})
 
 	t.Run("overflow", func(t *testing.T) {
-		httpBaseURL, _ := t2.TestServer(v1.Handler)
-		client := t2.ClientV2{BaseURL: httpBaseURL}
-
 		limit := 2
 
 		for i := 0; i < limit; i++ {
