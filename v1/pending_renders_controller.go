@@ -16,7 +16,7 @@ type PendingRendersController struct {
 
 func (c *PendingRendersController) AddRoutes(router *httprouter.Router) {
 	upgrader := websocket.Upgrader{}
-	pendingRenders := make(chan types.Layout)
+	pendingRenders := make(chan types.Layout, 2)
 	router.POST("/", func(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		var layout types.Layout
 		json.NewDecoder(r.Body).Decode(&layout)

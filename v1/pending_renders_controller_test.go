@@ -78,4 +78,42 @@ func TestPendingRendersController(t *testing.T) {
 			}
 		}
 	})
+
+	t.Run("buffer notifications", func(t *testing.T) {
+		controller := &PendingRendersController{time.Second}
+		httpBaseURL, wsBaseURL := t2.TestController(controller)
+		client := t2.ClientV2{BaseURL: httpBaseURL}
+
+		layout := types.Layout{Id: "unhandled"}
+		created := make(chan *struct{})
+		go func() {
+			client.CreatePendingRender(t, layout)
+			created <- nil
+		}()
+		select {
+		case <-created:
+		case <-time.After(time.Second):
+			t.Fatal("expected pending render to have been created in less than one second")
+		}
+
+		conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL, nil)
+		t2.AssertNoError(t, err)
+		defer conn.Close()
+
+		channel := make(chan types.Layout)
+		go func() {
+			var layout types.Layout
+			err := conn.ReadJSON(&layout)
+			if err != nil {
+				panic(err)
+			}
+			channel <- layout
+		}()
+
+		select {
+		case <-channel:
+		case <-time.After(time.Second):
+			t.Fatal("expected notification in less than one second")
+		}
+	})
 }
