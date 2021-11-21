@@ -12,7 +12,7 @@ type WSClient struct {
 	Conn *websocket.Conn
 }
 
-func (c *WSClient) ReadLayout() (types.Layout, error) {
+func (c *WSClient) StartDequeueAwaitingLayout() (types.Layout, error) {
 	channel := make(chan struct {
 		types.Layout
 		error
@@ -34,6 +34,6 @@ func (c *WSClient) ReadLayout() (types.Layout, error) {
 	}
 }
 
-func (c *WSClient) Ready() error {
+func (c *WSClient) CompleteDequeueAwaitingLayout() error {
 	return c.Conn.WriteMessage(websocket.BinaryMessage, nil)
 }

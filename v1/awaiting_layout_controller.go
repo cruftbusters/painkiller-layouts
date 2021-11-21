@@ -11,18 +11,18 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-type PendingRendersController struct {
+type AwaitingLayoutController struct {
 	interval time.Duration
 }
 
-func (c *PendingRendersController) AddRoutes(router *httprouter.Router) {
+func (c *AwaitingLayoutController) AddRoutes(router *httprouter.Router) {
 	upgrader := websocket.Upgrader{}
-	pendingRenders := make(chan types.Layout, 2)
+	awaitingLayouts := make(chan types.Layout, 2)
 	router.POST("/", func(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		var layout types.Layout
 		json.NewDecoder(r.Body).Decode(&layout)
 		select {
-		case pendingRenders <- layout:
+		case awaitingLayouts <- layout:
 			rw.WriteHeader(201)
 		default:
 			log.Print("queue full")
@@ -48,14 +48,14 @@ func (c *PendingRendersController) AddRoutes(router *httprouter.Router) {
 		}()
 
 		for {
-			pendingRender := <-pendingRenders
-			if err := conn.WriteJSON(pendingRender); err != nil {
+			awaitingLayout := <-awaitingLayouts
+			if err := conn.WriteJSON(awaitingLayout); err != nil {
 				log.Printf("failed websocket write: %s", err)
-				pendingRenders <- pendingRender
+				awaitingLayouts <- awaitingLayout
 				break
 			} else if _, _, err := conn.ReadMessage(); err != nil {
 				log.Printf("failed websocket read: %s", err)
-				pendingRenders <- pendingRender
+				awaitingLayouts <- awaitingLayout
 				break
 			}
 		}

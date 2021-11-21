@@ -11,9 +11,9 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func TestPendingRendersController(t *testing.T) {
+func TestAwaitingLayoutController(t *testing.T) {
 	t.Run("gracefully close connection", func(t *testing.T) {
-		controller := &PendingRendersController{time.Second}
+		controller := &AwaitingLayoutController{time.Second}
 		httpBaseURL, wsBaseURL := t2.TestController(controller)
 		client := t2.ClientV2{BaseURL: httpBaseURL}
 
@@ -23,12 +23,12 @@ func TestPendingRendersController(t *testing.T) {
 			conn.Close()
 		}
 
-		client.CreatePendingRender(t, types.Layout{})
+		client.EnqueueLayout(t, types.Layout{})
 	})
 
 	t.Run("ping every interval", func(t *testing.T) {
 		interval := time.Second
-		controller := &PendingRendersController{interval}
+		controller := &AwaitingLayoutController{interval}
 		_, wsBaseURL := t2.TestController(controller)
 		conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL, nil)
 		t2.AssertNoError(t, err)
@@ -58,15 +58,15 @@ func TestPendingRendersController(t *testing.T) {
 		}
 	})
 
-	t.Run("broadcast layout", func(t *testing.T) {
-		controller := &PendingRendersController{time.Second}
+	t.Run("dispatch one awaiting layout", func(t *testing.T) {
+		controller := &AwaitingLayoutController{time.Second}
 		httpBaseURL, wsBaseURL := t2.TestController(controller)
 		client := t2.ClientV2{BaseURL: httpBaseURL}
 
 		layouts := [2]types.Layout{}
 		for i := 0; i < len(layouts); i++ {
 			layouts[i] = types.Layout{Id: fmt.Sprintf("layout #%d", i)}
-			client.CreatePendingRender(t, layouts[i])
+			client.EnqueueLayout(t, layouts[i])
 		}
 
 		var wg sync.WaitGroup
@@ -77,7 +77,7 @@ func TestPendingRendersController(t *testing.T) {
 			defer conn.Close()
 
 			go func(want types.Layout) {
-				got, err := (&t2.WSClient{Conn: conn}).ReadLayout()
+				got, err := (&t2.WSClient{Conn: conn}).StartDequeueAwaitingLayout()
 				if err != nil {
 					t.Errorf("got %s want nil", err)
 				} else if got != want {
@@ -89,26 +89,26 @@ func TestPendingRendersController(t *testing.T) {
 		wg.Wait()
 	})
 
-	t.Run("buffer notifications", func(t *testing.T) {
-		controller := &PendingRendersController{time.Second}
+	t.Run("buffer awaiting layouts", func(t *testing.T) {
+		controller := &AwaitingLayoutController{time.Second}
 		httpBaseURL, wsBaseURL := t2.TestController(controller)
 		client := t2.ClientV2{BaseURL: httpBaseURL}
 
 		layout := types.Layout{Id: "unhandled"}
-		client.CreatePendingRender(t, layout)
+		client.EnqueueLayout(t, layout)
 
 		conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL, nil)
 		t2.AssertNoError(t, err)
 		defer conn.Close()
 		wsClient := t2.WSClient{Conn: conn}
 
-		got, err := wsClient.ReadLayout()
+		got, err := wsClient.StartDequeueAwaitingLayout()
 		t2.AssertNoError(t, err)
 		t2.AssertLayout(t, got, layout)
 	})
 
-	t.Run("pull more work", func(t *testing.T) {
-		controller := &PendingRendersController{time.Second}
+	t.Run("pull multiple awaiting layouts with one worker", func(t *testing.T) {
+		controller := &AwaitingLayoutController{time.Second}
 		httpBaseURL, wsBaseURL := t2.TestController(controller)
 		client := t2.ClientV2{BaseURL: httpBaseURL}
 
@@ -119,20 +119,20 @@ func TestPendingRendersController(t *testing.T) {
 
 		first, second := types.Layout{Id: "first"}, types.Layout{Id: "second"}
 
-		client.CreatePendingRender(t, first)
-		got, err := wsClient.ReadLayout()
+		client.EnqueueLayout(t, first)
+		got, err := wsClient.StartDequeueAwaitingLayout()
 		t2.AssertNoError(t, err)
 		t2.AssertLayout(t, got, first)
+		wsClient.CompleteDequeueAwaitingLayout()
 
-		client.CreatePendingRender(t, second)
-		wsClient.Ready()
-		got, err = wsClient.ReadLayout()
+		client.EnqueueLayout(t, second)
+		got, err = wsClient.StartDequeueAwaitingLayout()
 		t2.AssertNoError(t, err)
 		t2.AssertLayout(t, got, second)
 	})
 
-	t.Run("redistribute abandoned work", func(t *testing.T) {
-		controller := &PendingRendersController{time.Second}
+	t.Run("re-dispatch abandoned awaiting layout", func(t *testing.T) {
+		controller := &AwaitingLayoutController{time.Second}
 		httpBaseURL, wsBaseURL := t2.TestController(controller)
 		client := t2.ClientV2{BaseURL: httpBaseURL}
 
@@ -149,14 +149,14 @@ func TestPendingRendersController(t *testing.T) {
 
 		first, second := types.Layout{Id: "first"}, types.Layout{Id: "second"}
 
-		client.CreatePendingRender(t, first)
-		got, err := wsClient.ReadLayout()
+		client.EnqueueLayout(t, first)
+		got, err := wsClient.StartDequeueAwaitingLayout()
 		t2.AssertNoError(t, err)
 		t2.AssertLayout(t, got, first)
+		wsClient.CompleteDequeueAwaitingLayout()
 
-		client.CreatePendingRender(t, second)
-		wsClient.Ready()
-		got, err = wsClient.ReadLayout()
+		client.EnqueueLayout(t, second)
+		got, err = wsClient.StartDequeueAwaitingLayout()
 		t2.AssertNoError(t, err)
 		t2.AssertLayout(t, got, second)
 		conn.Close()
@@ -165,21 +165,21 @@ func TestPendingRendersController(t *testing.T) {
 		t2.AssertNoError(t, err)
 		defer conn.Close()
 		wsClient = t2.WSClient{Conn: conn}
-		got, err = wsClient.ReadLayout()
+		got, err = wsClient.StartDequeueAwaitingLayout()
 		t2.AssertNoError(t, err)
 		t2.AssertLayout(t, got, second)
 	})
 
 	t.Run("overflow", func(t *testing.T) {
-		controller := &PendingRendersController{time.Second}
+		controller := &AwaitingLayoutController{time.Second}
 		httpBaseURL, _ := t2.TestController(controller)
 		client := t2.ClientV2{BaseURL: httpBaseURL}
 
 		limit := 2
 
 		for i := 0; i < limit; i++ {
-			client.CreatePendingRender(t, types.Layout{})
+			client.EnqueueLayout(t, types.Layout{})
 		}
-		client.CreatePendingRenderExpectInternalServerError(t, types.Layout{})
+		client.EnqueueLayoutExpectInternalServerError(t, types.Layout{})
 	})
 }

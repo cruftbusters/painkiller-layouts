@@ -77,7 +77,7 @@ func (client ClientV2) CreateLayout(t testing.TB, layout Layout) Layout {
 	return decode(t, response)
 }
 
-func (client ClientV2) CreatePendingRender(t testing.TB, layout Layout) {
+func (client ClientV2) EnqueueLayout(t testing.TB, layout Layout) {
 	t.Helper()
 	up := encode(t, layout)
 	done := make(chan struct {
@@ -100,7 +100,7 @@ func (client ClientV2) CreatePendingRender(t testing.TB, layout Layout) {
 	}
 }
 
-func (client ClientV2) CreatePendingRenderExpectInternalServerError(t testing.TB, layout Layout) {
+func (client ClientV2) EnqueueLayoutExpectInternalServerError(t testing.TB, layout Layout) {
 	t.Helper()
 	up := encode(t, layout)
 	done := make(chan struct {
