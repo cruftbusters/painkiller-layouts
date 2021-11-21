@@ -42,8 +42,9 @@ func (c *PendingRendersController) AddRoutes(router *httprouter.Router) {
 			}
 		}()
 
-		if err := conn.WriteJSON(<-pendingRenders); err != nil {
-			panic(err)
+		pendingRender := <-pendingRenders
+		if err := conn.WriteJSON(pendingRender); err != nil {
+			log.Printf("failed websocket write: %s", err)
 		}
 	})
 }

@@ -112,9 +112,11 @@ func TestPendingRenders(t *testing.T) {
 		httpBaseURL, wsBaseURL := t2.TestServer(v1.Handler)
 		client := t2.ClientV2{BaseURL: httpBaseURL}
 
-		conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL, nil)
-		t2.AssertNoError(t, err)
-		conn.Close()
+		for i := 0; i < 16; i++ {
+			conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL, nil)
+			t2.AssertNoError(t, err)
+			conn.Close()
+		}
 
 		client.CreatePendingRender(t, types.Layout{})
 	})
