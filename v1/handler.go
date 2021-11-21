@@ -19,5 +19,6 @@ func Handler(router *httprouter.Router, sqlite3Connection, baseURL string) {
 	layoutService := NewLayoutService(db, &DefaultUUIDService{})
 	LayoutController{layoutService}.AddRoutes(router)
 	LayerController{NewLayerService(baseURL, db, layoutService)}.AddRoutes(router)
+	(&PendingRendersController{}).AddRoutes(router)
 	VersionController{}.AddRoutes(router)
 }
