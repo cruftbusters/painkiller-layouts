@@ -1,6 +1,7 @@
 package acceptance
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -42,7 +43,7 @@ func TestPendingRenders(t *testing.T) {
 		}
 	})
 
-	t.Run("broadcast layout", func(t *testing.T) {
+	t.Run("distribute layouts", func(t *testing.T) {
 		httpBaseURL, wsBaseURL := t2.TestServer(v1.Handler)
 		client := t2.ClientV2{BaseURL: httpBaseURL}
 
@@ -63,13 +64,16 @@ func TestPendingRenders(t *testing.T) {
 			}(i)
 		}
 
-		layout := types.Layout{Id: "notification"}
-		client.CreatePendingRender(t, layout)
+		layouts := [2]types.Layout{}
+		for i := 0; i < len(channels); i++ {
+			layouts[i] = types.Layout{Id: fmt.Sprintf("layout #%d", i)}
+			client.CreatePendingRender(t, layouts[i])
+		}
 
 		for i := 0; i < len(channels); i++ {
 			select {
 			case got := <-channels[i]:
-				t2.AssertLayout(t, got, layout)
+				t2.AssertLayout(t, got, layouts[i])
 			case <-time.After(time.Second):
 				t.Error("expected notification in less than one second")
 			}

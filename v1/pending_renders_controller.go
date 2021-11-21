@@ -17,15 +17,15 @@ type PendingRendersController struct {
 func (c *PendingRendersController) AddRoutes(router *httprouter.Router) {
 	upgrader := websocket.Upgrader{}
 	counter := 0
+	sendCounter := 0
 	connections := make(map[int]*websocket.Conn)
 	router.POST("/", func(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		var layout types.Layout
 		json.NewDecoder(r.Body).Decode(&layout)
-		for _, conn := range connections {
-			if err := conn.WriteJSON(layout); err != nil {
-				panic(err)
-			}
+		if err := connections[sendCounter].WriteJSON(layout); err != nil {
+			panic(err)
 		}
+		sendCounter++
 		rw.WriteHeader(201)
 	})
 	router.GET("/", func(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {

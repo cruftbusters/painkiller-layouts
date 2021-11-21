@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -62,13 +63,16 @@ func TestPendingRendersController(t *testing.T) {
 			}(i)
 		}
 
-		layout := types.Layout{Id: "notification"}
-		client.CreatePendingRender(t, layout)
+		layouts := [2]types.Layout{}
+		for i := 0; i < len(channels); i++ {
+			layouts[i] = types.Layout{Id: fmt.Sprintf("layout #%d", i)}
+			client.CreatePendingRender(t, layouts[i])
+		}
 
 		for i := 0; i < len(channels); i++ {
 			select {
 			case got := <-channels[i]:
-				t2.AssertLayout(t, got, layout)
+				t2.AssertLayout(t, got, layouts[i])
 			case <-time.After(time.Second):
 				t.Error("expected notification in less than one second")
 			}
