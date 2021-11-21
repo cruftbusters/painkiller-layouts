@@ -76,6 +76,14 @@ func (client ClientV2) CreateLayout(t testing.TB, layout Layout) Layout {
 	return decode(t, response)
 }
 
+func (client ClientV2) CreatePendingRender(t testing.TB, layout Layout) {
+	t.Helper()
+	up := encode(t, layout)
+	response, err := http.Post(client.baseURLF("/"), "", up)
+	AssertNoError(t, err)
+	AssertStatusCode(t, response, 201)
+}
+
 func (client ClientV2) PatchLayoutExpectNotFound(t testing.TB, id string) {
 	t.Helper()
 

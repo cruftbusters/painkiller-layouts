@@ -5,6 +5,7 @@ import (
 	"time"
 
 	t2 "github.com/cruftbusters/painkiller-layouts/testing"
+	"github.com/cruftbusters/painkiller-layouts/types"
 	"github.com/gorilla/websocket"
 )
 
@@ -38,6 +39,33 @@ func TestPendingRendersController(t *testing.T) {
 		case <-signal:
 		case <-six:
 			t.Fatalf("expected ping in less than %s", interval+time.Second)
+		}
+	})
+
+	t.Run("broadcast layout", func(t *testing.T) {
+		controller := &PendingRendersController{time.Second}
+		httpBaseURL, wsBaseURL := t2.TestController(controller)
+		client := t2.ClientV2{BaseURL: httpBaseURL}
+		conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL, nil)
+		t2.AssertNoError(t, err)
+		defer conn.Close()
+
+		channel := make(chan types.Layout)
+		go func() {
+			var layout types.Layout
+			err := conn.ReadJSON(&layout)
+			t2.AssertNoError(t, err)
+			channel <- layout
+		}()
+
+		layout := types.Layout{Id: "notification"}
+		client.CreatePendingRender(t, layout)
+
+		select {
+		case got := <-channel:
+			t2.AssertLayout(t, got, layout)
+		case <-time.After(time.Second):
+			t.Error("expected notification in less than one second")
 		}
 	})
 }
