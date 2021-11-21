@@ -99,27 +99,11 @@ func TestPendingRendersController(t *testing.T) {
 		conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL, nil)
 		t2.AssertNoError(t, err)
 		defer conn.Close()
+		wsClient := t2.WSClient{Conn: conn}
 
-		channel := make(chan struct {
-			types.Layout
-			error
-		})
-		go func() {
-			var layout types.Layout
-			err := conn.ReadJSON(&layout)
-			channel <- struct {
-				types.Layout
-				error
-			}{layout, err}
-		}()
-
-		select {
-		case result := <-channel:
-			t2.AssertNoError(t, result.error)
-			t2.AssertLayout(t, result.Layout, layout)
-		case <-time.After(time.Second):
-			t.Fatal("expected notification in less than one second")
-		}
+		got, err := wsClient.ReadLayout()
+		t2.AssertNoError(t, err)
+		t2.AssertLayout(t, got, layout)
 	})
 
 	t.Run("gracefully close connection", func(t *testing.T) {
