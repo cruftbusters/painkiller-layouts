@@ -16,7 +16,7 @@ func TestLayers(t *testing.T) {
 	client := ClientV2{BaseURL: httpBaseURL}
 
 	id := client.CreateLayout(t, Layout{}).Id
-	defer func() { client.DeleteLayout(t, id) }()
+	defer client.DeleteLayout(t, id)
 
 	t.Run("put layers on missing layout", func(t *testing.T) {
 		client.PutLayerExpectNotFound(t, "deadbeef", "heightmap.jpg")

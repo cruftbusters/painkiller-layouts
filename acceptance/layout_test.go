@@ -23,7 +23,7 @@ func TestLayout(t *testing.T) {
 
 	t.Run("create and get layout", func(t *testing.T) {
 		got := client.CreateLayout(t, Layout{})
-		defer func() { client.DeleteLayout(t, got.Id) }()
+		defer client.DeleteLayout(t, got.Id)
 		AssertLayout(t, got, Layout{Id: got.Id})
 		AssertLayout(t, client.GetLayout(t, got.Id), got)
 	})
@@ -36,14 +36,14 @@ func TestLayout(t *testing.T) {
 
 	t.Run("get all layouts", func(t *testing.T) {
 		withHeightmap := client.CreateLayout(t, Layout{HeightmapURL: "heightmap url"})
-		defer func() { client.DeleteLayout(t, withHeightmap.Id) }()
+		defer client.DeleteLayout(t, withHeightmap.Id)
 		withHillshade := client.CreateLayout(t, Layout{HillshadeURL: "hillshade url"})
-		defer func() { client.DeleteLayout(t, withHillshade.Id) }()
+		defer client.DeleteLayout(t, withHillshade.Id)
 		withEverythingElse := client.CreateLayout(t, Layout{
 			Size:   Size{Width: 1, Height: 2},
 			Bounds: Bounds{Left: 3, Top: 4, Right: 5, Bottom: 6},
 		})
-		defer func() { client.DeleteLayout(t, withEverythingElse.Id) }()
+		defer client.DeleteLayout(t, withEverythingElse.Id)
 
 		AssertLayoutsUnordered(t,
 			client.GetLayouts(t),
@@ -87,7 +87,7 @@ func TestLayout(t *testing.T) {
 					HillshadeURL: "old hillshade url",
 				},
 			)
-			defer func() { client.DeleteLayout(t, layout.Id) }()
+			defer client.DeleteLayout(t, layout.Id)
 
 			got := client.PatchLayout(t, layout.Id, scenario.patch)
 			scenario.want(&layout)
