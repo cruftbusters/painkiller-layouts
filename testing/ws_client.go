@@ -33,3 +33,7 @@ func (c *WSClient) ReadLayout() (types.Layout, error) {
 		return types.Layout{}, fmt.Errorf("timed out after one second")
 	}
 }
+
+func (c *WSClient) Ready() error {
+	return c.Conn.WriteMessage(websocket.BinaryMessage, nil)
+}
