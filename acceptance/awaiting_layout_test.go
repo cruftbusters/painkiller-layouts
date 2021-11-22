@@ -15,6 +15,24 @@ func TestPendingRenders(t *testing.T) {
 	httpBaseURL, wsBaseURL := t2.TestServer(v1.Handler)
 	client := t2.ClientV2{BaseURL: httpBaseURL}
 
+	t.Run("enqueue layout awaiting heightmap when queue full", func(t *testing.T) {
+		queueSize := 2
+
+		for i := 0; i < queueSize; i++ {
+			client.EnqueueLayout(t, types.Layout{})
+		}
+		client.EnqueueLayoutExpectInternalServerError(t, types.Layout{})
+
+		wsClient, err := t2.LayoutsAwaitingHeightmap(wsBaseURL)
+		t2.AssertNoError(t, err)
+		defer wsClient.Conn.Close()
+		for i := 0; i < queueSize; i++ {
+			_, err := wsClient.StartDequeue()
+			t2.AssertNoError(t, err)
+			wsClient.EndDequeue()
+		}
+	})
+
 	t.Run("ping every interval", func(t *testing.T) {
 		wsClient, err := t2.LayoutsAwaitingHeightmap(wsBaseURL)
 		t2.AssertNoError(t, err)
@@ -142,24 +160,6 @@ func TestPendingRenders(t *testing.T) {
 		t2.AssertNoError(t, err)
 		t2.AssertLayout(t, got, second)
 		wsClient.EndDequeue()
-	})
-
-	t.Run("overflow", func(t *testing.T) {
-		limit := 2
-
-		for i := 0; i < limit; i++ {
-			client.EnqueueLayout(t, types.Layout{})
-		}
-		client.EnqueueLayoutExpectInternalServerError(t, types.Layout{})
-
-		wsClient, err := t2.LayoutsAwaitingHeightmap(wsBaseURL)
-		t2.AssertNoError(t, err)
-		defer wsClient.Conn.Close()
-		for i := 0; i < limit; i++ {
-			_, err := wsClient.StartDequeue()
-			t2.AssertNoError(t, err)
-			wsClient.EndDequeue()
-		}
 	})
 
 	t.Run("enqueue new layouts", func(t *testing.T) {

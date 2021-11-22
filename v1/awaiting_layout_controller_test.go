@@ -12,10 +12,40 @@ import (
 
 func TestAwaitingLayoutController(t *testing.T) {
 	interval := time.Second
-	awaitingLayouts := make(chan types.Layout, 2)
-	controller := &AwaitingLayoutController{interval, awaitingLayouts}
+	queueSize := 2
+	layoutsAwaitingHeightmap := make(chan types.Layout, queueSize)
+	controller := &AwaitingLayoutController{interval, layoutsAwaitingHeightmap}
 	httpBaseURL, wsBaseURL := t2.TestController(controller)
 	client := t2.ClientV2{BaseURL: httpBaseURL}
+
+	t.Run("enqueue layout awaiting heightmap", func(t *testing.T) {
+		layout := types.Layout{Id: "enqueue me"}
+		client.EnqueueLayout(t, layout)
+
+		select {
+		case got := <-layoutsAwaitingHeightmap:
+			t2.AssertLayout(t, got, layout)
+		case <-time.After(time.Second):
+			t.Error("timed out after one second")
+		}
+	})
+
+	t.Run("enqueue layout awaiting heightmap when queue full", func(t *testing.T) {
+		layout := types.Layout{Id: "fill the queue"}
+		for i := 0; i < queueSize; i++ {
+			client.EnqueueLayout(t, layout)
+		}
+		client.EnqueueLayoutExpectInternalServerError(t, types.Layout{})
+
+		wsClient, err := t2.LayoutsAwaitingHeightmap(wsBaseURL)
+		t2.AssertNoError(t, err)
+		defer wsClient.Conn.Close()
+		for i := 0; i < queueSize; i++ {
+			_, err := wsClient.StartDequeue()
+			t2.AssertNoError(t, err)
+			wsClient.EndDequeue()
+		}
+	})
 
 	t.Run("ping every interval", func(t *testing.T) {
 		wsClient, err := t2.LayoutsAwaitingHeightmap(wsBaseURL)
@@ -144,22 +174,5 @@ func TestAwaitingLayoutController(t *testing.T) {
 		t2.AssertNoError(t, err)
 		t2.AssertLayout(t, got, second)
 		wsClient.EndDequeue()
-	})
-
-	t.Run("overflow", func(t *testing.T) {
-		limit := 2
-
-		for i := 0; i < limit; i++ {
-			client.EnqueueLayout(t, types.Layout{})
-		}
-		client.EnqueueLayoutExpectInternalServerError(t, types.Layout{})
-
-		wsClient, err := t2.LayoutsAwaitingHeightmap(wsBaseURL)
-		t2.AssertNoError(t, err)
-		for i := 0; i < limit; i++ {
-			_, err := wsClient.StartDequeue()
-			t2.AssertNoError(t, err)
-			wsClient.EndDequeue()
-		}
 	})
 }
