@@ -18,7 +18,7 @@ func TestAwaitingLayoutController(t *testing.T) {
 	client := t2.ClientV2{BaseURL: httpBaseURL}
 
 	t.Run("ping every interval", func(t *testing.T) {
-		wsClient, err := t2.NewLayoutsAwaitingClient(wsBaseURL)
+		wsClient, err := t2.LayoutsAwaitingHeightmap(wsBaseURL)
 		t2.AssertNoError(t, err)
 		defer wsClient.Conn.Close()
 
@@ -57,19 +57,19 @@ func TestAwaitingLayoutController(t *testing.T) {
 		var wg sync.WaitGroup
 		wg.Add(len(layouts))
 		for _, want := range layouts {
-			wsClient, err := t2.NewLayoutsAwaitingClient(wsBaseURL)
+			wsClient, err := t2.LayoutsAwaitingHeightmap(wsBaseURL)
 			t2.AssertNoError(t, err)
 			defer wsClient.Conn.Close()
 
 			go func(want types.Layout) {
 				t.Run(want.Id, func(t *testing.T) {
-					got, err := wsClient.StartDequeueAwaitingLayout()
+					got, err := wsClient.StartDequeue()
 					if err != nil {
 						t.Errorf("got %s want nil", err)
 					} else if got != want {
 						t.Errorf("got %+v want %+v", got, want)
 					}
-					wsClient.CompleteDequeueAwaitingLayout()
+					wsClient.EndDequeue()
 					wsClient.Conn.Close()
 					wg.Done()
 				})
@@ -82,68 +82,68 @@ func TestAwaitingLayoutController(t *testing.T) {
 		layout := types.Layout{Id: "unhandled"}
 		client.EnqueueLayout(t, layout)
 
-		wsClient, err := t2.NewLayoutsAwaitingClient(wsBaseURL)
+		wsClient, err := t2.LayoutsAwaitingHeightmap(wsBaseURL)
 		t2.AssertNoError(t, err)
 		defer wsClient.Conn.Close()
 
-		got, err := wsClient.StartDequeueAwaitingLayout()
+		got, err := wsClient.StartDequeue()
 		t2.AssertNoError(t, err)
 		t2.AssertLayout(t, got, layout)
-		wsClient.CompleteDequeueAwaitingLayout()
+		wsClient.EndDequeue()
 	})
 
 	t.Run("pull multiple awaiting layouts with one worker", func(t *testing.T) {
-		wsClient, err := t2.NewLayoutsAwaitingClient(wsBaseURL)
+		wsClient, err := t2.LayoutsAwaitingHeightmap(wsBaseURL)
 		t2.AssertNoError(t, err)
 		defer wsClient.Conn.Close()
 
 		first, second := types.Layout{Id: "first"}, types.Layout{Id: "second"}
 
 		client.EnqueueLayout(t, first)
-		got, err := wsClient.StartDequeueAwaitingLayout()
+		got, err := wsClient.StartDequeue()
 		t2.AssertNoError(t, err)
 		t2.AssertLayout(t, got, first)
-		wsClient.CompleteDequeueAwaitingLayout()
+		wsClient.EndDequeue()
 
 		client.EnqueueLayout(t, second)
-		got, err = wsClient.StartDequeueAwaitingLayout()
+		got, err = wsClient.StartDequeue()
 		t2.AssertNoError(t, err)
 		t2.AssertLayout(t, got, second)
-		wsClient.CompleteDequeueAwaitingLayout()
+		wsClient.EndDequeue()
 	})
 
 	t.Run("re-dispatch abandoned awaiting layout", func(t *testing.T) {
 		for i := 0; i < 16; i++ {
-			wsClient, err := t2.NewLayoutsAwaitingClient(wsBaseURL)
+			wsClient, err := t2.LayoutsAwaitingHeightmap(wsBaseURL)
 			t2.AssertNoError(t, err)
 			wsClient.Conn.Close()
 		}
 
-		wsClient, err := t2.NewLayoutsAwaitingClient(wsBaseURL)
+		wsClient, err := t2.LayoutsAwaitingHeightmap(wsBaseURL)
 		t2.AssertNoError(t, err)
 		defer wsClient.Conn.Close()
 
 		first, second := types.Layout{Id: "first"}, types.Layout{Id: "second"}
 
 		client.EnqueueLayout(t, first)
-		got, err := wsClient.StartDequeueAwaitingLayout()
+		got, err := wsClient.StartDequeue()
 		t2.AssertNoError(t, err)
 		t2.AssertLayout(t, got, first)
-		wsClient.CompleteDequeueAwaitingLayout()
+		wsClient.EndDequeue()
 
 		client.EnqueueLayout(t, second)
-		got, err = wsClient.StartDequeueAwaitingLayout()
+		got, err = wsClient.StartDequeue()
 		t2.AssertNoError(t, err)
 		t2.AssertLayout(t, got, second)
 		wsClient.Conn.Close()
 
-		wsClient, err = t2.NewLayoutsAwaitingClient(wsBaseURL)
+		wsClient, err = t2.LayoutsAwaitingHeightmap(wsBaseURL)
 		t2.AssertNoError(t, err)
 		defer wsClient.Conn.Close()
-		got, err = wsClient.StartDequeueAwaitingLayout()
+		got, err = wsClient.StartDequeue()
 		t2.AssertNoError(t, err)
 		t2.AssertLayout(t, got, second)
-		wsClient.CompleteDequeueAwaitingLayout()
+		wsClient.EndDequeue()
 	})
 
 	t.Run("overflow", func(t *testing.T) {
@@ -154,12 +154,12 @@ func TestAwaitingLayoutController(t *testing.T) {
 		}
 		client.EnqueueLayoutExpectInternalServerError(t, types.Layout{})
 
-		wsClient, err := t2.NewLayoutsAwaitingClient(wsBaseURL)
+		wsClient, err := t2.LayoutsAwaitingHeightmap(wsBaseURL)
 		t2.AssertNoError(t, err)
 		for i := 0; i < limit; i++ {
-			_, err := wsClient.StartDequeueAwaitingLayout()
+			_, err := wsClient.StartDequeue()
 			t2.AssertNoError(t, err)
-			wsClient.CompleteDequeueAwaitingLayout()
+			wsClient.EndDequeue()
 		}
 	})
 }

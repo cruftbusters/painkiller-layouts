@@ -12,12 +12,12 @@ type LayoutsAwaitingClient struct {
 	Conn *websocket.Conn
 }
 
-func NewLayoutsAwaitingClient(wsBaseURL string) (LayoutsAwaitingClient, error) {
+func LayoutsAwaitingHeightmap(wsBaseURL string) (LayoutsAwaitingClient, error) {
 	conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL+"/v1/layouts_awaiting", nil)
 	return LayoutsAwaitingClient{Conn: conn}, err
 }
 
-func (c *LayoutsAwaitingClient) StartDequeueAwaitingLayout() (types.Layout, error) {
+func (c *LayoutsAwaitingClient) StartDequeue() (types.Layout, error) {
 	channel := make(chan struct {
 		types.Layout
 		error
@@ -39,6 +39,6 @@ func (c *LayoutsAwaitingClient) StartDequeueAwaitingLayout() (types.Layout, erro
 	}
 }
 
-func (c *LayoutsAwaitingClient) CompleteDequeueAwaitingLayout() error {
+func (c *LayoutsAwaitingClient) EndDequeue() error {
 	return c.Conn.WriteMessage(websocket.BinaryMessage, nil)
 }

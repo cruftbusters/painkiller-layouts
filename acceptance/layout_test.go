@@ -13,16 +13,16 @@ func TestLayout(t *testing.T) {
 	httpBaseURL, wsBaseURL := TestServer(v1.Handler)
 	client := ClientV2{BaseURL: httpBaseURL}
 
-	wsClient, err := NewLayoutsAwaitingClient(wsBaseURL)
+	wsClient, err := LayoutsAwaitingHeightmap(wsBaseURL)
 	AssertNoError(t, err)
 	defer wsClient.Conn.Close()
 	go func() {
 		for {
-			_, err := wsClient.StartDequeueAwaitingLayout()
+			_, err := wsClient.StartDequeue()
 			if err != nil {
 				break
 			}
-			wsClient.CompleteDequeueAwaitingLayout()
+			wsClient.EndDequeue()
 		}
 	}()
 
