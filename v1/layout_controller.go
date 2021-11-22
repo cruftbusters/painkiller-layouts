@@ -10,8 +10,9 @@ import (
 )
 
 type LayoutController struct {
-	layoutService LayoutService
-	newLayouts    chan types.Layout
+	layoutService            LayoutService
+	layoutsAwaitingHeightmap chan types.Layout
+	layoutsAwaitingHillshade chan types.Layout
 }
 
 func (c LayoutController) AddRoutes(router *httprouter.Router) {
@@ -27,12 +28,12 @@ func (c LayoutController) Create(response http.ResponseWriter, request *http.Req
 	json.NewDecoder(request.Body).Decode(up)
 	down := c.layoutService.Create(*up)
 	select {
-	case c.newLayouts <- down:
+	case c.layoutsAwaitingHeightmap <- down:
 		response.WriteHeader(201)
 		json.NewEncoder(response).Encode(down)
 	default:
 		response.WriteHeader(500)
-		log.Print("new layouts channel is not accepting emissions")
+		log.Print("layouts awaiting heightmap is full")
 	}
 }
 
@@ -64,9 +65,18 @@ func (c LayoutController) Patch(response http.ResponseWriter, request *http.Requ
 	down, err := c.layoutService.Patch(ps.ByName("id"), *up)
 	if err != nil {
 		response.WriteHeader(404)
-	} else {
-		json.NewEncoder(response).Encode(down)
+		return
 	}
+	if down.HeightmapURL != "" && down.HillshadeURL == "" {
+		select {
+		case c.layoutsAwaitingHillshade <- down:
+		default:
+			response.WriteHeader(500)
+			log.Print("layouts awaiting hillshade is full")
+			return
+		}
+	}
+	json.NewEncoder(response).Encode(down)
 }
 
 func (c LayoutController) Delete(response http.ResponseWriter, request *http.Request, ps httprouter.Params) {

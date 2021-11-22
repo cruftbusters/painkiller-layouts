@@ -14,6 +14,7 @@ import (
 type AwaitingLayoutController struct {
 	interval                 time.Duration
 	layoutsAwaitingHeightmap chan types.Layout
+	layoutsAwaitingHillshade chan types.Layout
 }
 
 func (c *AwaitingLayoutController) AddRoutes(router *httprouter.Router) {
@@ -47,15 +48,21 @@ func (c *AwaitingLayoutController) AddRoutes(router *httprouter.Router) {
 			}
 		}()
 
+		var channel chan types.Layout
+		if r.URL.Query().Get("layer") == "hillshade" {
+			channel = c.layoutsAwaitingHillshade
+		} else {
+			channel = c.layoutsAwaitingHeightmap
+		}
 		for {
-			layout := <-c.layoutsAwaitingHeightmap
+			layout := <-channel
 			if err := conn.WriteJSON(layout); err != nil {
 				log.Printf("failed websocket write: %s", err)
-				c.layoutsAwaitingHeightmap <- layout
+				channel <- layout
 				break
 			} else if _, _, err := conn.ReadMessage(); err != nil {
 				log.Printf("failed websocket read: %s", err)
-				c.layoutsAwaitingHeightmap <- layout
+				channel <- layout
 				break
 			}
 		}

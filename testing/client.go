@@ -143,6 +143,18 @@ func (client ClientV2) PatchLayoutExpectNotFound(t testing.TB, id string) {
 	AssertStatusCode(t, response, 404)
 }
 
+func (client ClientV2) PatchLayoutExpectInternalServerError(t testing.TB, id string) {
+	t.Helper()
+
+	requestURL := client.baseURLF("/v1/layouts/%s", id)
+	request, err := http.NewRequest(http.MethodPatch, requestURL, nil)
+	AssertNoError(t, err)
+
+	response, err := (&http.Client{}).Do(request)
+	AssertNoError(t, err)
+	AssertStatusCode(t, response, 500)
+}
+
 func (client ClientV2) PatchLayout(t testing.TB, id string, layout Layout) Layout {
 	t.Helper()
 
@@ -151,11 +163,27 @@ func (client ClientV2) PatchLayout(t testing.TB, id string, layout Layout) Layou
 	request, err := http.NewRequest(http.MethodPatch, requestURL, up)
 	AssertNoError(t, err)
 
-	response, err := (&http.Client{}).Do(request)
-	AssertNoError(t, err)
-	AssertStatusCode(t, response, 200)
+	channel := make(chan struct {
+		*http.Response
+		error
+	})
+	go func() {
+		response, err := (&http.Client{}).Do(request)
+		channel <- struct {
+			*http.Response
+			error
+		}{response, err}
+	}()
 
-	return decode(t, response)
+	select {
+	case result := <-channel:
+		AssertNoError(t, result.error)
+		AssertStatusCode(t, result.Response, 200)
+		return decode(t, result.Response)
+	case <-time.After(time.Second):
+		t.Error("timed out after one second")
+		return Layout{}
+	}
 }
 
 func (client ClientV2) DeleteLayout(t testing.TB, id string) {

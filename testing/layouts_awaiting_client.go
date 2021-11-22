@@ -17,6 +17,11 @@ func LayoutsAwaitingHeightmap(wsBaseURL string) (LayoutsAwaitingClient, error) {
 	return LayoutsAwaitingClient{Conn: conn}, err
 }
 
+func LayoutsAwaitingHillshade(wsBaseURL string) (LayoutsAwaitingClient, error) {
+	conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL+"/v1/layouts_awaiting?layer=hillshade", nil)
+	return LayoutsAwaitingClient{Conn: conn}, err
+}
+
 func (c *LayoutsAwaitingClient) StartDequeue() (types.Layout, error) {
 	channel := make(chan struct {
 		types.Layout

@@ -173,5 +173,16 @@ func TestPendingRenders(t *testing.T) {
 		t2.AssertLayout(t, got, created)
 		awaiting.EndDequeue()
 		awaiting.Conn.Close()
+
+		t.Run("enqueue and dequeue layouts awaiting hillshade", func(t *testing.T) {
+			patched := client.PatchLayout(t, created.Id, types.Layout{HeightmapURL: "heightmap URL"})
+
+			awaiting, err := t2.LayoutsAwaitingHillshade(wsBaseURL)
+			t2.AssertNoError(t, err)
+			got, err := awaiting.StartDequeue()
+			t2.AssertNoError(t, err)
+			t2.AssertLayout(t, got, patched)
+			awaiting.EndDequeue()
+		})
 	})
 }

@@ -14,7 +14,8 @@ func TestAwaitingLayoutController(t *testing.T) {
 	interval := time.Second
 	queueSize := 2
 	layoutsAwaitingHeightmap := make(chan types.Layout, queueSize)
-	controller := &AwaitingLayoutController{interval, layoutsAwaitingHeightmap}
+	layoutsAwaitingHillshade := make(chan types.Layout, queueSize)
+	controller := &AwaitingLayoutController{interval, layoutsAwaitingHeightmap, layoutsAwaitingHillshade}
 	httpBaseURL, wsBaseURL := t2.TestController(controller)
 	client := t2.ClientV2{BaseURL: httpBaseURL}
 
@@ -77,7 +78,7 @@ func TestAwaitingLayoutController(t *testing.T) {
 		}
 	})
 
-	t.Run("dispatch one awaiting layout", func(t *testing.T) {
+	t.Run("dispatch one layout awaiting heightmap", func(t *testing.T) {
 		layouts := [2]types.Layout{}
 		for i := 0; i < len(layouts); i++ {
 			layouts[i] = types.Layout{Id: fmt.Sprintf("layout #%d", i)}
@@ -174,5 +175,17 @@ func TestAwaitingLayoutController(t *testing.T) {
 		t2.AssertNoError(t, err)
 		t2.AssertLayout(t, got, second)
 		wsClient.EndDequeue()
+	})
+
+	t.Run("enqueue layout awaiting hillshade", func(t *testing.T) {
+		layout := types.Layout{Id: "awaiting hillshade"}
+		layoutsAwaitingHillshade <- layout
+		awaiting, err := t2.LayoutsAwaitingHillshade(wsBaseURL)
+		t2.AssertNoError(t, err)
+		got, err := awaiting.StartDequeue()
+		t2.AssertNoError(t, err)
+		t2.AssertLayout(t, got, layout)
+		awaiting.EndDequeue()
+		awaiting.Conn.Close()
 	})
 }

@@ -12,11 +12,13 @@ import (
 )
 
 func TestLayoutController(t *testing.T) {
-	newLayouts := make(chan Layout)
+	layoutsAwaitingHeightmap := make(chan Layout)
+	layoutsAwaitingHillshade := make(chan Layout)
 	mockLayoutService := new(MockLayoutService)
 	controller := LayoutController{
 		mockLayoutService,
-		newLayouts,
+		layoutsAwaitingHeightmap,
+		layoutsAwaitingHillshade,
 	}
 
 	httpBaseURL, _ := TestController(controller)
@@ -42,7 +44,7 @@ func TestLayoutController(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			select {
-			case got := <-newLayouts:
+			case got := <-layoutsAwaitingHeightmap:
 				if got != down {
 					t.Errorf("got %+v want %+v", got, down)
 				}
@@ -92,8 +94,38 @@ func TestLayoutController(t *testing.T) {
 		AssertLayouts(t, got, down)
 	})
 
-	t.Run("patch by id", func(t *testing.T) {
+	t.Run("patch heightmap", func(t *testing.T) {
 		id, up, down := "rafael", Layout{HeightmapURL: "coming through"}, Layout{Id: "rafael", HeightmapURL: "coming through for real"}
+		mockLayoutService.On("Patch", id, up).Return(down, nil)
+
+		var wg sync.WaitGroup
+		wg.Add(1)
+		go func() {
+			select {
+			case got := <-layoutsAwaitingHillshade:
+				if got != down {
+					t.Errorf("got %+v want %+v", got, down)
+				}
+			case <-time.After(time.Second):
+				t.Error("timed out after one second")
+			}
+			wg.Done()
+		}()
+
+		got := client.PatchLayout(t, id, up)
+		AssertLayout(t, got, down)
+		wg.Wait()
+	})
+
+	t.Run("patch heightmap when queue full", func(t *testing.T) {
+		mockLayoutService.On("Patch", mock.Anything, mock.Anything).Return(Layout{HeightmapURL: "something"}, nil).Once()
+		client.PatchLayoutExpectInternalServerError(t, "kerblam")
+	})
+
+	t.Run("patch hillshade", func(t *testing.T) {
+		id, up, down := "mac miller",
+			Layout{HeightmapURL: "already got it", HillshadeURL: "coming through"},
+			Layout{Id: "mac miller", HeightmapURL: "already got it", HillshadeURL: "coming through for real"}
 		mockLayoutService.On("Patch", id, up).Return(down, nil)
 		got := client.PatchLayout(t, id, up)
 		AssertLayout(t, got, down)
