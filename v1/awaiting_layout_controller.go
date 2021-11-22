@@ -12,8 +12,8 @@ import (
 )
 
 type AwaitingLayoutController struct {
-	interval        time.Duration
-	awaitingLayouts chan types.Layout
+	interval                 time.Duration
+	layoutsAwaitingHeightmap chan types.Layout
 }
 
 func (c *AwaitingLayoutController) AddRoutes(router *httprouter.Router) {
@@ -22,7 +22,7 @@ func (c *AwaitingLayoutController) AddRoutes(router *httprouter.Router) {
 		var layout types.Layout
 		json.NewDecoder(r.Body).Decode(&layout)
 		select {
-		case c.awaitingLayouts <- layout:
+		case c.layoutsAwaitingHeightmap <- layout:
 			rw.WriteHeader(201)
 		default:
 			log.Print("queue full")
@@ -48,14 +48,14 @@ func (c *AwaitingLayoutController) AddRoutes(router *httprouter.Router) {
 		}()
 
 		for {
-			awaitingLayout := <-c.awaitingLayouts
-			if err := conn.WriteJSON(awaitingLayout); err != nil {
+			layout := <-c.layoutsAwaitingHeightmap
+			if err := conn.WriteJSON(layout); err != nil {
 				log.Printf("failed websocket write: %s", err)
-				c.awaitingLayouts <- awaitingLayout
+				c.layoutsAwaitingHeightmap <- layout
 				break
 			} else if _, _, err := conn.ReadMessage(); err != nil {
 				log.Printf("failed websocket read: %s", err)
-				c.awaitingLayouts <- awaitingLayout
+				c.layoutsAwaitingHeightmap <- layout
 				break
 			}
 		}
