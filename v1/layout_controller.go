@@ -2,7 +2,6 @@ package v1
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 
 	"github.com/cruftbusters/painkiller-layouts/types"
@@ -10,9 +9,7 @@ import (
 )
 
 type LayoutController struct {
-	layoutService            LayoutService
-	layoutsAwaitingHeightmap chan types.Layout
-	layoutsAwaitingHillshade chan types.Layout
+	layoutService LayoutService
 }
 
 func (c LayoutController) AddRoutes(router *httprouter.Router) {
@@ -27,14 +24,8 @@ func (c LayoutController) Create(response http.ResponseWriter, request *http.Req
 	up := &types.Layout{}
 	json.NewDecoder(request.Body).Decode(up)
 	down := c.layoutService.Create(*up)
-	select {
-	case c.layoutsAwaitingHeightmap <- down:
-		response.WriteHeader(201)
-		json.NewEncoder(response).Encode(down)
-	default:
-		response.WriteHeader(500)
-		log.Print("layouts awaiting heightmap is full")
-	}
+	response.WriteHeader(201)
+	json.NewEncoder(response).Encode(down)
 }
 
 func (c LayoutController) Get(response http.ResponseWriter, request *http.Request, ps httprouter.Params) {
@@ -66,15 +57,6 @@ func (c LayoutController) Patch(response http.ResponseWriter, request *http.Requ
 	if err != nil {
 		response.WriteHeader(404)
 		return
-	}
-	if down.HeightmapURL != "" && down.HillshadeURL == "" {
-		select {
-		case c.layoutsAwaitingHillshade <- down:
-		default:
-			response.WriteHeader(500)
-			log.Print("layouts awaiting hillshade is full")
-			return
-		}
 	}
 	json.NewEncoder(response).Encode(down)
 }
