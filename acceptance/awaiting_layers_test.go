@@ -125,7 +125,6 @@ func TestAwaitingLayers(t *testing.T) {
 				if err := EndDequeueLayout(conn); err != nil {
 					t.Fatal(err)
 				}
-				EndDequeueLayout(conn)
 			})
 		}
 	})

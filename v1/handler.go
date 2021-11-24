@@ -16,12 +16,19 @@ func Handler(router *httprouter.Router, sqlite3Connection, baseURL string) {
 
 	Migrate(db)
 
+	awaitingHeightmap := NewAwaitingLayerService(2)
+
 	layoutService := NewLayoutService(db, &DefaultUUIDService{})
-	LayoutController{layoutService}.AddRoutes(router)
+	LayoutController{
+		NewLayoutAwaitingLayerWire(
+			layoutService,
+			awaitingHeightmap,
+		),
+	}.AddRoutes(router)
 	LayerController{NewLayerService(baseURL, db, layoutService)}.AddRoutes(router)
 
 	(&AwaitingLayersController{
-		NewAwaitingLayerService(2),
+		awaitingHeightmap,
 		NewAwaitingLayerService(2),
 	}).AddRoutes(router)
 
