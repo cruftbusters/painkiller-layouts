@@ -41,6 +41,7 @@ func (c *AwaitingLayersController) AddRoutes(router *httprouter.Router) {
 }
 
 func PingServer(conn *websocket.Conn) {
+	conn.SetPingHandler(func(s string) error { return conn.WriteControl(websocket.PongMessage, []byte(s), time.Time{}) })
 	for {
 		conn.WriteControl(websocket.PingMessage, nil, time.Time{})
 		time.Sleep(5 * time.Second)
@@ -48,13 +49,25 @@ func PingServer(conn *websocket.Conn) {
 }
 
 func AwaitingLayerServer(conn *websocket.Conn, awaitingLayer AwaitingLayerService) {
+	read := make(chan error, 1)
 	go func() {
-		if _, _, err := conn.ReadMessage(); err != nil {
+		for {
+			_, _, err := conn.ReadMessage()
+			read <- err
+			if err != nil {
+				return
+			}
+		}
+	}()
+	go func() {
+		if err := <-read; err != nil {
 			return
 		}
 		layout := awaitingLayer.Dequeue()
-		conn.WriteJSON(layout)
-		if _, _, err := conn.ReadMessage(); err != nil {
+		if err := conn.WriteJSON(layout); err != nil {
+			awaitingLayer.Enqueue(layout)
+			return
+		} else if err := <-read; err != nil {
 			awaitingLayer.Enqueue(layout)
 			return
 		}

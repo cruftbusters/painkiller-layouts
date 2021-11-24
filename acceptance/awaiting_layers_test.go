@@ -2,7 +2,6 @@ package acceptance
 
 import (
 	"testing"
-	"time"
 
 	. "github.com/cruftbusters/painkiller-layouts/testing"
 	"github.com/cruftbusters/painkiller-layouts/types"
@@ -14,39 +13,6 @@ func TestAwaitingLayers(t *testing.T) {
 	httpBaseURL, wsBaseURL := TestServer(v1.Handler)
 	client := &ClientV2{BaseURL: httpBaseURL}
 	instances := []string{"/v1/awaiting_heightmap", "/v1/awaiting_hillshade"}
-
-	t.Run("ping every five seconds", func(t *testing.T) {
-		for _, path := range instances {
-			t.Run(path, func(t *testing.T) {
-				conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL+path, nil)
-				AssertNoError(t, err)
-				defer conn.Close()
-				go conn.ReadMessage()
-
-				ping := make(chan *struct{})
-				conn.SetPingHandler(func(string) error { ping <- nil; return nil })
-
-				one, five, six := time.After(time.Second), time.After(5*time.Second), time.After(6*time.Second)
-				select {
-				case <-ping:
-				case <-one:
-					t.Fatal("timed out waiting for first ping")
-				}
-
-				select {
-				case <-ping:
-					t.Fatal("second ping too early")
-				case <-five:
-				}
-
-				select {
-				case <-ping:
-				case <-six:
-					t.Fatal("second ping too late")
-				}
-			})
-		}
-	})
 
 	t.Run("enqueue two and distribute", func(t *testing.T) {
 		for _, path := range instances {
