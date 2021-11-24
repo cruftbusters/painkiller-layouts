@@ -7,6 +7,8 @@ StandardOutput=file:/home/arctair/painkiller/layouts/application.log
 StandardError=file:/home/arctair/painkiller/layouts/error.log
 Type=simple
 WorkingDirectory=/home/arctair/warehouse/painkiller/layouts
+Restart=on-failure
+RestartSec=5s
 
 [Install]
 WantedBy=default.target
