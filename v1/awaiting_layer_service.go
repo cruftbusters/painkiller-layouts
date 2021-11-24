@@ -24,8 +24,12 @@ type DefaultAwaitingLayerService struct {
 }
 
 func (s *DefaultAwaitingLayerService) Enqueue(layout types.Layout) error {
-	s.channel <- layout
-	return nil
+	select {
+	case s.channel <- layout:
+		return nil
+	default:
+		return ErrQueueFull
+	}
 }
 
 func (s *DefaultAwaitingLayerService) Dequeue() types.Layout {

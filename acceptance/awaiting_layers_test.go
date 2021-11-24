@@ -58,4 +58,23 @@ func TestAwaitingLayers(t *testing.T) {
 		AssertNoError(t, err)
 		AssertLayout(t, got, layout)
 	})
+
+	t.Run("queue is full", func(t *testing.T) {
+		conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL+"/v1/awaiting_heightmap", nil)
+		AssertNoError(t, err)
+		defer conn.Close()
+
+		if err := client.EnqueueLayoutAwaitingHeightmap(types.Layout{}); err != nil {
+			t.Fatal(err)
+		}
+
+		if err := client.EnqueueLayoutAwaitingHeightmapExpectInternalServerError(types.Layout{Id: "not gunna fit"}); err != nil {
+			t.Fatal(err)
+		}
+
+		conn.WriteMessage(websocket.BinaryMessage, nil)
+		if _, err = ReadLayout(conn); err != nil {
+			t.Fatal(err)
+		}
+	})
 }

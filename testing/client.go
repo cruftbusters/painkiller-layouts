@@ -3,6 +3,7 @@ package testing
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -92,7 +93,14 @@ func (client ClientV2) EnqueueLayoutAwaitingHeightmap(layout Layout) error {
 }
 
 func (client ClientV2) EnqueueLayoutAwaitingHeightmapExpectInternalServerError(layout Layout) error {
-	return client.EnqueueLayoutAwaitingHeightmapExpect(layout, 500)
+	channel := make(chan error)
+	go func() { channel <- client.EnqueueLayoutAwaitingHeightmapExpect(layout, 500) }()
+	select {
+	case err := <-channel:
+		return err
+	case <-time.After(time.Second):
+		return errors.New("timed out after one second")
+	}
 }
 
 func (client ClientV2) EnqueueLayoutAwaitingHeightmapExpect(layout Layout, statusCode int) error {
