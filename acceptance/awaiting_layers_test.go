@@ -1,6 +1,7 @@
 package acceptance
 
 import (
+	"fmt"
 	"testing"
 
 	. "github.com/cruftbusters/painkiller-layouts/testing"
@@ -187,9 +188,7 @@ func TestAwaitingLayers(t *testing.T) {
 		}
 		defer client.DeleteLayout(t, created.Id)
 
-		client.PatchLayout(t, created.Id, types.Layout{HillshadeURL: "irrelevant"})
-		client.PatchLayout(t, created.Id, types.Layout{HeightmapURL: "time for hillshade"})
-		client.PatchLayout(t, created.Id, types.Layout{HillshadeURL: "irrelevant2"})
+		client.PutLayer(t, created.Id, "heightmap.jpg", nil)
 
 		conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL+"/v1/awaiting_hillshade", nil)
 		AssertNoError(t, err)
@@ -199,7 +198,7 @@ func TestAwaitingLayers(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		AssertLayout(t, got, types.Layout{Id: created.Id, HeightmapURL: "time for hillshade", HillshadeURL: "irrelevant"})
+		AssertLayout(t, got, types.Layout{Id: created.Id, HeightmapURL: fmt.Sprintf("%s/v1/layouts/%s/heightmap.jpg", httpBaseURL, created.Id)})
 		if err := EndDequeueLayout(conn); err != nil {
 			t.Fatal(err)
 		}

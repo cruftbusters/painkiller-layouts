@@ -18,16 +18,15 @@ func Handler(router *httprouter.Router, sqlite3Connection, baseURL string) {
 
 	awaitingHeightmap := NewAwaitingLayerService(8)
 	awaitingHillshade := NewAwaitingLayerService(8)
-
 	layoutService := NewLayoutService(db, &DefaultUUIDService{})
-	LayoutController{
-		NewLayoutAwaitingLayerWire(
-			layoutService,
-			awaitingHeightmap,
-			awaitingHillshade,
-		),
-	}.AddRoutes(router)
-	LayerController{NewLayerService(baseURL, db, layoutService)}.AddRoutes(router)
+	wire := NewLayoutAwaitingLayerWire(
+		layoutService,
+		awaitingHeightmap,
+		awaitingHillshade,
+	)
+
+	LayoutController{wire}.AddRoutes(router)
+	LayerController{NewLayerService(baseURL, db, wire)}.AddRoutes(router)
 
 	(&AwaitingLayersController{
 		awaitingHeightmap,
