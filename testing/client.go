@@ -89,12 +89,12 @@ func (client ClientV2) CreateLayoutExpectInternalServerError(t testing.TB, layou
 }
 
 func (client ClientV2) EnqueueLayoutAwaitingHeightmap(layout Layout) error {
-	return client.EnqueueLayoutAwaitingHeightmapExpect(layout, 201)
+	return client.EnqueueLayoutExpect("/v1/awaiting_heightmap", layout, 201)
 }
 
 func (client ClientV2) EnqueueLayoutAwaitingHeightmapExpectInternalServerError(layout Layout) error {
 	channel := make(chan error)
-	go func() { channel <- client.EnqueueLayoutAwaitingHeightmapExpect(layout, 500) }()
+	go func() { channel <- client.EnqueueLayoutExpect("/v1/awaiting_heightmap", layout, 500) }()
 	select {
 	case err := <-channel:
 		return err
@@ -103,12 +103,12 @@ func (client ClientV2) EnqueueLayoutAwaitingHeightmapExpectInternalServerError(l
 	}
 }
 
-func (client ClientV2) EnqueueLayoutAwaitingHeightmapExpect(layout Layout, statusCode int) error {
+func (client ClientV2) EnqueueLayoutExpect(path string, layout Layout, statusCode int) error {
 	up := &bytes.Buffer{}
 	if err := json.NewEncoder(up).Encode(layout); err != nil {
 		return err
 	}
-	response, err := http.Post(client.baseURLF("/v1/awaiting_heightmap"), "", up)
+	response, err := http.Post(client.baseURLF(path), "", up)
 	if err != nil {
 		return err
 	} else if response.StatusCode != statusCode {

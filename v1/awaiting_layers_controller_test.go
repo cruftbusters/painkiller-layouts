@@ -29,9 +29,10 @@ func TestAwaitingLayers(t *testing.T) {
 	controller := &AwaitingLayersController{awaitingHeightmap}
 	httpBaseURL, wsBaseURL := TestController(controller)
 	client := ClientV2{BaseURL: httpBaseURL}
+	instances := []string{"/v1/awaiting_heightmap", "/v1/awaiting_hillshade"}
 
 	t.Run("ping every five seconds", func(t *testing.T) {
-		for _, path := range []string{"/v1/awaiting_heightmap", "/v1/awaiting_hillshade"} {
+		for _, path := range instances {
 			t.Run(path, func(t *testing.T) {
 				conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL+path, nil)
 				AssertNoError(t, err)
@@ -64,63 +65,79 @@ func TestAwaitingLayers(t *testing.T) {
 	})
 
 	t.Run("enqueue one", func(t *testing.T) {
-		layout := types.Layout{Id: "enqueue me"}
-		awaitingHeightmap.On("Enqueue", layout).Return(nil)
+		for _, path := range instances {
+			t.Run(path, func(t *testing.T) {
+				layout := types.Layout{Id: "enqueue me"}
+				awaitingHeightmap.On("Enqueue", layout).Return(nil)
 
-		if err := client.EnqueueLayoutAwaitingHeightmap(layout); err != nil {
-			t.Fatal(err)
+				if err := client.EnqueueLayoutExpect(path, layout, 201); err != nil {
+					t.Fatal(err)
+				}
+			})
 		}
 	})
 
 	t.Run("enqueue one when queue is full", func(t *testing.T) {
-		layout := types.Layout{Id: "im not gunna fit"}
-		awaitingHeightmap.On("Enqueue", layout).Return(ErrQueueFull)
+		for _, path := range instances {
+			t.Run(path, func(t *testing.T) {
+				layout := types.Layout{Id: "im not gunna fit"}
+				awaitingHeightmap.On("Enqueue", layout).Return(ErrQueueFull)
 
-		if err := client.EnqueueLayoutAwaitingHeightmapExpectInternalServerError(layout); err != nil {
-			t.Fatal(err)
+				if err := client.EnqueueLayoutExpect(path, layout, 500); err != nil {
+					t.Fatal(err)
+				}
+			})
 		}
 	})
 
 	t.Run("dequeue one", func(t *testing.T) {
-		layout := types.Layout{Id: "rabid dequeueing"}
-		awaitingHeightmap.On("Dequeue").Return(layout).Once()
+		for _, path := range instances {
+			t.Run(path, func(t *testing.T) {
+				layout := types.Layout{Id: "rabid dequeueing"}
+				awaitingHeightmap.On("Dequeue").Return(layout).Once()
 
-		conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL+"/v1/awaiting_heightmap", nil)
-		if err != nil {
-			t.Fatal(err)
-		}
-		defer conn.Close()
+				conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL+path, nil)
+				if err != nil {
+					t.Fatal(err)
+				}
+				defer conn.Close()
 
-		got, err := BeginDequeueLayout(conn)
-		if err != nil {
-			t.Fatal(err)
+				got, err := BeginDequeueLayout(conn)
+				if err != nil {
+					t.Fatal(err)
+				}
+				AssertLayout(t, got, layout)
+				conn.WriteMessage(websocket.BinaryMessage, nil)
+			})
 		}
-		AssertLayout(t, got, layout)
-		conn.WriteMessage(websocket.BinaryMessage, nil)
 	})
 
 	t.Run("requeue work unfinished by closed workers", func(t *testing.T) {
-		conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL+"/v1/awaiting_heightmap", nil)
-		if err != nil {
-			t.Fatal(err)
-		}
-		defer conn.Close()
+		for _, path := range instances {
+			t.Run(path, func(t *testing.T) {
+				conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL+path, nil)
+				if err != nil {
+					t.Fatal(err)
+				}
+				defer conn.Close()
 
-		layout := types.Layout{Id: "requeue me"}
-		awaitingHeightmap.On("Dequeue").Return(layout).Once()
-		if _, err := BeginDequeueLayout(conn); err != nil {
-			t.Fatal(err)
-		}
+				layout := types.Layout{Id: "requeue me"}
+				awaitingHeightmap.On("Dequeue").Return(layout).Once()
+				if _, err := BeginDequeueLayout(conn); err != nil {
+					t.Fatal(err)
+				}
 
-		channel := make(chan types.Layout)
-		awaitingHeightmap.On("Enqueue", mock.Anything).Return(nil).Run(func(args mock.Arguments) { channel <- args.Get(0).(types.Layout) })
-		conn.Close()
+				channel := make(chan types.Layout)
+				awaitingHeightmap.On("Enqueue", mock.Anything).Return(nil).Run(func(args mock.Arguments) { channel <- args.Get(0).(types.Layout) }).Once()
+				conn.Close()
 
-		select {
-		case got := <-channel:
-			AssertLayout(t, got, layout)
-		case <-time.After(time.Second):
-			t.Fatal("timed out after one second")
+				select {
+				case got := <-channel:
+					AssertLayout(t, got, layout)
+				case <-time.After(time.Second):
+					t.Fatal("timed out after one second")
+				}
+			})
 		}
 	})
 }

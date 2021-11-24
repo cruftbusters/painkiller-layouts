@@ -15,17 +15,8 @@ type AwaitingLayersController struct {
 }
 
 func (c *AwaitingLayersController) AddRoutes(router *httprouter.Router) {
-	router.POST("/v1/awaiting_heightmap", func(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		var layout types.Layout
-		if err := json.NewDecoder(r.Body).Decode(&layout); err != nil {
-			rw.WriteHeader(400)
-			return
-		} else if err := c.awaitingHeightmap.Enqueue(layout); err != nil {
-			rw.WriteHeader(500)
-			return
-		}
-		rw.WriteHeader(201)
-	})
+	router.POST("/v1/awaiting_heightmap", c.EnqueueLayout)
+	router.POST("/v1/awaiting_hillshade", c.EnqueueLayout)
 	router.GET("/v1/awaiting_hillshade", func(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		upgrader := websocket.Upgrader{}
 		conn, err := upgrader.Upgrade(rw, r, nil)
@@ -33,6 +24,7 @@ func (c *AwaitingLayersController) AddRoutes(router *httprouter.Router) {
 			panic(err)
 		}
 		defer conn.Close()
+		AwaitingLayerServer(conn, c.awaitingHeightmap)
 		PingServer(conn)
 	})
 	router.GET("/v1/awaiting_heightmap", func(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -42,23 +34,40 @@ func (c *AwaitingLayersController) AddRoutes(router *httprouter.Router) {
 			panic(err)
 		}
 		defer conn.Close()
-		go func() {
-			if _, _, err := conn.ReadMessage(); err != nil {
-				return
-			}
-			layout := c.awaitingHeightmap.Dequeue()
-			conn.WriteJSON(layout)
-			if _, _, err := conn.ReadMessage(); err != nil {
-				c.awaitingHeightmap.Enqueue(layout)
-				return
-			}
-		}()
+		AwaitingLayerServer(conn, c.awaitingHeightmap)
 		PingServer(conn)
 	})
 }
+
 func PingServer(conn *websocket.Conn) {
 	for {
 		conn.WriteControl(websocket.PingMessage, nil, time.Time{})
 		time.Sleep(5 * time.Second)
 	}
+}
+
+func AwaitingLayerServer(conn *websocket.Conn, awaitingLayer AwaitingLayerService) {
+	go func() {
+		if _, _, err := conn.ReadMessage(); err != nil {
+			return
+		}
+		layout := awaitingLayer.Dequeue()
+		conn.WriteJSON(layout)
+		if _, _, err := conn.ReadMessage(); err != nil {
+			awaitingLayer.Enqueue(layout)
+			return
+		}
+	}()
+}
+
+func (c *AwaitingLayersController) EnqueueLayout(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	var layout types.Layout
+	if err := json.NewDecoder(r.Body).Decode(&layout); err != nil {
+		rw.WriteHeader(400)
+		return
+	} else if err := c.awaitingHeightmap.Enqueue(layout); err != nil {
+		rw.WriteHeader(500)
+		return
+	}
+	rw.WriteHeader(201)
 }
