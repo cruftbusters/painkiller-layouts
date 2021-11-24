@@ -50,17 +50,19 @@ func TestAwaitingLayers(t *testing.T) {
 
 	t.Run("enqueue two and distribute", func(t *testing.T) {
 		for _, path := range instances {
-			t.Run(path, func(t *testing.T) {
-				layout0 := types.Layout{Id: "0"}
-				if err := client.EnqueueLayoutExpect(path, layout0, 201); err != nil {
+			t.Run("enqueue "+path, func(t *testing.T) {
+				if err := client.EnqueueLayoutExpect(path, types.Layout{Id: path + "0"}, 201); err != nil {
 					t.Fatal(err)
 				}
-
-				layout1 := types.Layout{Id: "1"}
-				if err := client.EnqueueLayoutExpect(path, layout1, 201); err != nil {
+				if err := client.EnqueueLayoutExpect(path, types.Layout{Id: path + "1"}, 201); err != nil {
 					t.Fatal(err)
 				}
+			})
+		}
 
+		for i := len(instances) - 1; i >= 0; i-- {
+			path := instances[i]
+			t.Run("dequeue "+path, func(t *testing.T) {
 				conn0, _, err := websocket.DefaultDialer.Dial(wsBaseURL+path, nil)
 				if err != nil {
 					t.Fatal(err)
@@ -77,7 +79,7 @@ func TestAwaitingLayers(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-				AssertLayout(t, got, layout0)
+				AssertLayout(t, got, types.Layout{Id: path + "0"})
 				if err := EndDequeueLayout(conn0); err != nil {
 					t.Fatal(err)
 				}
@@ -86,7 +88,7 @@ func TestAwaitingLayers(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-				AssertLayout(t, got, layout1)
+				AssertLayout(t, got, types.Layout{Id: path + "1"})
 				if err := EndDequeueLayout(conn1); err != nil {
 					t.Fatal(err)
 				}
@@ -102,7 +104,7 @@ func TestAwaitingLayers(t *testing.T) {
 				defer conn.Close()
 
 				layout := types.Layout{Id: "bumpy ride"}
-				if err := client.EnqueueLayoutAwaitingHeightmap(layout); err != nil {
+				if err := client.EnqueueLayoutExpect(path, layout, 201); err != nil {
 					t.Fatal(err)
 				}
 
@@ -134,12 +136,12 @@ func TestAwaitingLayers(t *testing.T) {
 				queueSize := 2
 
 				for i := 0; i < queueSize; i++ {
-					if err := client.EnqueueLayoutAwaitingHeightmap(types.Layout{}); err != nil {
+					if err := client.EnqueueLayoutExpect(path, types.Layout{}, 201); err != nil {
 						t.Fatal(err)
 					}
 				}
 
-				if err := client.EnqueueLayoutAwaitingHeightmapExpectInternalServerError(types.Layout{Id: "not gunna fit"}); err != nil {
+				if err := client.EnqueueLayoutExpect(path, types.Layout{Id: "not gunna fit"}, 500); err != nil {
 					t.Fatal(err)
 				}
 

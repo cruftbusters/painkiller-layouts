@@ -26,15 +26,22 @@ func (m *MockAwaitingLayerService) Dequeue() types.Layout {
 
 func TestAwaitingLayers(t *testing.T) {
 	awaitingHeightmap := new(MockAwaitingLayerService)
-	controller := &AwaitingLayersController{awaitingHeightmap}
+	awaitingHillshade := new(MockAwaitingLayerService)
+	controller := &AwaitingLayersController{awaitingHeightmap, awaitingHillshade}
 	httpBaseURL, wsBaseURL := TestController(controller)
 	client := ClientV2{BaseURL: httpBaseURL}
-	instances := []string{"/v1/awaiting_heightmap", "/v1/awaiting_hillshade"}
+	instances := []struct {
+		string
+		*MockAwaitingLayerService
+	}{
+		{"/v1/awaiting_heightmap", awaitingHeightmap},
+		{"/v1/awaiting_hillshade", awaitingHillshade},
+	}
 
 	t.Run("ping every five seconds", func(t *testing.T) {
-		for _, path := range instances {
-			t.Run(path, func(t *testing.T) {
-				conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL+path, nil)
+		for _, instance := range instances {
+			t.Run(instance.string, func(t *testing.T) {
+				conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL+instance.string, nil)
 				AssertNoError(t, err)
 				defer conn.Close()
 				go conn.ReadMessage()
@@ -65,12 +72,12 @@ func TestAwaitingLayers(t *testing.T) {
 	})
 
 	t.Run("enqueue one", func(t *testing.T) {
-		for _, path := range instances {
-			t.Run(path, func(t *testing.T) {
+		for _, instance := range instances {
+			t.Run(instance.string, func(t *testing.T) {
 				layout := types.Layout{Id: "enqueue me"}
-				awaitingHeightmap.On("Enqueue", layout).Return(nil)
+				instance.MockAwaitingLayerService.On("Enqueue", layout).Return(nil)
 
-				if err := client.EnqueueLayoutExpect(path, layout, 201); err != nil {
+				if err := client.EnqueueLayoutExpect(instance.string, layout, 201); err != nil {
 					t.Fatal(err)
 				}
 			})
@@ -78,12 +85,12 @@ func TestAwaitingLayers(t *testing.T) {
 	})
 
 	t.Run("enqueue one when queue is full", func(t *testing.T) {
-		for _, path := range instances {
-			t.Run(path, func(t *testing.T) {
+		for _, instance := range instances {
+			t.Run(instance.string, func(t *testing.T) {
 				layout := types.Layout{Id: "im not gunna fit"}
-				awaitingHeightmap.On("Enqueue", layout).Return(ErrQueueFull)
+				instance.MockAwaitingLayerService.On("Enqueue", layout).Return(ErrQueueFull).Once()
 
-				if err := client.EnqueueLayoutExpect(path, layout, 500); err != nil {
+				if err := client.EnqueueLayoutExpect(instance.string, layout, 500); err != nil {
 					t.Fatal(err)
 				}
 			})
@@ -91,12 +98,12 @@ func TestAwaitingLayers(t *testing.T) {
 	})
 
 	t.Run("dequeue one", func(t *testing.T) {
-		for _, path := range instances {
-			t.Run(path, func(t *testing.T) {
+		for _, instance := range instances {
+			t.Run(instance.string, func(t *testing.T) {
 				layout := types.Layout{Id: "rabid dequeueing"}
-				awaitingHeightmap.On("Dequeue").Return(layout).Once()
+				instance.MockAwaitingLayerService.On("Dequeue").Return(layout).Once()
 
-				conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL+path, nil)
+				conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL+instance.string, nil)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -113,22 +120,22 @@ func TestAwaitingLayers(t *testing.T) {
 	})
 
 	t.Run("requeue work unfinished by closed workers", func(t *testing.T) {
-		for _, path := range instances {
-			t.Run(path, func(t *testing.T) {
-				conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL+path, nil)
+		for _, instance := range instances {
+			t.Run(instance.string, func(t *testing.T) {
+				conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL+instance.string, nil)
 				if err != nil {
 					t.Fatal(err)
 				}
 				defer conn.Close()
 
 				layout := types.Layout{Id: "requeue me"}
-				awaitingHeightmap.On("Dequeue").Return(layout).Once()
+				instance.MockAwaitingLayerService.On("Dequeue").Return(layout).Once()
 				if _, err := BeginDequeueLayout(conn); err != nil {
 					t.Fatal(err)
 				}
 
 				channel := make(chan types.Layout)
-				awaitingHeightmap.On("Enqueue", mock.Anything).Return(nil).Run(func(args mock.Arguments) { channel <- args.Get(0).(types.Layout) }).Once()
+				instance.MockAwaitingLayerService.On("Enqueue", mock.Anything).Return(nil).Run(func(args mock.Arguments) { channel <- args.Get(0).(types.Layout) }).Once()
 				conn.Close()
 
 				select {

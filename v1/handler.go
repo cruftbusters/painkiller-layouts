@@ -22,6 +22,7 @@ func Handler(router *httprouter.Router, sqlite3Connection, baseURL string) {
 
 	(&AwaitingLayersController{
 		NewAwaitingLayerService(2),
+		NewAwaitingLayerService(2),
 	}).AddRoutes(router)
 
 	VersionController{}.AddRoutes(router)
