@@ -107,9 +107,16 @@ func TestAwaitingLayers(t *testing.T) {
 		if _, err := BeginDequeueLayout(conn); err != nil {
 			t.Fatal(err)
 		}
-		awaitingHeightmap.On("Enqueue", mock.Anything).Return(nil).Once()
+
+		channel := make(chan types.Layout)
+		awaitingHeightmap.On("Enqueue", mock.Anything).Return(nil).Run(func(args mock.Arguments) { channel <- args.Get(0).(types.Layout) })
 		conn.Close()
-		time.Sleep(time.Second)
-		awaitingHeightmap.AssertCalled(t, "Enqueue", layout)
+
+		select {
+		case got := <-channel:
+			AssertLayout(t, got, layout)
+		case <-time.After(time.Second):
+			t.Fatal("timed out after one second")
+		}
 	})
 }
