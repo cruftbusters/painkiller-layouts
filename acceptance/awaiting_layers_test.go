@@ -57,6 +57,39 @@ func TestAwaitingLayers(t *testing.T) {
 		got, err := ReadLayout(conn)
 		AssertNoError(t, err)
 		AssertLayout(t, got, layout)
+		conn.WriteMessage(websocket.BinaryMessage, nil)
+	})
+
+	t.Run("requeue work unfinished by closed workers", func(t *testing.T) {
+		conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL+"/v1/awaiting_heightmap", nil)
+		AssertNoError(t, err)
+		defer conn.Close()
+
+		layout := types.Layout{Id: "bumpy ride"}
+		if err := client.EnqueueLayoutAwaitingHeightmap(layout); err != nil {
+			t.Fatal(err)
+		}
+
+		if err := conn.WriteMessage(websocket.BinaryMessage, nil); err != nil {
+			t.Fatal(err)
+		} else if _, err := ReadLayout(conn); err != nil {
+			t.Fatal(err)
+		}
+		conn.Close()
+
+		conn, _, err = websocket.DefaultDialer.Dial(wsBaseURL+"/v1/awaiting_heightmap", nil)
+		AssertNoError(t, err)
+		defer conn.Close()
+
+		if err := conn.WriteMessage(websocket.BinaryMessage, nil); err != nil {
+			t.Fatal(err)
+		}
+		got, err := ReadLayout(conn)
+		if err != nil {
+			t.Fatal(err)
+		}
+		AssertLayout(t, got, layout)
+		conn.WriteMessage(websocket.BinaryMessage, nil)
 	})
 
 	t.Run("queue is full", func(t *testing.T) {
@@ -76,5 +109,6 @@ func TestAwaitingLayers(t *testing.T) {
 		if _, err = ReadLayout(conn); err != nil {
 			t.Fatal(err)
 		}
+		conn.WriteMessage(websocket.BinaryMessage, nil)
 	})
 }

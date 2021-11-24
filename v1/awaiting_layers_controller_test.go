@@ -79,7 +79,7 @@ func TestAwaitingLayers(t *testing.T) {
 
 	t.Run("dequeue one", func(t *testing.T) {
 		layout := types.Layout{Id: "rabid dequeueing"}
-		awaitingHeightmap.On("Dequeue").Return(layout)
+		awaitingHeightmap.On("Dequeue").Return(layout).Once()
 
 		conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL+"/v1/awaiting_heightmap", nil)
 		if err != nil {
@@ -93,5 +93,27 @@ func TestAwaitingLayers(t *testing.T) {
 			t.Fatal(err)
 		}
 		AssertLayout(t, got, layout)
+		conn.WriteMessage(websocket.BinaryMessage, nil)
+	})
+
+	t.Run("requeue work unfinished by closed workers", func(t *testing.T) {
+		conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL+"/v1/awaiting_heightmap", nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer conn.Close()
+
+		layout := types.Layout{Id: "requeue me"}
+		awaitingHeightmap.On("Dequeue").Return(layout).Once()
+		if err := conn.WriteMessage(websocket.BinaryMessage, nil); err != nil {
+			t.Fatal(err)
+		} else if _, err := ReadLayout(conn); err != nil {
+			t.Fatal(err)
+		}
+
+		awaitingHeightmap.On("Enqueue", mock.Anything).Return(nil).Once()
+		conn.WriteControl(websocket.CloseMessage, nil, time.Time{})
+		time.Sleep(time.Second)
+		awaitingHeightmap.AssertCalled(t, "Enqueue", layout)
 	})
 }

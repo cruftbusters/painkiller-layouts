@@ -37,8 +37,14 @@ func (c *AwaitingLayersController) AddRoutes(router *httprouter.Router) {
 			if _, _, err := conn.ReadMessage(); err != nil {
 				return
 			}
-			conn.WriteJSON(c.awaitingHeightmap.Dequeue())
+			layout := c.awaitingHeightmap.Dequeue()
+			conn.WriteJSON(layout)
+			if _, _, err := conn.ReadMessage(); err != nil {
+				c.awaitingHeightmap.Enqueue(layout)
+				return
+			}
 		}()
+		conn.SetCloseHandler(func(int, string) error { return conn.Close() })
 		for {
 			conn.WriteControl(websocket.PingMessage, nil, time.Time{})
 			time.Sleep(5 * time.Second)
