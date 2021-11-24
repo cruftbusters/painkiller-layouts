@@ -5,12 +5,14 @@ import (
 	"time"
 
 	. "github.com/cruftbusters/painkiller-layouts/testing"
+	"github.com/cruftbusters/painkiller-layouts/types"
 	v1 "github.com/cruftbusters/painkiller-layouts/v1"
 	"github.com/gorilla/websocket"
 )
 
 func TestAwaitingLayers(t *testing.T) {
-	_, wsBaseURL := TestServer(v1.Handler)
+	httpBaseURL, wsBaseURL := TestServer(v1.Handler)
+	client := &ClientV2{BaseURL: httpBaseURL}
 
 	t.Run("ping every five seconds", func(t *testing.T) {
 		conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL+"/v1/awaiting_heightmap", nil)
@@ -39,5 +41,21 @@ func TestAwaitingLayers(t *testing.T) {
 		case <-six:
 			t.Fatal("second ping too late")
 		}
+	})
+
+	t.Run("enqueue and dequeue one", func(t *testing.T) {
+		conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL+"/v1/awaiting_heightmap", nil)
+		AssertNoError(t, err)
+		defer conn.Close()
+
+		layout := types.Layout{Id: "see you on the other side"}
+		if err := client.EnqueueLayoutAwaitingHeightmap(layout); err != nil {
+			t.Fatal(err)
+		}
+
+		conn.WriteMessage(websocket.BinaryMessage, nil)
+		got, err := ReadLayout(conn)
+		AssertNoError(t, err)
+		AssertLayout(t, got, layout)
 	})
 }

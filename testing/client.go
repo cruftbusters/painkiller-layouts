@@ -1,6 +1,8 @@
 package testing
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -83,6 +85,28 @@ func (client ClientV2) CreateLayoutExpectInternalServerError(t testing.TB, layou
 	response, err := http.Post(client.baseURLF("/v1/layouts"), "", up)
 	AssertNoError(t, err)
 	AssertStatusCode(t, response, 500)
+}
+
+func (client ClientV2) EnqueueLayoutAwaitingHeightmap(layout Layout) error {
+	return client.EnqueueLayoutAwaitingHeightmapExpect(layout, 201)
+}
+
+func (client ClientV2) EnqueueLayoutAwaitingHeightmapExpectInternalServerError(layout Layout) error {
+	return client.EnqueueLayoutAwaitingHeightmapExpect(layout, 500)
+}
+
+func (client ClientV2) EnqueueLayoutAwaitingHeightmapExpect(layout Layout, statusCode int) error {
+	up := &bytes.Buffer{}
+	if err := json.NewEncoder(up).Encode(layout); err != nil {
+		return err
+	}
+	response, err := http.Post(client.baseURLF("/v1/awaiting_heightmap"), "", up)
+	if err != nil {
+		return err
+	} else if response.StatusCode != statusCode {
+		return fmt.Errorf("got status code %d want %d", response.StatusCode, statusCode)
+	}
+	return nil
 }
 
 func (client ClientV2) PatchLayoutExpectNotFound(t testing.TB, id string) {
