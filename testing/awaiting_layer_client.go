@@ -8,7 +8,10 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func ReadLayout(conn *websocket.Conn) (types.Layout, error) {
+func BeginDequeueLayout(conn *websocket.Conn) (types.Layout, error) {
+	if err := conn.WriteMessage(websocket.BinaryMessage, nil); err != nil {
+		return types.Layout{}, err
+	}
 	channel := make(chan struct {
 		types.Layout
 		error
@@ -27,4 +30,8 @@ func ReadLayout(conn *websocket.Conn) (types.Layout, error) {
 	case <-time.After(time.Second):
 		return types.Layout{}, errors.New("timed out after one second")
 	}
+}
+
+func EndDequeueLayout(conn *websocket.Conn) error {
+	return conn.WriteMessage(websocket.BinaryMessage, nil)
 }

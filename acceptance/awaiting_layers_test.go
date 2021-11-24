@@ -66,21 +66,23 @@ func TestAwaitingLayers(t *testing.T) {
 		}
 		defer conn1.Close()
 
-		conn0.WriteMessage(websocket.BinaryMessage, nil)
-		got, err := ReadLayout(conn0)
+		got, err := BeginDequeueLayout(conn0)
 		if err != nil {
 			t.Fatal(err)
 		}
 		AssertLayout(t, got, layout0)
-		conn0.WriteMessage(websocket.BinaryMessage, nil)
+		if err := EndDequeueLayout(conn0); err != nil {
+			t.Fatal(err)
+		}
 
-		conn1.WriteMessage(websocket.BinaryMessage, nil)
-		got, err = ReadLayout(conn1)
+		got, err = BeginDequeueLayout(conn1)
 		if err != nil {
 			t.Fatal(err)
 		}
 		AssertLayout(t, got, layout1)
-		conn1.WriteMessage(websocket.BinaryMessage, nil)
+		if err := EndDequeueLayout(conn1); err != nil {
+			t.Fatal(err)
+		}
 	})
 
 	t.Run("requeue work unfinished by closed workers", func(t *testing.T) {
@@ -93,9 +95,7 @@ func TestAwaitingLayers(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if err := conn.WriteMessage(websocket.BinaryMessage, nil); err != nil {
-			t.Fatal(err)
-		} else if _, err := ReadLayout(conn); err != nil {
+		if _, err := BeginDequeueLayout(conn); err != nil {
 			t.Fatal(err)
 		}
 		conn.Close()
@@ -104,15 +104,15 @@ func TestAwaitingLayers(t *testing.T) {
 		AssertNoError(t, err)
 		defer conn.Close()
 
-		if err := conn.WriteMessage(websocket.BinaryMessage, nil); err != nil {
-			t.Fatal(err)
-		}
-		got, err := ReadLayout(conn)
+		got, err := BeginDequeueLayout(conn)
 		if err != nil {
 			t.Fatal(err)
 		}
 		AssertLayout(t, got, layout)
-		conn.WriteMessage(websocket.BinaryMessage, nil)
+		if err := EndDequeueLayout(conn); err != nil {
+			t.Fatal(err)
+		}
+		EndDequeueLayout(conn)
 	})
 
 	t.Run("queue is full", func(t *testing.T) {
@@ -133,11 +133,10 @@ func TestAwaitingLayers(t *testing.T) {
 			AssertNoError(t, err)
 			defer conn.Close()
 
-			conn.WriteMessage(websocket.BinaryMessage, nil)
-			if _, err = ReadLayout(conn); err != nil {
+			if _, err = BeginDequeueLayout(conn); err != nil {
 				t.Fatal(err)
 			}
-			conn.WriteMessage(websocket.BinaryMessage, nil)
+			EndDequeueLayout(conn)
 		}
 	})
 }

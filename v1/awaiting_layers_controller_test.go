@@ -87,8 +87,7 @@ func TestAwaitingLayers(t *testing.T) {
 		}
 		defer conn.Close()
 
-		conn.WriteMessage(websocket.BinaryMessage, nil)
-		got, err := ReadLayout(conn)
+		got, err := BeginDequeueLayout(conn)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -105,14 +104,11 @@ func TestAwaitingLayers(t *testing.T) {
 
 		layout := types.Layout{Id: "requeue me"}
 		awaitingHeightmap.On("Dequeue").Return(layout).Once()
-		if err := conn.WriteMessage(websocket.BinaryMessage, nil); err != nil {
-			t.Fatal(err)
-		} else if _, err := ReadLayout(conn); err != nil {
+		if _, err := BeginDequeueLayout(conn); err != nil {
 			t.Fatal(err)
 		}
-
 		awaitingHeightmap.On("Enqueue", mock.Anything).Return(nil).Once()
-		conn.WriteControl(websocket.CloseMessage, nil, time.Time{})
+		conn.Close()
 		time.Sleep(time.Second)
 		awaitingHeightmap.AssertCalled(t, "Enqueue", layout)
 	})
