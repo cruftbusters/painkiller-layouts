@@ -26,6 +26,15 @@ func (c *AwaitingLayersController) AddRoutes(router *httprouter.Router) {
 		}
 		rw.WriteHeader(201)
 	})
+	router.GET("/v1/awaiting_hillshade", func(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		upgrader := websocket.Upgrader{}
+		conn, err := upgrader.Upgrade(rw, r, nil)
+		if err != nil {
+			panic(err)
+		}
+		defer conn.Close()
+		PingServer(conn)
+	})
 	router.GET("/v1/awaiting_heightmap", func(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		upgrader := websocket.Upgrader{}
 		conn, err := upgrader.Upgrade(rw, r, nil)
@@ -44,9 +53,12 @@ func (c *AwaitingLayersController) AddRoutes(router *httprouter.Router) {
 				return
 			}
 		}()
-		for {
-			conn.WriteControl(websocket.PingMessage, nil, time.Time{})
-			time.Sleep(5 * time.Second)
-		}
+		PingServer(conn)
 	})
+}
+func PingServer(conn *websocket.Conn) {
+	for {
+		conn.WriteControl(websocket.PingMessage, nil, time.Time{})
+		time.Sleep(5 * time.Second)
+	}
 }

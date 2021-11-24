@@ -15,31 +15,35 @@ func TestAwaitingLayers(t *testing.T) {
 	client := &ClientV2{BaseURL: httpBaseURL}
 
 	t.Run("ping every five seconds", func(t *testing.T) {
-		conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL+"/v1/awaiting_heightmap", nil)
-		AssertNoError(t, err)
-		defer conn.Close()
-		go conn.ReadMessage()
+		for _, path := range []string{"/v1/awaiting_heightmap", "/v1/awaiting_hillshade"} {
+			t.Run(path, func(t *testing.T) {
+				conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL+path, nil)
+				AssertNoError(t, err)
+				defer conn.Close()
+				go conn.ReadMessage()
 
-		ping := make(chan *struct{})
-		conn.SetPingHandler(func(string) error { ping <- nil; return nil })
+				ping := make(chan *struct{})
+				conn.SetPingHandler(func(string) error { ping <- nil; return nil })
 
-		one, five, six := time.After(time.Second), time.After(5*time.Second), time.After(6*time.Second)
-		select {
-		case <-ping:
-		case <-one:
-			t.Fatal("timed out waiting for first ping")
-		}
+				one, five, six := time.After(time.Second), time.After(5*time.Second), time.After(6*time.Second)
+				select {
+				case <-ping:
+				case <-one:
+					t.Fatal("timed out waiting for first ping")
+				}
 
-		select {
-		case <-ping:
-			t.Fatal("second ping too early")
-		case <-five:
-		}
+				select {
+				case <-ping:
+					t.Fatal("second ping too early")
+				case <-five:
+				}
 
-		select {
-		case <-ping:
-		case <-six:
-			t.Fatal("second ping too late")
+				select {
+				case <-ping:
+				case <-six:
+					t.Fatal("second ping too late")
+				}
+			})
 		}
 	})
 
