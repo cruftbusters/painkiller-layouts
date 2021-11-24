@@ -132,7 +132,7 @@ func TestAwaitingLayers(t *testing.T) {
 	t.Run("queue is full", func(t *testing.T) {
 		for _, path := range instances {
 			t.Run(path, func(t *testing.T) {
-				queueSize := 2
+				queueSize := 8
 
 				for i := 0; i < queueSize; i++ {
 					if err := client.EnqueueLayoutExpect(path, types.Layout{}, 201); err != nil {
@@ -155,6 +155,27 @@ func TestAwaitingLayers(t *testing.T) {
 					EndDequeueLayout(conn)
 				}
 			})
+		}
+	})
+
+	t.Run("new layout enqueues awaiting heightmap", func(t *testing.T) {
+		created, err := client.CreateLayoutExpect(types.Layout{}, 201)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer client.DeleteLayout(t, created.Id)
+
+		conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL+"/v1/awaiting_heightmap", nil)
+		AssertNoError(t, err)
+		defer conn.Close()
+
+		got, err := BeginDequeueLayout(conn)
+		if err != nil {
+			t.Fatal(err)
+		}
+		AssertLayout(t, got, created)
+		if err := EndDequeueLayout(conn); err != nil {
+			t.Fatal(err)
 		}
 	})
 }

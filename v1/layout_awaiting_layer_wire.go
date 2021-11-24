@@ -10,15 +10,21 @@ func NewLayoutAwaitingLayerWire(
 ) LayoutService {
 	return &DefaultLayoutAwaitingLayerWire{
 		layoutService,
+		awaitingHeightmap,
 	}
 }
 
 type DefaultLayoutAwaitingLayerWire struct {
 	layoutService     LayoutService
+	awaitingHeightmap AwaitingLayerService
 }
 
 func (s *DefaultLayoutAwaitingLayerWire) Create(layout Layout) Layout {
-	return s.layoutService.Create(layout)
+	down := s.layoutService.Create(layout)
+	if err := s.awaitingHeightmap.Enqueue(down); err != nil {
+		panic(err)
+	}
+	return down
 }
 
 func (s *DefaultLayoutAwaitingLayerWire) Get(id string) (Layout, error) {

@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/cruftbusters/painkiller-layouts/types"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestLayoutAwaitingLayerWire(t *testing.T) {
@@ -16,13 +17,15 @@ func TestLayoutAwaitingLayerWire(t *testing.T) {
 		awaitingHeightmap,
 	)
 
-	t.Run("proxy create", func(t *testing.T) {
+	t.Run("proxy create and notify awaiting heightmap", func(t *testing.T) {
 		up, down := types.Layout{Id: "hey up"}, types.Layout{Id: "hey down"}
-		layoutService.On("Create", up).Return(down)
+		awaitingHeightmap.On("Enqueue", mock.Anything).Return(nil).Once()
+		layoutService.On("Create", up).Return(down).Once()
 		got := service.Create(up)
 		if got != down {
 			t.Errorf("got %+v want %+v", got, down)
 		}
+		awaitingHeightmap.AssertCalled(t, "Enqueue", down)
 	})
 
 	t.Run("proxy delete", func(t *testing.T) {

@@ -80,6 +80,23 @@ func (client ClientV2) CreateLayout(t testing.TB, layout Layout) Layout {
 	return decode(t, response)
 }
 
+func (client ClientV2) CreateLayoutExpect(layout Layout, statusCode int) (Layout, error) {
+	up := &bytes.Buffer{}
+	if err := json.NewEncoder(up).Encode(layout); err != nil {
+		return layout, err
+	}
+	response, err := http.Post(client.baseURLF("/v1/layouts"), "", up)
+	if err != nil {
+		return layout, err
+	} else if response.StatusCode != statusCode {
+		return layout, fmt.Errorf("got status code %d want %d", response.StatusCode, statusCode)
+	}
+	if err := json.NewDecoder(response.Body).Decode(&layout); err != nil {
+		return layout, err
+	}
+	return layout, nil
+}
+
 func (client ClientV2) CreateLayoutExpectInternalServerError(t testing.TB, layout Layout) {
 	t.Helper()
 	up := encode(t, layout)
