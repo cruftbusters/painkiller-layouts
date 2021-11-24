@@ -13,9 +13,9 @@ type AwaitingLayerService interface {
 
 var ErrQueueFull error = errors.New("queue full")
 
-func NewAwaitingLayerService() AwaitingLayerService {
+func NewAwaitingLayerService(queueSize int) AwaitingLayerService {
 	return &DefaultAwaitingLayerService{
-		channel: make(chan types.Layout, 1),
+		channel: make(chan types.Layout, queueSize),
 	}
 }
 

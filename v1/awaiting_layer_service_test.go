@@ -9,7 +9,7 @@ import (
 )
 
 func TestAwaitingLayerService(t *testing.T) {
-	service := NewAwaitingLayerService()
+	service := NewAwaitingLayerService(1)
 
 	t.Run("enqueue and dequeue", func(t *testing.T) {
 		layout := types.Layout{Id: "enqueue this"}
