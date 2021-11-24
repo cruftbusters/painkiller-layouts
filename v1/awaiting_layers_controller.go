@@ -60,16 +60,18 @@ func AwaitingLayerServer(conn *websocket.Conn, awaitingLayer AwaitingLayerServic
 		}
 	}()
 	go func() {
-		if err := <-read; err != nil {
-			return
-		}
-		layout := awaitingLayer.Dequeue()
-		if err := conn.WriteJSON(layout); err != nil {
-			awaitingLayer.Enqueue(layout)
-			return
-		} else if err := <-read; err != nil {
-			awaitingLayer.Enqueue(layout)
-			return
+		for {
+			if err := <-read; err != nil {
+				return
+			}
+			layout := awaitingLayer.Dequeue()
+			if err := conn.WriteJSON(layout); err != nil {
+				awaitingLayer.Enqueue(layout)
+				return
+			} else if err := <-read; err != nil {
+				awaitingLayer.Enqueue(layout)
+				return
+			}
 		}
 	}()
 }

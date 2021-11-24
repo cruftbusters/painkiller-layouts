@@ -133,4 +133,36 @@ func TestAwaitingLayers(t *testing.T) {
 			})
 		}
 	})
+
+	t.Run("dequeue more than one with one worker", func(t *testing.T) {
+		for _, instance := range instances {
+			t.Run(instance.string, func(t *testing.T) {
+				conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL+instance.string, nil)
+				AssertNoError(t, err)
+				defer conn.Close()
+
+				first, second := types.Layout{Id: "first"}, types.Layout{Id: "second"}
+				instance.MockAwaitingLayerService.On("Dequeue").Return(first).Once()
+				instance.MockAwaitingLayerService.On("Dequeue").Return(second).Once()
+
+				got, err := BeginDequeueLayout(conn)
+				if err != nil {
+					t.Fatal(err)
+				}
+				AssertLayout(t, got, first)
+				if err := EndDequeueLayout(conn); err != nil {
+					t.Fatal(err)
+				}
+
+				got, err = BeginDequeueLayout(conn)
+				if err != nil {
+					t.Fatal(err)
+				}
+				AssertLayout(t, got, second)
+				if err := EndDequeueLayout(conn); err != nil {
+					t.Fatal(err)
+				}
+			})
+		}
+	})
 }

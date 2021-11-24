@@ -124,6 +124,41 @@ func TestAwaitingLayers(t *testing.T) {
 		}
 	})
 
+	t.Run("dequeue more than one with one worker", func(t *testing.T) {
+		for _, path := range instances {
+			t.Run(path, func(t *testing.T) {
+				conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL+path, nil)
+				AssertNoError(t, err)
+				defer conn.Close()
+
+				first, second := types.Layout{Id: "first"}, types.Layout{Id: "second"}
+				if err := client.EnqueueLayoutExpect(path, first, 201); err != nil {
+					t.Fatal(err)
+				} else if err := client.EnqueueLayoutExpect(path, second, 201); err != nil {
+					t.Fatal(err)
+				}
+
+				got, err := BeginDequeueLayout(conn)
+				if err != nil {
+					t.Fatal(err)
+				}
+				AssertLayout(t, got, first)
+				if err := EndDequeueLayout(conn); err != nil {
+					t.Fatal(err)
+				}
+
+				got, err = BeginDequeueLayout(conn)
+				if err != nil {
+					t.Fatal(err)
+				}
+				AssertLayout(t, got, second)
+				if err := EndDequeueLayout(conn); err != nil {
+					t.Fatal(err)
+				}
+			})
+		}
+	})
+
 	t.Run("new layout enqueues awaiting heightmap", func(t *testing.T) {
 		created, err := client.CreateLayoutExpect(types.Layout{}, 201)
 		if err != nil {
