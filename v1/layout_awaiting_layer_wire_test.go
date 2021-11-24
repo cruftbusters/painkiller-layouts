@@ -12,9 +12,11 @@ import (
 func TestLayoutAwaitingLayerWire(t *testing.T) {
 	layoutService := new(MockLayoutService)
 	awaitingHeightmap := new(MockAwaitingLayerService)
+	awaitingHillshade := new(MockAwaitingLayerService)
 	service := NewLayoutAwaitingLayerWire(
 		layoutService,
 		awaitingHeightmap,
+		awaitingHillshade,
 	)
 
 	t.Run("proxy create and notify awaiting heightmap", func(t *testing.T) {
@@ -77,8 +79,8 @@ func TestLayoutAwaitingLayerWire(t *testing.T) {
 	})
 
 	t.Run("proxy patch", func(t *testing.T) {
-		id, up, down, err := "patch me", types.Layout{Id: "here comes the patch"}, types.Layout{Id: "result"}, errors.New("patch broke")
-		layoutService.On("Patch", id, up).Return(down, err)
+		id, up, down, err := "patch me", types.Layout{Id: "up up and away"}, types.Layout{Id: "down down and away"}, errors.New("patch broke")
+		layoutService.On("Patch", id, up).Return(down, err).Once()
 		got, gotErr := service.Patch(id, up)
 		if got != down {
 			t.Errorf("got %+v want %+v", got, down)
@@ -86,5 +88,13 @@ func TestLayoutAwaitingLayerWire(t *testing.T) {
 		if gotErr != err {
 			t.Errorf("got %s want %s", gotErr, err)
 		}
+
+		t.Run("notify awaiting hillshades when heightmap URL is populated", func(t *testing.T) {
+			up := types.Layout{HeightmapURL: "not blank"}
+			layoutService.On("Patch", id, up).Return(down, err).Once()
+			awaitingHillshade.On("Enqueue", down).Return(nil).Once()
+			service.Patch(id, up)
+			awaitingHillshade.AssertCalled(t, "Enqueue", down)
+		})
 	})
 }

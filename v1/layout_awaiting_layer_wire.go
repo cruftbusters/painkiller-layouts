@@ -7,16 +7,19 @@ import (
 func NewLayoutAwaitingLayerWire(
 	layoutService LayoutService,
 	awaitingHeightmap AwaitingLayerService,
+	awaitingHillshade AwaitingLayerService,
 ) LayoutService {
 	return &DefaultLayoutAwaitingLayerWire{
 		layoutService,
 		awaitingHeightmap,
+		awaitingHillshade,
 	}
 }
 
 type DefaultLayoutAwaitingLayerWire struct {
 	layoutService     LayoutService
 	awaitingHeightmap AwaitingLayerService
+	awaitingHillshade AwaitingLayerService
 }
 
 func (s *DefaultLayoutAwaitingLayerWire) Create(layout Layout) Layout {
@@ -44,7 +47,13 @@ func (s *DefaultLayoutAwaitingLayerWire) GetAllWithHeightmapWithoutHillshade() [
 }
 
 func (s *DefaultLayoutAwaitingLayerWire) Patch(id string, patch Layout) (Layout, error) {
-	return s.layoutService.Patch(id, patch)
+	down, err := s.layoutService.Patch(id, patch)
+	if patch.HeightmapURL != "" {
+		if err := s.awaitingHillshade.Enqueue(down); err != nil {
+			panic(err)
+		}
+	}
+	return down, err
 }
 
 func (s *DefaultLayoutAwaitingLayerWire) Delete(id string) error {
