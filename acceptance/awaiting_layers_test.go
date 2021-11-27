@@ -2,6 +2,7 @@ package acceptance
 
 import (
 	"fmt"
+	"sync"
 	"testing"
 
 	. "github.com/cruftbusters/painkiller-layouts/testing"
@@ -202,5 +203,56 @@ func TestAwaitingLayers(t *testing.T) {
 		if err := EndDequeueLayout(conn); err != nil {
 			t.Fatal(err)
 		}
+	})
+
+	t.Run("workers specify priority", func(t *testing.T) {
+		layout0, layout1 := types.Layout{Id: "layout0"}, types.Layout{Id: "layout1"}
+		conn1, _, err := websocket.DefaultDialer.Dial(wsBaseURL+"/v1/awaiting_hillshade", nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		conn0, _, err := websocket.DefaultDialer.Dial(wsBaseURL+"/v1/awaiting_hillshade", nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		var wg sync.WaitGroup
+		wg.Add(3)
+		go func() {
+			defer wg.Done()
+			got1, err := BeginDequeueLayout(conn1, 1)
+			if err != nil {
+				t.Error(err)
+				return
+			} else if err = EndDequeueLayout(conn1); err != nil {
+				t.Error(err)
+				return
+			} else if got1 != layout1 {
+				t.Errorf("got %+v want %+v", got1, layout1)
+			}
+		}()
+		go func() {
+			defer wg.Done()
+			got0, err := BeginDequeueLayout(conn0, 0)
+			if err != nil {
+				t.Error(err)
+				return
+			} else if err = EndDequeueLayout(conn0); err != nil {
+				t.Error(err)
+				return
+			} else if got0 != layout0 {
+				t.Errorf("got %+v want %+v", got0, layout0)
+			}
+		}()
+		go func() {
+			defer wg.Done()
+			if err := client.EnqueueLayoutExpect("/v1/awaiting_hillshade", layout0, 201); err != nil {
+				t.Error(err)
+			} else if err := client.EnqueueLayoutExpect("/v1/awaiting_hillshade", layout1, 201); err != nil {
+				t.Error(err)
+			}
+		}()
+		wg.Wait()
 	})
 }
