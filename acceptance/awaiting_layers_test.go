@@ -42,7 +42,7 @@ func TestAwaitingLayers(t *testing.T) {
 				}
 				defer conn1.Close()
 
-				got, err := BeginDequeueLayout(conn0)
+				got, err := BeginDequeueLayout(conn0, 0)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -51,7 +51,7 @@ func TestAwaitingLayers(t *testing.T) {
 					t.Fatal(err)
 				}
 
-				got, err = BeginDequeueLayout(conn1)
+				got, err = BeginDequeueLayout(conn1, 0)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -75,7 +75,7 @@ func TestAwaitingLayers(t *testing.T) {
 					t.Fatal(err)
 				}
 
-				if _, err := BeginDequeueLayout(conn); err != nil {
+				if _, err := BeginDequeueLayout(conn, 0); err != nil {
 					t.Fatal(err)
 				}
 				conn.Close()
@@ -84,7 +84,7 @@ func TestAwaitingLayers(t *testing.T) {
 				AssertNoError(t, err)
 				defer conn.Close()
 
-				got, err := BeginDequeueLayout(conn)
+				got, err := BeginDequeueLayout(conn, 0)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -116,7 +116,7 @@ func TestAwaitingLayers(t *testing.T) {
 					AssertNoError(t, err)
 					defer conn.Close()
 
-					if _, err = BeginDequeueLayout(conn); err != nil {
+					if _, err = BeginDequeueLayout(conn, 0); err != nil {
 						t.Fatal(err)
 					}
 					EndDequeueLayout(conn)
@@ -139,7 +139,7 @@ func TestAwaitingLayers(t *testing.T) {
 					t.Fatal(err)
 				}
 
-				got, err := BeginDequeueLayout(conn)
+				got, err := BeginDequeueLayout(conn, 0)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -148,7 +148,7 @@ func TestAwaitingLayers(t *testing.T) {
 					t.Fatal(err)
 				}
 
-				got, err = BeginDequeueLayout(conn)
+				got, err = BeginDequeueLayout(conn, 0)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -171,7 +171,7 @@ func TestAwaitingLayers(t *testing.T) {
 		AssertNoError(t, err)
 		defer conn.Close()
 
-		got, err := BeginDequeueLayout(conn)
+		got, err := BeginDequeueLayout(conn, 0)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -194,7 +194,7 @@ func TestAwaitingLayers(t *testing.T) {
 		AssertNoError(t, err)
 		defer conn.Close()
 
-		got, err := BeginDequeueLayout(conn)
+		got, err := BeginDequeueLayout(conn, 0)
 		if err != nil {
 			t.Fatal(err)
 		}

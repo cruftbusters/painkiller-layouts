@@ -14,7 +14,7 @@ func (m *MockAwaitingLayerService) Enqueue(got types.Layout) error {
 	return args.Error(0)
 }
 
-func (m *MockAwaitingLayerService) Dequeue() types.Layout {
-	args := m.Called()
+func (m *MockAwaitingLayerService) Dequeue(priority int) types.Layout {
+	args := m.Called(priority)
 	return args.Get(0).(types.Layout)
 }

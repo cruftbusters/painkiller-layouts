@@ -3,6 +3,7 @@ package v1
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/cruftbusters/painkiller-layouts/types"
@@ -25,7 +26,7 @@ func (c *AwaitingLayersController) AddRoutes(router *httprouter.Router) {
 			panic(err)
 		}
 		defer conn.Close()
-		AwaitingLayerServer(conn, c.awaitingHillshade)
+		AwaitingLayerServer(conn, c.awaitingHillshade, priority(r))
 		PingServer(conn)
 	})
 	router.GET("/v1/awaiting_heightmap", func(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -35,9 +36,17 @@ func (c *AwaitingLayersController) AddRoutes(router *httprouter.Router) {
 			panic(err)
 		}
 		defer conn.Close()
-		AwaitingLayerServer(conn, c.awaitingHeightmap)
+		AwaitingLayerServer(conn, c.awaitingHeightmap, priority(r))
 		PingServer(conn)
 	})
+}
+
+func priority(r *http.Request) int {
+	priority, err := strconv.Atoi(r.URL.Query().Get("priority"))
+	if err != nil {
+		return 0
+	}
+	return priority
 }
 
 func PingServer(conn *websocket.Conn) {
@@ -48,7 +57,7 @@ func PingServer(conn *websocket.Conn) {
 	}
 }
 
-func AwaitingLayerServer(conn *websocket.Conn, awaitingLayer AwaitingLayerService) {
+func AwaitingLayerServer(conn *websocket.Conn, awaitingLayer AwaitingLayerService, priority int) {
 	read := make(chan error, 1)
 	go func() {
 		for {
@@ -64,7 +73,7 @@ func AwaitingLayerServer(conn *websocket.Conn, awaitingLayer AwaitingLayerServic
 			if err := <-read; err != nil {
 				return
 			}
-			layout := awaitingLayer.Dequeue()
+			layout := awaitingLayer.Dequeue(priority)
 			if err := conn.WriteJSON(layout); err != nil {
 				awaitingLayer.Enqueue(layout)
 				return

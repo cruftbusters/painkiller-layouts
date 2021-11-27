@@ -8,7 +8,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func BeginDequeueLayout(conn *websocket.Conn) (types.Layout, error) {
+func BeginDequeueLayout(conn *websocket.Conn, priority int) (types.Layout, error) {
 	if err := conn.WriteMessage(websocket.BinaryMessage, nil); err != nil {
 		return types.Layout{}, err
 	}

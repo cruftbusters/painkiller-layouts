@@ -16,7 +16,7 @@ func TestAwaitingLayerService(t *testing.T) {
 		if err := service.Enqueue(layout); err != nil {
 			t.Fatal(err)
 		}
-		got := service.Dequeue()
+		got := service.Dequeue(0)
 		AssertLayout(t, got, layout)
 	})
 
@@ -37,7 +37,7 @@ func TestAwaitingLayerService(t *testing.T) {
 		}
 
 		c1 := make(chan *struct{})
-		go func() { service.Dequeue(); c1 <- nil }()
+		go func() { service.Dequeue(0); c1 <- nil }()
 		select {
 		case <-c1:
 		case <-time.After(time.Second):

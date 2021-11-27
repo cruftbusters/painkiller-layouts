@@ -54,7 +54,7 @@ func TestAwaitingLayers(t *testing.T) {
 		for _, instance := range instances {
 			t.Run(instance.string, func(t *testing.T) {
 				layout := types.Layout{Id: "rabid dequeueing"}
-				instance.MockAwaitingLayerService.On("Dequeue").Return(layout).Once()
+				instance.MockAwaitingLayerService.On("Dequeue", 0).Return(layout).Once()
 
 				conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL+instance.string, nil)
 				if err != nil {
@@ -62,7 +62,7 @@ func TestAwaitingLayers(t *testing.T) {
 				}
 				defer conn.Close()
 
-				got, err := BeginDequeueLayout(conn)
+				got, err := BeginDequeueLayout(conn, 0)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -82,8 +82,8 @@ func TestAwaitingLayers(t *testing.T) {
 				defer conn.Close()
 
 				layout := types.Layout{Id: "requeue me"}
-				instance.MockAwaitingLayerService.On("Dequeue").Return(layout).Once()
-				if _, err := BeginDequeueLayout(conn); err != nil {
+				instance.MockAwaitingLayerService.On("Dequeue", 0).Return(layout).Once()
+				if _, err := BeginDequeueLayout(conn, 0); err != nil {
 					t.Fatal(err)
 				}
 
@@ -109,10 +109,10 @@ func TestAwaitingLayers(t *testing.T) {
 				defer conn.Close()
 
 				first, second := types.Layout{Id: "first"}, types.Layout{Id: "second"}
-				instance.MockAwaitingLayerService.On("Dequeue").Return(first).Once()
-				instance.MockAwaitingLayerService.On("Dequeue").Return(second).Once()
+				instance.MockAwaitingLayerService.On("Dequeue", 0).Return(first).Once()
+				instance.MockAwaitingLayerService.On("Dequeue", 0).Return(second).Once()
 
-				got, err := BeginDequeueLayout(conn)
+				got, err := BeginDequeueLayout(conn, 0)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -121,13 +121,58 @@ func TestAwaitingLayers(t *testing.T) {
 					t.Fatal(err)
 				}
 
-				got, err = BeginDequeueLayout(conn)
+				got, err = BeginDequeueLayout(conn, 0)
 				if err != nil {
 					t.Fatal(err)
 				}
 				AssertLayout(t, got, second)
 				if err := EndDequeueLayout(conn); err != nil {
 					t.Fatal(err)
+				}
+			})
+		}
+	})
+
+	t.Run("workers specify priority", func(t *testing.T) {
+		for _, instance := range instances {
+			t.Run(instance.string, func(t *testing.T) {
+				layout := types.Layout{Id: "prioritize that worker"}
+				conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL+instance.string+"?priority=123", nil)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				instance.MockAwaitingLayerService.On("Dequeue", 123).Return(layout).Once()
+
+				gotChannel := make(chan struct {
+					types.Layout
+					error
+				})
+				go func() {
+					got, err := BeginDequeueLayout(conn, 1)
+					if err != nil {
+						gotChannel <- struct {
+							types.Layout
+							error
+						}{got, err}
+						return
+					}
+					err = EndDequeueLayout(conn)
+					gotChannel <- struct {
+						types.Layout
+						error
+					}{got, err}
+				}()
+				select {
+				case result := <-gotChannel:
+					got, err := result.Layout, result.error
+					if err != nil {
+						t.Fatal(err)
+					} else if got != layout {
+						t.Fatalf("got %+v want %+v", got, layout)
+					}
+				case <-time.After(time.Second):
+					t.Fatal("timed out after one second")
 				}
 			})
 		}

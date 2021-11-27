@@ -8,7 +8,7 @@ import (
 
 type AwaitingLayerService interface {
 	Enqueue(types.Layout) error
-	Dequeue() types.Layout
+	Dequeue(priority int) types.Layout
 }
 
 var ErrQueueFull error = errors.New("queue full")
@@ -32,6 +32,7 @@ func (s *DefaultAwaitingLayerService) Enqueue(layout types.Layout) error {
 	}
 }
 
-func (s *DefaultAwaitingLayerService) Dequeue() types.Layout {
+func (s *DefaultAwaitingLayerService) Dequeue(priority int) types.Layout {
 	return <-s.channel
 }
+
