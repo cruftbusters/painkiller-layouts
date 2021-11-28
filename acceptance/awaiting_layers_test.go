@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sync"
 	"testing"
+	"time"
 
 	. "github.com/cruftbusters/painkiller-layouts/testing"
 	"github.com/cruftbusters/painkiller-layouts/types"
@@ -21,8 +22,7 @@ func TestAwaitingLayers(t *testing.T) {
 			t.Run("enqueue "+path, func(t *testing.T) {
 				if err := client.EnqueueLayoutExpect(path, types.Layout{Id: path + "0"}, 201); err != nil {
 					t.Fatal(err)
-				}
-				if err := client.EnqueueLayoutExpect(path, types.Layout{Id: path + "1"}, 201); err != nil {
+				} else if err := client.EnqueueLayoutExpect(path, types.Layout{Id: path + "1"}, 201); err != nil {
 					t.Fatal(err)
 				}
 			})
@@ -207,7 +207,7 @@ func TestAwaitingLayers(t *testing.T) {
 
 	t.Run("workers specify priority", func(t *testing.T) {
 		layout0, layout1 := types.Layout{Id: "layout0"}, types.Layout{Id: "layout1"}
-		conn1, _, err := websocket.DefaultDialer.Dial(wsBaseURL+"/v1/awaiting_hillshade", nil)
+		conn1, _, err := websocket.DefaultDialer.Dial(wsBaseURL+"/v1/awaiting_hillshade?priority=1", nil)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -225,20 +225,15 @@ func TestAwaitingLayers(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 				return
-			} else if err = EndDequeueLayout(conn1); err != nil {
-				t.Error(err)
-				return
 			} else if got1 != layout1 {
 				t.Errorf("got %+v want %+v", got1, layout1)
 			}
 		}()
 		go func() {
 			defer wg.Done()
+			time.Sleep(125 * time.Millisecond)
 			got0, err := BeginDequeueLayout(conn0, 0)
 			if err != nil {
-				t.Error(err)
-				return
-			} else if err = EndDequeueLayout(conn0); err != nil {
 				t.Error(err)
 				return
 			} else if got0 != layout0 {
@@ -247,6 +242,7 @@ func TestAwaitingLayers(t *testing.T) {
 		}()
 		go func() {
 			defer wg.Done()
+			time.Sleep(250 * time.Millisecond)
 			if err := client.EnqueueLayoutExpect("/v1/awaiting_hillshade", layout0, 201); err != nil {
 				t.Error(err)
 			} else if err := client.EnqueueLayoutExpect("/v1/awaiting_hillshade", layout1, 201); err != nil {
@@ -254,5 +250,10 @@ func TestAwaitingLayers(t *testing.T) {
 			}
 		}()
 		wg.Wait()
+		if err := EndDequeueLayout(conn0); err != nil {
+			t.Fatal(err)
+		} else if err := EndDequeueLayout(conn1); err != nil {
+			t.Fatal(err)
+		}
 	})
 }
