@@ -100,6 +100,7 @@ func TestLayoutService(t *testing.T) {
 			stubUuidService.idQueue = []string{id}
 			layout := service.Create(
 				Layout{
+					Scale:        0.12345,
 					Size:         Size{Width: 1, Height: 2},
 					Bounds:       Bounds{Left: 3, Top: 4, Right: 5, Bottom: 6},
 					HeightmapURL: "old heightmap url",

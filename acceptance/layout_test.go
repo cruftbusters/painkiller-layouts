@@ -81,6 +81,7 @@ func TestLayout(t *testing.T) {
 		t.Run(fmt.Sprintf("patch layout with %+v", scenario.patch), func(t *testing.T) {
 			layout := client.CreateLayout(t,
 				Layout{
+					Scale:        0.75,
 					Size:         Size{Width: 1, Height: 2},
 					Bounds:       Bounds{Left: 3, Top: 4, Right: 5, Bottom: 6},
 					HeightmapURL: "old heightmap url",

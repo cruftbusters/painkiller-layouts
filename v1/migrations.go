@@ -29,6 +29,7 @@ var migrations = []string{
 	`drop table heightmaps`,
 	`alter table layouts add column hillshade_url text`,
 	`update layouts set hillshade_url = '' where hillshade_url IS NULL`,
+	`alter table layouts add column scale numeric default 1`,
 }
 
 func Migrate(db *sql.DB) error {

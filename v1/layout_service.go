@@ -36,10 +36,11 @@ func (service *DefaultLayoutService) Create(requestLayout Layout) Layout {
 	statement, err := service.db.Prepare(`
 insert into layouts (
 	id,
+	scale,
 	size_width, size_height,
 	bounds_left, bounds_top, bounds_right, bounds_bottom,
 	heightmap_url, hillshade_url
-) values(?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
 	if err != nil {
 		panic(err)
 	}
@@ -48,6 +49,7 @@ insert into layouts (
 	layout.Id = id
 	statement.Exec(
 		id,
+		requestLayout.Scale,
 		requestLayout.Size.Width,
 		requestLayout.Size.Height,
 		requestLayout.Bounds.Left,
@@ -63,6 +65,7 @@ insert into layouts (
 func (service *DefaultLayoutService) Get(id string) (Layout, error) {
 	statement, err := service.db.Prepare(`
 select id,
+scale,
 size_width, size_height,
 bounds_left, bounds_top, bounds_right, bounds_bottom,
 heightmap_url, hillshade_url
@@ -86,6 +89,7 @@ from layouts where id = ?
 func (service *DefaultLayoutService) GetAll() []Layout {
 	layouts, err := service.getAllSQL(`
 select id,
+scale,
 size_width, size_height,
 bounds_left, bounds_top, bounds_right, bounds_bottom,
 heightmap_url, hillshade_url
@@ -99,6 +103,7 @@ from layouts`)
 func (service *DefaultLayoutService) GetAllWithNoHeightmap() []Layout {
 	layouts, err := service.getAllSQL(`
 select id,
+scale,
 size_width, size_height,
 bounds_left, bounds_top, bounds_right, bounds_bottom,
 heightmap_url, hillshade_url
@@ -113,6 +118,7 @@ where heightmap_url == ''`)
 func (service *DefaultLayoutService) GetAllWithHeightmapWithoutHillshade() []Layout {
 	layouts, err := service.getAllSQL(`
 select id,
+scale,
 size_width, size_height,
 bounds_left, bounds_top, bounds_right, bounds_bottom,
 heightmap_url, hillshade_url
@@ -198,6 +204,7 @@ func scan(scan func(dest ...interface{}) error) (Layout, error) {
 	layout := Layout{}
 	err := scan(
 		&layout.Id,
+		&layout.Scale,
 		&layout.Size.Width,
 		&layout.Size.Height,
 		&layout.Bounds.Left,
