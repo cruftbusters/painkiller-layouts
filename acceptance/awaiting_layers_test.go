@@ -182,7 +182,7 @@ func TestAwaitingLayers(t *testing.T) {
 		}
 	})
 
-	t.Run("patch of empty heightmap url enqueues awaiting hillshade", func(t *testing.T) {
+	t.Run("patch of heightmap url enqueues awaiting hillshade", func(t *testing.T) {
 		created, err := client.CreateLayoutExpect(types.Layout{}, 201)
 		if err != nil {
 			t.Fatal(err)
@@ -203,6 +203,19 @@ func TestAwaitingLayers(t *testing.T) {
 		if err := EndDequeueLayout(conn); err != nil {
 			t.Fatal(err)
 		}
+
+		t.Run("patch of scale enqueues awaiting hillshade", func(t *testing.T) {
+			client.PatchLayout(t, created.Id, types.Layout{Scale: 0.1257})
+
+			got, err := BeginDequeueLayout(conn)
+			if err != nil {
+				t.Fatal(err)
+			}
+			AssertLayout(t, got, types.Layout{Id: created.Id, Scale: 0.1257, HeightmapURL: fmt.Sprintf("%s/v1/layouts/%s/heightmap.jpg", httpBaseURL, created.Id)})
+			if err := EndDequeueLayout(conn); err != nil {
+				t.Fatal(err)
+			}
+		})
 	})
 
 	t.Run("workers specify priority", func(t *testing.T) {

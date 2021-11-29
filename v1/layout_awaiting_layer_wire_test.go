@@ -89,8 +89,16 @@ func TestLayoutAwaitingLayerWire(t *testing.T) {
 			t.Errorf("got %s want %s", gotErr, err)
 		}
 
-		t.Run("notify awaiting hillshades when heightmap URL is populated", func(t *testing.T) {
-			up := types.Layout{HeightmapURL: "not blank"}
+		t.Run("notify awaiting hillshades when heightmap URL is patched", func(t *testing.T) {
+			up, down := types.Layout{HeightmapURL: "not blank"}, types.Layout{Id: "barrow downs"}
+			layoutService.On("Patch", id, up).Return(down, err).Once()
+			awaitingHillshade.On("Enqueue", down).Return(nil).Once()
+			service.Patch(id, up)
+			awaitingHillshade.AssertCalled(t, "Enqueue", down)
+		})
+
+		t.Run("notify awaiting hillshades when scale is patched", func(t *testing.T) {
+			up, down := types.Layout{Scale: 1.543}, types.Layout{Id: "down under"}
 			layoutService.On("Patch", id, up).Return(down, err).Once()
 			awaitingHillshade.On("Enqueue", down).Return(nil).Once()
 			service.Patch(id, up)

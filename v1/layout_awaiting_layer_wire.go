@@ -48,7 +48,7 @@ func (s *DefaultLayoutAwaitingLayerWire) GetAllWithHeightmapWithoutHillshade() [
 
 func (s *DefaultLayoutAwaitingLayerWire) Patch(id string, patch Layout) (Layout, error) {
 	down, err := s.layoutService.Patch(id, patch)
-	if patch.HeightmapURL != "" {
+	if patch.HeightmapURL != "" || patch.Scale != 0 {
 		if err := s.awaitingHillshade.Enqueue(down); err != nil {
 			panic(err)
 		}
