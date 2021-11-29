@@ -94,6 +94,10 @@ func TestLayoutService(t *testing.T) {
 			patch: Layout{HillshadeURL: "new hillshade url"},
 			want:  func(initial *Layout) { initial.HillshadeURL = "new hillshade url" },
 		},
+		{
+			patch: Layout{Scale: 12.34},
+			want:  func(initial *Layout) { initial.Scale = 12.34 },
+		},
 	} {
 		t.Run(fmt.Sprintf("patch layout with %+v", scenario.patch), func(t *testing.T) {
 			id := "the id"

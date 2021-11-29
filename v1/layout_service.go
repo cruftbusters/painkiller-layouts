@@ -185,6 +185,18 @@ func (service *DefaultLayoutService) Patch(id string, patch Layout) (Layout, err
 		newLayout.HillshadeURL = patch.HillshadeURL
 	}
 
+	if patch.Scale != 0 {
+		statement, err := service.db.Prepare("update layouts set scale = ? where id = ?")
+		if err != nil {
+			panic(err)
+		}
+		defer statement.Close()
+		if _, err = statement.Exec(patch.Scale, id); err != nil {
+			panic(err)
+		}
+		newLayout.Scale = patch.Scale
+	}
+
 	return *newLayout, nil
 }
 
