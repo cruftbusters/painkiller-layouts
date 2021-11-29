@@ -62,7 +62,7 @@ func TestAwaitingLayers(t *testing.T) {
 				}
 				defer conn.Close()
 
-				got, err := BeginDequeueLayout(conn, 0)
+				got, err := BeginDequeueLayout(conn)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -83,7 +83,7 @@ func TestAwaitingLayers(t *testing.T) {
 
 				layout := types.Layout{Id: "requeue me"}
 				instance.MockAwaitingLayerService.On("Dequeue", 0).Return(layout).Once()
-				if _, err := BeginDequeueLayout(conn, 0); err != nil {
+				if _, err := BeginDequeueLayout(conn); err != nil {
 					t.Fatal(err)
 				}
 
@@ -112,7 +112,7 @@ func TestAwaitingLayers(t *testing.T) {
 				instance.MockAwaitingLayerService.On("Dequeue", 0).Return(first).Once()
 				instance.MockAwaitingLayerService.On("Dequeue", 0).Return(second).Once()
 
-				got, err := BeginDequeueLayout(conn, 0)
+				got, err := BeginDequeueLayout(conn)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -121,7 +121,7 @@ func TestAwaitingLayers(t *testing.T) {
 					t.Fatal(err)
 				}
 
-				got, err = BeginDequeueLayout(conn, 0)
+				got, err = BeginDequeueLayout(conn)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -149,7 +149,7 @@ func TestAwaitingLayers(t *testing.T) {
 					error
 				})
 				go func() {
-					got, err := BeginDequeueLayout(conn, 1)
+					got, err := BeginDequeueLayout(conn)
 					if err != nil {
 						gotChannel <- struct {
 							types.Layout

@@ -43,7 +43,7 @@ func TestAwaitingLayers(t *testing.T) {
 				}
 				defer conn1.Close()
 
-				got, err := BeginDequeueLayout(conn0, 0)
+				got, err := BeginDequeueLayout(conn0)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -52,7 +52,7 @@ func TestAwaitingLayers(t *testing.T) {
 					t.Fatal(err)
 				}
 
-				got, err = BeginDequeueLayout(conn1, 0)
+				got, err = BeginDequeueLayout(conn1)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -76,7 +76,7 @@ func TestAwaitingLayers(t *testing.T) {
 					t.Fatal(err)
 				}
 
-				if _, err := BeginDequeueLayout(conn, 0); err != nil {
+				if _, err := BeginDequeueLayout(conn); err != nil {
 					t.Fatal(err)
 				}
 				conn.Close()
@@ -85,7 +85,7 @@ func TestAwaitingLayers(t *testing.T) {
 				AssertNoError(t, err)
 				defer conn.Close()
 
-				got, err := BeginDequeueLayout(conn, 0)
+				got, err := BeginDequeueLayout(conn)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -117,7 +117,7 @@ func TestAwaitingLayers(t *testing.T) {
 					AssertNoError(t, err)
 					defer conn.Close()
 
-					if _, err = BeginDequeueLayout(conn, 0); err != nil {
+					if _, err = BeginDequeueLayout(conn); err != nil {
 						t.Fatal(err)
 					}
 					EndDequeueLayout(conn)
@@ -140,7 +140,7 @@ func TestAwaitingLayers(t *testing.T) {
 					t.Fatal(err)
 				}
 
-				got, err := BeginDequeueLayout(conn, 0)
+				got, err := BeginDequeueLayout(conn)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -149,7 +149,7 @@ func TestAwaitingLayers(t *testing.T) {
 					t.Fatal(err)
 				}
 
-				got, err = BeginDequeueLayout(conn, 0)
+				got, err = BeginDequeueLayout(conn)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -172,7 +172,7 @@ func TestAwaitingLayers(t *testing.T) {
 		AssertNoError(t, err)
 		defer conn.Close()
 
-		got, err := BeginDequeueLayout(conn, 0)
+		got, err := BeginDequeueLayout(conn)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -195,7 +195,7 @@ func TestAwaitingLayers(t *testing.T) {
 		AssertNoError(t, err)
 		defer conn.Close()
 
-		got, err := BeginDequeueLayout(conn, 0)
+		got, err := BeginDequeueLayout(conn)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -221,7 +221,7 @@ func TestAwaitingLayers(t *testing.T) {
 		wg.Add(3)
 		go func() {
 			defer wg.Done()
-			got1, err := BeginDequeueLayout(conn1, 1)
+			got1, err := BeginDequeueLayout(conn1)
 			if err != nil {
 				t.Error(err)
 				return
@@ -232,7 +232,7 @@ func TestAwaitingLayers(t *testing.T) {
 		go func() {
 			defer wg.Done()
 			time.Sleep(125 * time.Millisecond)
-			got0, err := BeginDequeueLayout(conn0, 0)
+			got0, err := BeginDequeueLayout(conn0)
 			if err != nil {
 				t.Error(err)
 				return
