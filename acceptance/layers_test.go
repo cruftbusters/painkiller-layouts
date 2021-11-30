@@ -4,9 +4,12 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"net/http"
+	"strings"
 	"testing"
 
 	. "github.com/cruftbusters/painkiller-layouts/testing"
+	"github.com/cruftbusters/painkiller-layouts/types"
 	. "github.com/cruftbusters/painkiller-layouts/types"
 	v1 "github.com/cruftbusters/painkiller-layouts/v1"
 )
@@ -88,25 +91,34 @@ func TestLayers(t *testing.T) {
 		}
 	})
 
-	t.Run("put heightmap updates heightmap URL", func(t *testing.T) {
-		client.PutLayer(t, id, "heightmap.jpg", nil)
+	type URLSelector func(types.Layout) string
+	for _, instance := range []struct {
+		string
+		URLSelector
+	}{{"heightmap", func(layout types.Layout) string { return layout.HeightmapURL }}, {"hillshade", func(layout types.Layout) string { return layout.HillshadeURL }}} {
+		t.Run(fmt.Sprintf("put /v1/layouts/:id/%s.jpg updates layout url", instance.string), func(t *testing.T) {
+			want := "hello werald " + instance.string
+			client.PutLayer(t, id, instance.string+".jpg", strings.NewReader(want))
 
-		got := client.GetLayout(t, id).HeightmapURL
-		want := fmt.Sprintf("%s/v1/layouts/%s/heightmap.jpg", httpBaseURL, id)
-		if got != want {
-			t.Errorf("got %s want %s", got, want)
-		}
-	})
+			url := instance.URLSelector(client.GetLayout(t, id))
+			response, err := http.Get(url)
+			if err != nil {
+				t.Fatal(err)
+			} else if response.StatusCode != 200 {
+				t.Fatalf("got status code %d want 200", response.StatusCode)
+			}
 
-	t.Run("put hillshade updates hillshade URL", func(t *testing.T) {
-		client.PutLayer(t, id, "hillshade.jpg", nil)
+			builder := new(strings.Builder)
+			if _, err := io.Copy(builder, response.Body); err != nil {
+				t.Fatal(err)
+			}
 
-		got := client.GetLayout(t, id).HillshadeURL
-		want := fmt.Sprintf("%s/v1/layouts/%s/hillshade.jpg", httpBaseURL, id)
-		if got != want {
-			t.Errorf("got %s want %s", got, want)
-		}
-	})
+			got := builder.String()
+			if got != want {
+				t.Errorf("got %s want %s", got, want)
+			}
+		})
+	}
 
 	t.Run("layers are present after deleting layout", func(t *testing.T) {
 		id := client.CreateLayout(t, Layout{}).Id
