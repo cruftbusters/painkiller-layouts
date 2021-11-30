@@ -7,12 +7,14 @@ import (
 )
 
 type Layout struct {
-	Id           string  `json:"id"`
-	Scale        float64 `json:"scale"`
-	Size         Size    `json:"size"`
-	Bounds       Bounds  `json:"bounds"`
-	HeightmapURL string  `json:"heightmapURL"`
-	HillshadeURL string  `json:"hillshadeURL"`
+	Id                string  `json:"id"`
+	Scale             float64 `json:"scale"`
+	Size              Size    `json:"size"`
+	Bounds            Bounds  `json:"bounds"`
+	HeightmapURL      string  `json:"heightmapURL"`
+	HiResHeightmapURL string  `json:"hiResHeightmapURL"`
+	HillshadeURL      string  `json:"hillshadeURL"`
+	HiResHillshadeURL string  `json:"hiResHillshadeURL"`
 }
 
 type Size struct {

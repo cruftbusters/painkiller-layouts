@@ -52,19 +52,10 @@ func TestLayoutController(t *testing.T) {
 		AssertLayouts(t, got, down)
 	})
 
-	t.Run("patch heightmap", func(t *testing.T) {
+	t.Run("patch", func(t *testing.T) {
 		id, up, down := "rafael", Layout{HeightmapURL: "coming through"}, Layout{Id: "rafael", HeightmapURL: "coming through for real"}
 		mockLayoutService.On("Patch", id, up).Return(down, nil)
 
-		got := client.PatchLayout(t, id, up)
-		AssertLayout(t, got, down)
-	})
-
-	t.Run("patch hillshade", func(t *testing.T) {
-		id, up, down := "mac miller",
-			Layout{HeightmapURL: "already got it", HillshadeURL: "coming through"},
-			Layout{Id: "mac miller", HeightmapURL: "already got it", HillshadeURL: "coming through for real"}
-		mockLayoutService.On("Patch", id, up).Return(down, nil)
 		got := client.PatchLayout(t, id, up)
 		AssertLayout(t, got, down)
 	})

@@ -35,3 +35,36 @@ func BeginDequeueLayout(conn *websocket.Conn) (types.Layout, error) {
 func EndDequeueLayout(conn *websocket.Conn) error {
 	return conn.WriteMessage(websocket.BinaryMessage, nil)
 }
+
+func DrainAwaitingLayers(wsBaseURL string) (func(), error) {
+	c0, err := DrainAwaitingLayer(wsBaseURL + "/v1/awaiting_heightmap")
+	if err != nil {
+		return nil, err
+	}
+	c1, err := DrainAwaitingLayer(wsBaseURL + "/v1/awaiting_hillshade")
+	if err != nil {
+		c0.Close()
+		return nil, err
+	}
+	return func() {
+		c0.Close()
+		c1.Close()
+	}, nil
+}
+
+func DrainAwaitingLayer(url string) (*websocket.Conn, error) {
+	conn, _, err := websocket.DefaultDialer.Dial(url, nil)
+	if err != nil {
+		return conn, err
+	}
+	go func() {
+		for {
+			if _, err := BeginDequeueLayout(conn); err != nil {
+				return
+			} else if err := EndDequeueLayout(conn); err != nil {
+				return
+			}
+		}
+	}()
+	return conn, nil
+}

@@ -37,8 +37,8 @@ insert into layouts (
 	scale,
 	size_width, size_height,
 	bounds_left, bounds_top, bounds_right, bounds_bottom,
-	heightmap_url, hillshade_url
-) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+	heightmap_url, hi_res_heightmap_url, hillshade_url, hi_res_hillshade_url
+) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
 	if err != nil {
 		panic(err)
 	}
@@ -55,7 +55,9 @@ insert into layouts (
 		requestLayout.Bounds.Right,
 		requestLayout.Bounds.Bottom,
 		requestLayout.HeightmapURL,
+		requestLayout.HiResHeightmapURL,
 		requestLayout.HillshadeURL,
+		requestLayout.HiResHillshadeURL,
 	)
 	return *layout
 }
@@ -66,7 +68,7 @@ select id,
 scale,
 size_width, size_height,
 bounds_left, bounds_top, bounds_right, bounds_bottom,
-heightmap_url, hillshade_url
+heightmap_url, hi_res_heightmap_url, hillshade_url, hi_res_hillshade_url
 from layouts where id = ?
 `)
 	if err != nil {
@@ -90,7 +92,7 @@ select id,
 scale,
 size_width, size_height,
 bounds_left, bounds_top, bounds_right, bounds_bottom,
-heightmap_url, hillshade_url
+heightmap_url, hi_res_heightmap_url, hillshade_url, hi_res_hillshade_url
 from layouts`)
 	if err != nil {
 		panic(err)
@@ -140,6 +142,18 @@ func (service *DefaultLayoutService) Patch(id string, patch Layout) (Layout, err
 		newLayout.HeightmapURL = patch.HeightmapURL
 	}
 
+	if patch.HiResHeightmapURL != "" {
+		statement, err := service.db.Prepare("update layouts set hi_res_heightmap_url = ? where id = ?")
+		if err != nil {
+			panic(err)
+		}
+		defer statement.Close()
+		if _, err = statement.Exec(patch.HiResHeightmapURL, id); err != nil {
+			panic(err)
+		}
+		newLayout.HiResHeightmapURL = patch.HiResHeightmapURL
+	}
+
 	if patch.HillshadeURL != "" {
 		statement, err := service.db.Prepare("update layouts set hillshade_url = ? where id = ?")
 		if err != nil {
@@ -150,6 +164,18 @@ func (service *DefaultLayoutService) Patch(id string, patch Layout) (Layout, err
 			panic(err)
 		}
 		newLayout.HillshadeURL = patch.HillshadeURL
+	}
+
+	if patch.HiResHillshadeURL != "" {
+		statement, err := service.db.Prepare("update layouts set hi_res_hillshade_url = ? where id = ?")
+		if err != nil {
+			panic(err)
+		}
+		defer statement.Close()
+		if _, err = statement.Exec(patch.HiResHillshadeURL, id); err != nil {
+			panic(err)
+		}
+		newLayout.HiResHillshadeURL = patch.HiResHillshadeURL
 	}
 
 	if patch.Scale != 0 {
@@ -191,7 +217,9 @@ func scan(scan func(dest ...interface{}) error) (Layout, error) {
 		&layout.Bounds.Right,
 		&layout.Bounds.Bottom,
 		&layout.HeightmapURL,
+		&layout.HiResHeightmapURL,
 		&layout.HillshadeURL,
+		&layout.HiResHillshadeURL,
 	)
 	return layout, err
 }

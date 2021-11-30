@@ -61,8 +61,13 @@ func TestLayoutService(t *testing.T) {
 		first := service.Create(Layout{})
 		defer service.Delete("first")
 		second := service.Create(Layout{
-			Size:   Size{Width: 1, Height: 2},
-			Bounds: Bounds{Left: 3, Top: 4, Right: 5, Bottom: 6},
+			Scale:             9.45,
+			Size:              Size{Width: 1, Height: 2},
+			Bounds:            Bounds{Left: 3, Top: 4, Right: 5, Bottom: 6},
+			HeightmapURL:      "heightmap url",
+			HiResHeightmapURL: "hi res heightmap url",
+			HillshadeURL:      "hillshade url",
+			HiResHillshadeURL: "hi res hillshade url",
 		})
 		defer service.Delete("second")
 
@@ -79,8 +84,16 @@ func TestLayoutService(t *testing.T) {
 			want:  func(initial *Layout) { initial.HeightmapURL = "new heightmap url" },
 		},
 		{
+			patch: Layout{HiResHeightmapURL: "new hi res heightmap url"},
+			want:  func(initial *Layout) { initial.HiResHeightmapURL = "new hi res heightmap url" },
+		},
+		{
 			patch: Layout{HillshadeURL: "new hillshade url"},
 			want:  func(initial *Layout) { initial.HillshadeURL = "new hillshade url" },
+		},
+		{
+			patch: Layout{HiResHillshadeURL: "new hi res hillshade url"},
+			want:  func(initial *Layout) { initial.HiResHillshadeURL = "new hi res hillshade url" },
 		},
 		{
 			patch: Layout{Scale: 12.34},
@@ -92,11 +105,13 @@ func TestLayoutService(t *testing.T) {
 			stubUuidService.idQueue = []string{id}
 			layout := service.Create(
 				Layout{
-					Scale:        0.12345,
-					Size:         Size{Width: 1, Height: 2},
-					Bounds:       Bounds{Left: 3, Top: 4, Right: 5, Bottom: 6},
-					HeightmapURL: "old heightmap url",
-					HillshadeURL: "old hillshade url",
+					Scale:             0.12345,
+					Size:              Size{Width: 1, Height: 2},
+					Bounds:            Bounds{Left: 3, Top: 4, Right: 5, Bottom: 6},
+					HeightmapURL:      "old heightmap url",
+					HiResHeightmapURL: "old hi res heightmap url",
+					HillshadeURL:      "old hillshade url",
+					HiResHillshadeURL: "old hi res hillshade url",
 				},
 			)
 			defer service.Delete(id)

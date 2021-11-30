@@ -30,6 +30,8 @@ var migrations = []string{
 	`alter table layouts add column hillshade_url text`,
 	`update layouts set hillshade_url = '' where hillshade_url IS NULL`,
 	`alter table layouts add column scale numeric default 1`,
+	`alter table layouts add column hi_res_heightmap_url text default ''`,
+	`alter table layouts add column hi_res_hillshade_url text default ''`,
 }
 
 func Migrate(db *sql.DB) error {
