@@ -24,16 +24,6 @@ func (m *MockLayoutService) GetAll() []Layout {
 	return args.Get(0).([]Layout)
 }
 
-func (m *MockLayoutService) GetAllWithNoHeightmap() []Layout {
-	args := m.Called()
-	return args.Get(0).([]Layout)
-}
-
-func (m *MockLayoutService) GetAllWithHeightmapWithoutHillshade() []Layout {
-	args := m.Called()
-	return args.Get(0).([]Layout)
-}
-
 func (m *MockLayoutService) Patch(id string, patch Layout) (Layout, error) {
 	args := m.Called(id, patch)
 	return args.Get(0).(Layout), args.Error(1)

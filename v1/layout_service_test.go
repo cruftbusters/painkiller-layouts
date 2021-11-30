@@ -56,30 +56,18 @@ func TestLayoutService(t *testing.T) {
 	})
 
 	t.Run("get all", func(t *testing.T) {
-		stubUuidService.idQueue = []string{"first", "second", "third"}
+		stubUuidService.idQueue = []string{"first", "second"}
 
-		withHeightmap := service.Create(Layout{HeightmapURL: "heightmap url"})
+		first := service.Create(Layout{})
 		defer service.Delete("first")
-		withHillshade := service.Create(Layout{HillshadeURL: "hillshade url"})
-		defer service.Delete("second")
-		withEverythingElse := service.Create(Layout{
+		second := service.Create(Layout{
 			Size:   Size{Width: 1, Height: 2},
 			Bounds: Bounds{Left: 3, Top: 4, Right: 5, Bottom: 6},
 		})
-		defer service.Delete("third")
+		defer service.Delete("second")
 
 		got := service.GetAll()
-		AssertLayoutsUnordered(t, got, []Layout{withEverythingElse, withHillshade, withHeightmap})
-
-		t.Run("with no heightmap", func(t *testing.T) {
-			got = service.GetAllWithNoHeightmap()
-			AssertLayoutsUnordered(t, got, []Layout{withEverythingElse, withHillshade})
-		})
-
-		t.Run("with no hillshade", func(t *testing.T) {
-			got = service.GetAllWithHeightmapWithoutHillshade()
-			AssertLayoutsUnordered(t, got, []Layout{withHeightmap})
-		})
+		AssertLayoutsUnordered(t, got, []Layout{first, second})
 	})
 
 	for _, scenario := range []struct {

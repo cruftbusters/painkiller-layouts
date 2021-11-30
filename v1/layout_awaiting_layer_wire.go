@@ -38,14 +38,6 @@ func (s *DefaultLayoutAwaitingLayerWire) GetAll() []Layout {
 	return s.layoutService.GetAll()
 }
 
-func (s *DefaultLayoutAwaitingLayerWire) GetAllWithNoHeightmap() []Layout {
-	return s.layoutService.GetAllWithNoHeightmap()
-}
-
-func (s *DefaultLayoutAwaitingLayerWire) GetAllWithHeightmapWithoutHillshade() []Layout {
-	return s.layoutService.GetAllWithHeightmapWithoutHillshade()
-}
-
 func (s *DefaultLayoutAwaitingLayerWire) Patch(id string, patch Layout) (Layout, error) {
 	down, err := s.layoutService.Patch(id, patch)
 	if patch.HeightmapURL != "" || patch.Scale != 0 {

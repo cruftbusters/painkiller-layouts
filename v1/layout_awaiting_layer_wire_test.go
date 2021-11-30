@@ -60,24 +60,6 @@ func TestLayoutAwaitingLayerWire(t *testing.T) {
 		}
 	})
 
-	t.Run("proxy get all with heightmap without hillshade", func(t *testing.T) {
-		layouts := []types.Layout{{Id: "get all these with heightmap without hillshade"}}
-		layoutService.On("GetAllWithHeightmapWithoutHillshade").Return(layouts)
-		got := service.GetAllWithHeightmapWithoutHillshade()
-		if !reflect.DeepEqual(got, layouts) {
-			t.Errorf("got %+v want %+v", got, layouts)
-		}
-	})
-
-	t.Run("proxy get all with no heightmap", func(t *testing.T) {
-		layouts := []types.Layout{{Id: "get all these with no heightmap"}}
-		layoutService.On("GetAllWithNoHeightmap").Return(layouts)
-		got := service.GetAllWithNoHeightmap()
-		if !reflect.DeepEqual(got, layouts) {
-			t.Errorf("got %+v want %+v", got, layouts)
-		}
-	})
-
 	t.Run("proxy patch", func(t *testing.T) {
 		id, up, down, err := "patch me", types.Layout{Id: "up up and away"}, types.Layout{Id: "down down and away"}, errors.New("patch broke")
 		layoutService.On("Patch", id, up).Return(down, err).Once()
