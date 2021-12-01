@@ -144,6 +144,13 @@ func TestLayerService(t *testing.T) {
 		}
 	})
 
+	t.Run("put unknown layer raises error", func(t *testing.T) {
+		id := "unknown layer"
+		mockLayoutService.On("Get", id).Return(Layout{}, nil)
+		err := layerService.Put(id, "unknown.txt", "", nil)
+		AssertError(t, err, ErrUnknownLayerName)
+	})
+
 	t.Run("layers are present after deleting layout", func(t *testing.T) {
 		id := "wimbly wombly"
 

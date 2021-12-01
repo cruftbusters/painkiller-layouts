@@ -33,6 +33,7 @@ type DefaultLayerService struct {
 }
 
 var ErrLayerNotFound = errors.New("layer not found")
+var ErrUnknownLayerName = errors.New("unknown layer name")
 
 func (s *DefaultLayerService) Put(id, name, contentType string, layer []byte) error {
 	_, err := s.layoutService.Get(id)
@@ -56,6 +57,8 @@ func (s *DefaultLayerService) Put(id, name, contentType string, layer []byte) er
 		patch = types.Layout{HiResHeightmapURL: layerURL}
 	} else if name == "hillshade.tif" {
 		patch = types.Layout{HiResHillshadeURL: layerURL}
+	} else {
+		return ErrUnknownLayerName
 	}
 	_, err = s.layoutService.Patch(id, patch)
 	return err
