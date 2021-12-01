@@ -193,22 +193,31 @@ func (client ClientV2) DeleteLayoutExpectInternalServerError(t testing.TB, id st
 
 func (client ClientV2) PutLayerExpectNotFound(t testing.TB, id, name string) {
 	t.Helper()
-	requestURL := client.baseURLF("/v1/layouts/%s/%s", id, name)
-	request, err := http.NewRequest(http.MethodPut, requestURL, nil)
-	AssertNoError(t, err)
-	response, err := (&http.Client{}).Do(request)
-	AssertNoError(t, err)
-	AssertStatusCode(t, response, 404)
+	if err := client.PutLayerExpect(id, name, 404); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func (client ClientV2) PutLayerExpectBadRequest(t testing.TB, id, name string) {
 	t.Helper()
+	if err := client.PutLayerExpect(id, name, 400); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func (client ClientV2) PutLayerExpect(id, name string, statusCode int) error {
 	requestURL := client.baseURLF("/v1/layouts/%s/%s", id, name)
 	request, err := http.NewRequest(http.MethodPut, requestURL, nil)
-	AssertNoError(t, err)
+	if err != nil {
+		return err
+	}
 	response, err := (&http.Client{}).Do(request)
-	AssertNoError(t, err)
-	AssertStatusCode(t, response, 400)
+	if err != nil {
+		return err
+	} else if response.StatusCode != statusCode {
+		return fmt.Errorf("got %d want %d", response.StatusCode, statusCode)
+	}
+	return nil
 }
 
 func (client ClientV2) PutLayer(t testing.TB, id, name, contentType string, reader io.Reader) {

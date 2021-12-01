@@ -27,8 +27,14 @@ func (c LayerController) Put(response http.ResponseWriter, request *http.Request
 	if err != nil {
 		panic(err)
 	}
-	if c.layerService.Put(ps.ByName("id"), name, request.Header.Get("Content-Type"), layer) != nil {
+	switch c.layerService.Put(ps.ByName("id"), name, request.Header.Get("Content-Type"), layer) {
+	case ErrLayoutNotFound, ErrLayerNotFound:
 		response.WriteHeader(404)
+	case ErrQueueFull, ErrUnknownLayerName:
+		response.WriteHeader(500)
+	case nil:
+	default:
+		panic(err)
 	}
 }
 

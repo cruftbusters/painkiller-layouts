@@ -42,7 +42,7 @@ func (s *DefaultLayoutAwaitingLayerWire) Patch(id string, patch Layout) (Layout,
 	down, err := s.layoutService.Patch(id, patch)
 	if patch.HiResHeightmapURL != "" || patch.Scale != 0 {
 		if err := s.awaitingHillshade.Enqueue(down); err != nil {
-			panic(err)
+			return down, err
 		}
 	}
 	return down, err

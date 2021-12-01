@@ -61,30 +61,53 @@ func TestLayoutAwaitingLayerWire(t *testing.T) {
 	})
 
 	t.Run("proxy patch", func(t *testing.T) {
-		id, up, down, err := "patch me", types.Layout{Id: "up up and away"}, types.Layout{Id: "down down and away"}, errors.New("patch broke")
-		layoutService.On("Patch", id, up).Return(down, err).Once()
+		id := "patch me"
+
+		up, down := types.Layout{Id: "up up and away"}, types.Layout{Id: "down down and away"}
+		layoutService.On("Patch", id, up).Return(down, nil).Once()
 		got, gotErr := service.Patch(id, up)
 		if got != down {
 			t.Errorf("got %+v want %+v", got, down)
+		} else if gotErr != nil {
+			t.Errorf("got unexpected error '%s'", gotErr)
 		}
-		if gotErr != err {
-			t.Errorf("got %s want %s", gotErr, err)
-		}
+
+		t.Run("proxy target has error", func(t *testing.T) {
+			up, down, err := types.Layout{Id: "this is"}, types.Layout{Id: "gunna break"}, errors.New("patch broke")
+			layoutService.On("Patch", id, up).Return(down, err).Once()
+			got, gotErr := service.Patch(id, up)
+			if got != down {
+				t.Errorf("got %+v want %+v", got, down)
+			} else if gotErr != err {
+				t.Errorf("got %s want %s", gotErr, err)
+			}
+		})
 
 		t.Run("notify awaiting hillshades when hi res heightmap URL is patched", func(t *testing.T) {
 			up, down := types.Layout{HiResHeightmapURL: "not blank"}, types.Layout{Id: "barrow downs"}
-			layoutService.On("Patch", id, up).Return(down, err).Once()
+			layoutService.On("Patch", id, up).Return(down, nil).Once()
 			awaitingHillshade.On("Enqueue", down).Return(nil).Once()
-			service.Patch(id, up)
-			awaitingHillshade.AssertCalled(t, "Enqueue", down)
+			if _, err := service.Patch(id, up); err != nil {
+				t.Fatal(err)
+			}
 		})
 
 		t.Run("notify awaiting hillshades when scale is patched", func(t *testing.T) {
 			up, down := types.Layout{Scale: 1.543}, types.Layout{Id: "down under"}
-			layoutService.On("Patch", id, up).Return(down, err).Once()
+			layoutService.On("Patch", id, up).Return(down, nil).Once()
 			awaitingHillshade.On("Enqueue", down).Return(nil).Once()
-			service.Patch(id, up)
-			awaitingHillshade.AssertCalled(t, "Enqueue", down)
+			if _, err := service.Patch(id, up); err != nil {
+				t.Fatal(err)
+			}
+		})
+
+		t.Run("awaiting hillshade is full", func(t *testing.T) {
+			up, down := types.Layout{Scale: 1.543}, types.Layout{Id: "dang queue full"}
+			layoutService.On("Patch", id, up).Return(down, nil).Once()
+			awaitingHillshade.On("Enqueue", down).Return(ErrQueueFull).Once()
+			if _, err := service.Patch(id, up); err != ErrQueueFull {
+				t.Fatalf("got '%s' expected '%s'", err, ErrQueueFull)
+			}
 		})
 	})
 }

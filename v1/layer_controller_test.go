@@ -42,6 +42,22 @@ func TestLayerController(t *testing.T) {
 			mockLayerService.On("Get", id, name).Return([]byte{}, "", ErrLayerNotFound)
 			client.GetLayerExpectNotFound(t, id, name)
 		})
+
+		t.Run(fmt.Sprintf("put %s on full queue is 500", name), func(t *testing.T) {
+			id := "zoink " + name
+			mockLayerService.On("Put", id, name, "", []byte{}).Return(ErrQueueFull)
+			if err := client.PutLayerExpect(id, name, 500); err != nil {
+				t.Fatal(err)
+			}
+		})
+
+		t.Run(fmt.Sprintf("put %s on unknown layer is 500", name), func(t *testing.T) {
+			id := "doink " + name
+			mockLayerService.On("Put", id, name, "", []byte{}).Return(ErrUnknownLayerName)
+			if err := client.PutLayerExpect(id, name, 500); err != nil {
+				t.Fatal(err)
+			}
+		})
 	}
 
 	t.Run("disallow put for invalid layer names", func(t *testing.T) {
