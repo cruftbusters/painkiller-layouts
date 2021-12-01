@@ -1,7 +1,9 @@
 package acceptance
 
 import (
-	"fmt"
+	"io"
+	"net/http"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -182,37 +184,57 @@ func TestAwaitingLayers(t *testing.T) {
 		}
 	})
 
-	t.Run("patch of heightmap url enqueues awaiting hillshade", func(t *testing.T) {
+	t.Run("enqueue awaiting hillshade", func(t *testing.T) {
 		created, err := client.CreateLayoutExpect(types.Layout{}, 201)
 		if err != nil {
 			t.Fatal(err)
 		}
 		defer client.DeleteLayout(t, created.Id)
 
-		client.PutLayer(t, created.Id, "heightmap.jpg", "", nil)
+		t.Run("when hi res heightmap updates", func(t *testing.T) {
+			conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL+"/v1/awaiting_hillshade", nil)
+			AssertNoError(t, err)
+			defer conn.Close()
 
-		conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL+"/v1/awaiting_hillshade", nil)
-		AssertNoError(t, err)
-		defer conn.Close()
-
-		got, err := BeginDequeueLayout(conn)
-		if err != nil {
-			t.Fatal(err)
-		}
-		AssertLayout(t, got, types.Layout{Id: created.Id, HeightmapURL: fmt.Sprintf("%s/v1/layouts/%s/heightmap.jpg", httpBaseURL, created.Id)})
-		if err := EndDequeueLayout(conn); err != nil {
-			t.Fatal(err)
-		}
-
-		t.Run("patch of scale enqueues awaiting hillshade", func(t *testing.T) {
-			client.PatchLayout(t, created.Id, types.Layout{Scale: 0.1257})
+			layerAsString := "layer bytes"
+			client.PutLayer(t, created.Id, "heightmap.tif", "", strings.NewReader(layerAsString))
 
 			got, err := BeginDequeueLayout(conn)
 			if err != nil {
 				t.Fatal(err)
 			}
-			AssertLayout(t, got, types.Layout{Id: created.Id, Scale: 0.1257, HeightmapURL: fmt.Sprintf("%s/v1/layouts/%s/heightmap.jpg", httpBaseURL, created.Id)})
-			if err := EndDequeueLayout(conn); err != nil {
+
+			response, err := http.Get(got.HiResHeightmapURL)
+			AssertNoError(t, err)
+			builder := &strings.Builder{}
+			if _, err = io.Copy(builder, response.Body); err != nil {
+				t.Fatal(err)
+			}
+			gotLayerAsString := builder.String()
+			if gotLayerAsString != layerAsString {
+				t.Fatalf("got '%s' want '%s'", gotLayerAsString, layerAsString)
+			} else if err := EndDequeueLayout(conn); err != nil {
+				t.Fatal(err)
+			}
+		})
+
+		t.Run("patch of scale enqueues awaiting hillshade", func(t *testing.T) {
+			conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL+"/v1/awaiting_hillshade", nil)
+			AssertNoError(t, err)
+			defer conn.Close()
+
+			scale := 0.1257
+			client.PatchLayout(t, created.Id, types.Layout{Scale: scale})
+
+			got, err := BeginDequeueLayout(conn)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			gotScale := got.Scale
+			if gotScale != scale {
+				t.Fatalf("got %f want %f", gotScale, scale)
+			} else if err := EndDequeueLayout(conn); err != nil {
 				t.Fatal(err)
 			}
 		})
