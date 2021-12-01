@@ -23,17 +23,24 @@ func TestLayerService(t *testing.T) {
 		mockLayoutService,
 	)
 
-	t.Run("put when layout not found", func(t *testing.T) {
-		id, err := "not found", ErrLayoutNotFound
-		mockLayoutService.On("Get", id).Return(Layout{}, err)
-		got := layerService.Put(id, "heightmap.jpg", nil)
-		AssertError(t, got, err)
-	})
+	for _, name := range []string{
+		"heightmap.jpg",
+		"heightmap.tif",
+		"hillshade.jpg",
+		"hillshade.tif",
+	} {
+		t.Run("put when layout not found", func(t *testing.T) {
+			id, err := "not found", ErrLayoutNotFound
+			mockLayoutService.On("Get", id).Return(Layout{}, err)
+			got := layerService.Put(id, name, "", nil)
+			AssertError(t, got, err)
+		})
 
-	t.Run("get when layer not found", func(t *testing.T) {
-		_, _, got := layerService.Get("weeknights", "heightmap.jpg")
-		AssertError(t, got, ErrLayerNotFound)
-	})
+		t.Run("get when layer not found", func(t *testing.T) {
+			_, _, got := layerService.Get("weeknights", name)
+			AssertError(t, got, ErrLayerNotFound)
+		})
+	}
 
 	t.Run("put get delete", func(t *testing.T) {
 		id := "bhan mi"
@@ -49,15 +56,25 @@ func TestLayerService(t *testing.T) {
 				layer:       []byte("vegan impossible burger"),
 			},
 			{
+				name:        "heightmap.tif",
+				contentType: "image/tiff",
+				layer:       []byte("no more minecraft maps!"),
+			},
+			{
 				name:        "hillshade.jpg",
 				contentType: "image/jpeg",
 				layer:       []byte("mega wompus"),
+			},
+			{
+				name:        "hillshade.tif",
+				contentType: "image/tiff",
+				layer:       []byte("how exciting!"),
 			},
 		}
 
 		for _, step := range steps {
 			mockLayoutService.On("Patch", id, mock.Anything).Return(Layout{}, nil)
-			err := layerService.Put(id, step.name, step.layer)
+			err := layerService.Put(id, step.name, step.contentType, step.layer)
 			AssertNoError(t, err)
 		}
 
@@ -76,7 +93,7 @@ func TestLayerService(t *testing.T) {
 		t.Run("put again", func(t *testing.T) {
 			for _, step := range steps {
 				mockLayoutService.On("Patch", id, mock.Anything).Return(Layout{}, nil)
-				err := layerService.Put(id, step.name, step.layer)
+				err := layerService.Put(id, step.name, "", step.layer)
 				AssertNoError(t, err)
 			}
 		})
@@ -108,12 +125,12 @@ func TestLayerService(t *testing.T) {
 			},
 		} {
 			mockLayoutService.On("Patch", id, scenario.patch).Return(Layout{}, nil).Once()
-			err := layerService.Put(id, scenario.name, nil)
+			err := layerService.Put(id, scenario.name, "", nil)
 			AssertNoError(t, err)
 
 			t.Run("patch layout has error", func(t *testing.T) {
 				mockLayoutService.On("Patch", id, scenario.patch).Return(Layout{}, ErrLayoutNotFound)
-				err := layerService.Put(id, scenario.name, nil)
+				err := layerService.Put(id, scenario.name, "", nil)
 				AssertError(t, err, ErrLayoutNotFound)
 			})
 		}
@@ -125,7 +142,7 @@ func TestLayerService(t *testing.T) {
 		mockLayoutService.On("Get", id).Return(Layout{}, nil)
 		mockLayoutService.On("Patch", id, mock.Anything).Return(Layout{}, nil)
 
-		layerService.Put(id, "heightmap.jpg", nil)
+		layerService.Put(id, "heightmap.jpg", "", nil)
 
 		mockLayoutService.On("Get", id).Return(ErrLayerNotFound)
 

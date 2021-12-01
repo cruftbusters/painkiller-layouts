@@ -27,7 +27,7 @@ func (c LayerController) Put(response http.ResponseWriter, request *http.Request
 	if err != nil {
 		panic(err)
 	}
-	if c.layerService.Put(ps.ByName("id"), name, layer) != nil {
+	if c.layerService.Put(ps.ByName("id"), name, request.Header.Get("Content-Type"), layer) != nil {
 		response.WriteHeader(404)
 	}
 }
@@ -50,5 +50,5 @@ func (c LayerController) Delete(response http.ResponseWriter, request *http.Requ
 }
 
 func isUnacceptableName(name string) bool {
-	return name != "heightmap.jpg" && name != "hillshade.jpg"
+	return name != "heightmap.jpg" && name != "heightmap.tif" && name != "hillshade.jpg" && name != "hillshade.tif"
 }

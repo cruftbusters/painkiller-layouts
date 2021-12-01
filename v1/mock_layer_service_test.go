@@ -8,8 +8,8 @@ type MockLayerService struct {
 	mock.Mock
 }
 
-func (m *MockLayerService) Put(id, name string, layer []byte) error {
-	args := m.Called(id, name, layer)
+func (m *MockLayerService) Put(id, name, contentType string, layer []byte) error {
+	args := m.Called(id, name, contentType, layer)
 	return args.Error(0)
 }
 

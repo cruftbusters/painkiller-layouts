@@ -32,6 +32,7 @@ var migrations = []string{
 	`alter table layouts add column scale numeric default 1`,
 	`alter table layouts add column hi_res_heightmap_url text default ''`,
 	`alter table layouts add column hi_res_hillshade_url text default ''`,
+	`alter table layers add column content_type text default 'image/jpeg'`,
 }
 
 func Migrate(db *sql.DB) error {

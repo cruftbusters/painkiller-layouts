@@ -189,7 +189,7 @@ func TestAwaitingLayers(t *testing.T) {
 		}
 		defer client.DeleteLayout(t, created.Id)
 
-		client.PutLayer(t, created.Id, "heightmap.jpg", nil)
+		client.PutLayer(t, created.Id, "heightmap.jpg", "", nil)
 
 		conn, _, err := websocket.DefaultDialer.Dial(wsBaseURL+"/v1/awaiting_hillshade", nil)
 		AssertNoError(t, err)

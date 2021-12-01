@@ -9,7 +9,7 @@ import (
 )
 
 type LayerService interface {
-	Put(id, name string, layer []byte) error
+	Put(id, name, contentType string, layer []byte) error
 	Get(id, name string) ([]byte, string, error)
 	Delete(id, name string) error
 }
@@ -34,17 +34,17 @@ type DefaultLayerService struct {
 
 var ErrLayerNotFound = errors.New("layer not found")
 
-func (s *DefaultLayerService) Put(id, name string, layer []byte) error {
+func (s *DefaultLayerService) Put(id, name, contentType string, layer []byte) error {
 	_, err := s.layoutService.Get(id)
 	if err != nil {
 		return err
 	}
-	statement, err := s.db.Prepare("insert into layers (id, name, layer) values(?, ?, ?)")
+	statement, err := s.db.Prepare("insert into layers (id, name, content_type, layer) values(?, ?, ?, ?)")
 	if err != nil {
-		panic(err)
+		return err
 	}
-	if _, err = statement.Exec(id, name, layer); err != nil {
-		panic(err)
+	if _, err = statement.Exec(id, name, contentType, layer); err != nil {
+		return err
 	}
 	layerURL := fmt.Sprintf("%s/v1/layouts/%s/%s", s.baseURL, id, name)
 	var patch types.Layout
@@ -58,17 +58,18 @@ func (s *DefaultLayerService) Put(id, name string, layer []byte) error {
 }
 
 func (s *DefaultLayerService) Get(id, name string) ([]byte, string, error) {
-	statement, err := s.db.Prepare("select layer from layers where id = ? and name = ?")
+	statement, err := s.db.Prepare("select content_type, layer from layers where id = ? and name = ?")
 	if err != nil {
 		panic(err)
 	}
+	var contentType string
 	var layer []byte
-	err = statement.QueryRow(id, name).Scan(&layer)
+	err = statement.QueryRow(id, name).Scan(&contentType, &layer)
 	switch err {
 	case sql.ErrNoRows:
 		return nil, "", ErrLayerNotFound
 	case nil:
-		return layer, "image/jpeg", nil
+		return layer, contentType, nil
 	default:
 		panic(err)
 	}

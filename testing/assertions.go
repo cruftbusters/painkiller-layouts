@@ -12,7 +12,7 @@ import (
 func AssertNoError(t testing.TB, err error) {
 	t.Helper()
 	if err != nil {
-		t.Fatal("got error wanted no error", err)
+		t.Fatalf("got unexpected error '%s'", err)
 	}
 }
 

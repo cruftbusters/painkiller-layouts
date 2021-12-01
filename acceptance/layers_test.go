@@ -23,16 +23,20 @@ func TestLayers(t *testing.T) {
 
 	t.Run("put layers on missing layout", func(t *testing.T) {
 		client.PutLayerExpectNotFound(t, "deadbeef", "heightmap.jpg")
+		client.PutLayerExpectNotFound(t, "deadbeef", "heightmap.tif")
 		client.PutLayerExpectNotFound(t, "deadbeef", "hillshade.jpg")
+		client.PutLayerExpectNotFound(t, "deadbeef", "hillshade.tif")
 	})
 
 	t.Run("get missing layers on layout", func(t *testing.T) {
 		client.GetLayerExpectNotFound(t, id, "heightmap.jpg")
+		client.GetLayerExpectNotFound(t, id, "heightmap.tif")
 		client.GetLayerExpectNotFound(t, id, "hillshade.jpg")
+		client.GetLayerExpectNotFound(t, id, "hillshade.tif")
 	})
 
 	for _, name := range []string{
-		"heightmap.tif",
+		"heightmap.txt",
 		"hillshade.png",
 		"anything.jpg",
 	} {
@@ -57,15 +61,25 @@ func TestLayers(t *testing.T) {
 				contentType: "image/jpeg",
 			},
 			{
+				name:        "heightmap.tif",
+				layer:       []byte("hi res heightmap bytes"),
+				contentType: "image/tiff",
+			},
+			{
 				name:        "hillshade.jpg",
 				layer:       []byte("hillshade bytes"),
 				contentType: "image/jpeg",
+			},
+			{
+				name:        "hillshade.tif",
+				layer:       []byte("hi res hillshade bytes"),
+				contentType: "image/tiff",
 			},
 		}
 
 		for _, scenario := range scenarios {
 			t.Run("put "+scenario.name, func(t *testing.T) {
-				client.PutLayer(t, id, scenario.name, bytes.NewBuffer(scenario.layer))
+				client.PutLayer(t, id, scenario.name, scenario.contentType, bytes.NewBuffer(scenario.layer))
 			})
 		}
 
@@ -98,7 +112,7 @@ func TestLayers(t *testing.T) {
 	}{{"heightmap", func(layout types.Layout) string { return layout.HeightmapURL }}, {"hillshade", func(layout types.Layout) string { return layout.HillshadeURL }}} {
 		t.Run(fmt.Sprintf("put /v1/layouts/:id/%s.jpg updates layout url", instance.string), func(t *testing.T) {
 			want := "hello werald " + instance.string
-			client.PutLayer(t, id, instance.string+".jpg", strings.NewReader(want))
+			client.PutLayer(t, id, instance.string+".jpg", "image/jpeg", strings.NewReader(want))
 
 			url := instance.URLSelector(client.GetLayout(t, id))
 			response, err := http.Get(url)
@@ -122,7 +136,7 @@ func TestLayers(t *testing.T) {
 
 	t.Run("layers are present after deleting layout", func(t *testing.T) {
 		id := client.CreateLayout(t, Layout{}).Id
-		client.PutLayer(t, id, "heightmap.jpg", nil)
+		client.PutLayer(t, id, "heightmap.jpg", "", nil)
 		client.DeleteLayout(t, id)
 		client.GetLayer(t, id, "heightmap.jpg")
 	})

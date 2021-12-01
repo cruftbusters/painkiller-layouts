@@ -3,6 +3,7 @@ package v1
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"testing"
 
@@ -18,27 +19,34 @@ func TestLayerController(t *testing.T) {
 	httpBaseURL, _ := TestController(controller)
 	client := ClientV2{BaseURL: httpBaseURL}
 
-	t.Run("put layer on missing map is not found", func(t *testing.T) {
-		id, name := "there is no creativity", "heightmap.jpg"
-		mockLayerService.On("Put", id, name, []byte{}).Return(ErrLayoutNotFound)
-		client.PutLayerExpectNotFound(t, id, name)
-	})
+	for _, name := range []string{
+		"heightmap.jpg",
+		"heightmap.tif",
+		"hillshade.jpg",
+		"hillshade.tif",
+	} {
+		t.Run(fmt.Sprintf("put %s on missing map is not found", name), func(t *testing.T) {
+			id := "there is no creativity " + name
+			mockLayerService.On("Put", id, name, "", []byte{}).Return(ErrLayoutNotFound)
+			client.PutLayerExpectNotFound(t, id, name)
+		})
 
-	t.Run("get layer on missing map is not found", func(t *testing.T) {
-		id, name := "walrus", "heightmap.jpg"
-		mockLayerService.On("Get", id, name).Return([]byte{}, "", ErrLayoutNotFound)
-		client.GetLayerExpectNotFound(t, id, name)
-	})
+		t.Run("get layer on missing map is not found", func(t *testing.T) {
+			id := "walrus " + name
+			mockLayerService.On("Get", id, name).Return([]byte{}, "", ErrLayoutNotFound)
+			client.GetLayerExpectNotFound(t, id, name)
+		})
 
-	t.Run("get layer is not found", func(t *testing.T) {
-		id, name := "serendipity", "heightmap.jpg"
-		mockLayerService.On("Get", id, name).Return([]byte{}, "", ErrLayerNotFound)
-		client.GetLayerExpectNotFound(t, id, name)
-	})
+		t.Run("get layer is not found", func(t *testing.T) {
+			id := "serendipity " + name
+			mockLayerService.On("Get", id, name).Return([]byte{}, "", ErrLayerNotFound)
+			client.GetLayerExpectNotFound(t, id, name)
+		})
+	}
 
 	t.Run("disallow put for invalid layer names", func(t *testing.T) {
 		for _, name := range []string{
-			"heightmap.tif",
+			"heightmap.txt",
 			"hillshade.png",
 			"anything.jpg",
 		} {
@@ -47,9 +55,9 @@ func TestLayerController(t *testing.T) {
 	})
 
 	t.Run("put layer", func(t *testing.T) {
-		id, name, up := "john denver", "heightmap.jpg", []byte("was a bear")
-		mockLayerService.On("Put", id, name, up).Return(nil)
-		client.PutLayer(t, id, name, bytes.NewBuffer(up))
+		id, name, contentType, up := "john denver", "heightmap.jpg", "the content type", []byte("was a bear")
+		mockLayerService.On("Put", id, name, contentType, up).Return(nil)
+		client.PutLayer(t, id, name, contentType, bytes.NewBuffer(up))
 	})
 
 	t.Run("get layer", func(t *testing.T) {

@@ -211,10 +211,11 @@ func (client ClientV2) PutLayerExpectBadRequest(t testing.TB, id, name string) {
 	AssertStatusCode(t, response, 400)
 }
 
-func (client ClientV2) PutLayer(t testing.TB, id, name string, reader io.Reader) {
+func (client ClientV2) PutLayer(t testing.TB, id, name, contentType string, reader io.Reader) {
 	t.Helper()
 	requestURL := client.baseURLF("/v1/layouts/%s/%s", id, name)
 	request, err := http.NewRequest(http.MethodPut, requestURL, reader)
+	request.Header.Add("Content-Type", contentType)
 	AssertNoError(t, err)
 	response, err := (&http.Client{}).Do(request)
 	AssertNoError(t, err)
