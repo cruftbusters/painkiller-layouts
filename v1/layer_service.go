@@ -50,8 +50,12 @@ func (s *DefaultLayerService) Put(id, name, contentType string, layer []byte) er
 	var patch types.Layout
 	if name == "heightmap.jpg" {
 		patch = types.Layout{HeightmapURL: layerURL}
-	} else {
+	} else if name == "hillshade.jpg" {
 		patch = types.Layout{HillshadeURL: layerURL}
+	} else if name == "heightmap.tif" {
+		patch = types.Layout{HiResHeightmapURL: layerURL}
+	} else if name == "hillshade.tif" {
+		patch = types.Layout{HiResHillshadeURL: layerURL}
 	}
 	_, err = s.layoutService.Patch(id, patch)
 	return err

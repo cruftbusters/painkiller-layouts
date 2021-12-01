@@ -109,10 +109,15 @@ func TestLayers(t *testing.T) {
 	for _, instance := range []struct {
 		string
 		URLSelector
-	}{{"heightmap", func(layout types.Layout) string { return layout.HeightmapURL }}, {"hillshade", func(layout types.Layout) string { return layout.HillshadeURL }}} {
-		t.Run(fmt.Sprintf("put /v1/layouts/:id/%s.jpg updates layout url", instance.string), func(t *testing.T) {
+	}{
+		{"heightmap.jpg", func(layout types.Layout) string { return layout.HeightmapURL }},
+		{"heightmap.tif", func(layout types.Layout) string { return layout.HiResHeightmapURL }},
+		{"hillshade.jpg", func(layout types.Layout) string { return layout.HillshadeURL }},
+		{"hillshade.tif", func(layout types.Layout) string { return layout.HiResHillshadeURL }},
+	} {
+		t.Run(fmt.Sprintf("put /v1/layouts/:id/%s updates layout url", instance.string), func(t *testing.T) {
 			want := "hello werald " + instance.string
-			client.PutLayer(t, id, instance.string+".jpg", "image/jpeg", strings.NewReader(want))
+			client.PutLayer(t, id, instance.string, "", strings.NewReader(want))
 
 			url := instance.URLSelector(client.GetLayout(t, id))
 			response, err := http.Get(url)

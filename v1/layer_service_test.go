@@ -120,8 +120,16 @@ func TestLayerService(t *testing.T) {
 				patch: Layout{HeightmapURL: "http://baseURL/v1/layouts/not so unique/heightmap.jpg"},
 			},
 			{
+				name:  "heightmap.tif",
+				patch: Layout{HiResHeightmapURL: "http://baseURL/v1/layouts/not so unique/heightmap.tif"},
+			},
+			{
 				name:  "hillshade.jpg",
 				patch: Layout{HillshadeURL: "http://baseURL/v1/layouts/not so unique/hillshade.jpg"},
+			},
+			{
+				name:  "hillshade.tif",
+				patch: Layout{HiResHillshadeURL: "http://baseURL/v1/layouts/not so unique/hillshade.tif"},
 			},
 		} {
 			mockLayoutService.On("Patch", id, scenario.patch).Return(Layout{}, nil).Once()
