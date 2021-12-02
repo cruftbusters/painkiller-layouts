@@ -3,8 +3,6 @@ Description=painkiller/layouts
 
 [Service]
 ExecStart=/home/arctair/painkiller/layouts/build/server 8082 "file:/home/arctair/warehouse/painkiller/layouts.sqlite?cache=shared" https://layouts.painkillergis.com
-StandardOutput=file:/home/arctair/painkiller/layouts/application.log
-StandardError=file:/home/arctair/painkiller/layouts/error.log
 Type=simple
 WorkingDirectory=/home/arctair/warehouse/painkiller/layouts
 Restart=on-failure
